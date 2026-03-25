@@ -1,33 +1,258 @@
+const palette = {
+  navy: "#1b345d",
+  evidence: "#2f6fed",
+  calibration: "#7c5ce0",
+  simulation: "#18a6a0",
+  review: "#d9852c",
+  success: "#2e9d6b",
+  muted: "#5f6f83",
+  line: "rgba(19, 32, 51, 0.1)",
+};
+
+const calibrationObserved = [0.98, 0.91, 0.82, 0.69, 0.57, 0.45, 0.33, 0.23];
+const calibrationPredicted = {
+  low: [0.98, 0.93, 0.86, 0.77, 0.68, 0.59, 0.51, 0.42],
+  base: [0.98, 0.9, 0.81, 0.7, 0.58, 0.46, 0.34, 0.24],
+  high: [0.98, 0.87, 0.75, 0.62, 0.5, 0.39, 0.28, 0.19],
+};
+const calibrationBand = {
+  upper: [0.99, 0.93, 0.85, 0.74, 0.63, 0.52, 0.41, 0.3],
+  lower: [0.97, 0.87, 0.77, 0.66, 0.54, 0.4, 0.28, 0.19],
+};
+
+const workflowSteps = [
+  {
+    index: "01",
+    tone: "evidence",
+    title: "上传证据 Evidence Workbench",
+    summary: "接收 KM table、hazard table、survival table 和 compound curve 定义。",
+    input: "KM / survival / hazard / curve fragments",
+    system: "Time alignment、字段校验、对象标准化、validation log",
+    output: "ClinicalSeries、CurveFit、CompoundCurve",
+  },
+  {
+    index: "02",
+    tone: "evidence",
+    title: "标准化曲线 Curve Standardization",
+    summary: "把分散来源统一到同一时间粒度和引用格式，避免每次 run 都重复手工换算。",
+    input: "Raw timepoints + metadata",
+    system: "Unit conversion、windowing、traceable transforms",
+    output: "Versioned evidence objects",
+  },
+  {
+    index: "03",
+    tone: "evidence",
+    title: "构建概率函数 Probability Runtime",
+    summary: "把 survival / hazard table 和复合曲线转换成 cycle-level event probabilities。",
+    input: "ClinicalSeries / CompoundCurve",
+    system: "ProbSurvTable、ProbHazardTable、ProbCompCurve",
+    output: "Reusable runtime functions",
+  },
+  {
+    index: "04",
+    tone: "simulation",
+    title: "运行 Markov / PSA Simulation Lab",
+    summary: "运行 cohort Markov、PSA 和 sensitivity analysis，保留样本矩阵、seed 和 artifacts。",
+    input: "Runtime functions + model parameters",
+    system: "Markov engine、LHS sampler、queued runs",
+    output: "Costs、QALYs、ICER、sample matrix",
+  },
+  {
+    index: "05",
+    tone: "calibration",
+    title: "校准 Observed vs Predicted",
+    summary: "根据临床数据拟合参数边界，记录优化轨迹、goodness-of-fit 和 overlay plot。",
+    input: "Observed OS/PFS + calibration bounds",
+    system: "Optimizer、fit scoring、overlay generation",
+    output: "Best-fit parameter set + run log",
+  },
+  {
+    index: "06",
+    tone: "review",
+    title: "进入审阅 Review Surface",
+    summary: "统一查看 cohort trace、scatterplots、patient event log 和 downloadable artifacts。",
+    input: "Run metrics + patient events + notes",
+    system: "Trace view、artifact versioning、review comments",
+    output: "Review-ready outputs",
+  },
+];
+
+const surfaces = {
+  evidence: {
+    key: "evidence",
+    tone: "evidence",
+    label: "证据工作台 Evidence Workbench",
+    kicker: "Upload -> Standardize -> Version",
+    title: "证据工作台 Evidence Workbench",
+    description:
+      "负责接收 survival / hazard / KM 数据和 compound curve 定义，并在进入 solver 之前完成对象标准化、时间对齐和校验日志生成。",
+    status: "Validated object pipeline",
+    inputs: ["KM OS / PFS table", "Hazard table", "Compound curve fragments"],
+    system: ["字段校验与 time alignment", "单位换算与 trace log", "对象标准化与版本标记"],
+    outputs: ["ClinicalSeries", "CurveFit", "CompoundCurve", "ProbabilityFunction draft"],
+  },
+  calibration: {
+    key: "calibration",
+    tone: "calibration",
+    label: "校准工作台 Calibration Studio",
+    kicker: "Observed -> Bounds -> Overlay",
+    title: "校准工作台 Calibration Studio",
+    description:
+      "围绕 observed clinical data 进行参数拟合，保留参数边界、目标函数、优化轨迹、版本标记和 observed vs predicted overlay。",
+    status: "Observed data fitting",
+    inputs: ["OS / PFS target series", "Bounds for p_progression / p_death", "Objective function"],
+    system: ["Optimization loop", "Goodness-of-fit scoring", "Overlay plot rendering"],
+    outputs: ["Best-fit parameter set", "Fit score", "Versioned overlay artifact"],
+  },
+  simulation: {
+    key: "simulation",
+    tone: "simulation",
+    label: "模拟实验室 Simulation Lab",
+    kicker: "Run -> Sample -> Store",
+    title: "模拟实验室 Simulation Lab",
+    description:
+      "异步运行 cohort Markov、PSA、sensitivity analysis，并保留 sampling method、seed、matrix、run metadata 和 artifacts。",
+    status: "Queued and reproducible",
+    inputs: ["Probability runtime", "Model parameters", "Sampling config"],
+    system: ["Run queue orchestration", "LHS / random sampler", "Artifact persistence"],
+    outputs: ["Run status", "Sample matrix", "Metrics catalog", "Downloadable outputs"],
+  },
+  review: {
+    key: "review",
+    tone: "review",
+    label: "审阅界面 Review Surface",
+    kicker: "Inspect -> Explain -> Share",
+    title: "审阅界面 Review Surface",
+    description:
+      "把 scatterplots、cohort trace、run metadata、artifact versions 和 reviewer notes 放进同一个审阅面，降低解释成本。",
+    status: "Traceable and review-ready",
+    inputs: ["Run metrics", "Patient / cohort events", "Artifacts and notes"],
+    system: ["Axis selection", "Cohort time slicing", "Artifact versioning"],
+    outputs: ["Scatterplot", "Cohort dashboard", "Run notes", "Share-ready evidence pack"],
+  },
+};
+
+const objectCards = [
+  {
+    tone: "evidence",
+    name: "ClinicalSeries",
+    en: "Versioned clinical evidence",
+    status: "Validated",
+    tags: ["KM points", "Time-aligned", "Versioned"],
+    source: "Clinical trial KM table / survival table / hazard table",
+    fields: "series_type, unit, source_id, points, trace_log",
+    generatedBy: "Evidence ingest + validation pipeline",
+    usedBy: "Curve fitting, calibration targets, review artifacts",
+  },
+  {
+    tone: "evidence",
+    name: "CompoundCurve",
+    en: "Composite survival definition",
+    status: "Traceable",
+    tags: ["Blended segments", "Rule-based", "Reusable"],
+    source: "Multiple fitted curves or table segments",
+    fields: "curve_parts, switch_rules, time_windows, provenance",
+    generatedBy: "Curve composition workspace",
+    usedBy: "Probability runtime, plots, sensitivity overlays",
+  },
+  {
+    tone: "simulation",
+    name: "ProbabilityFunction",
+    en: "Cycle-level event probabilities",
+    status: "Versioned",
+    tags: ["ProbSurvTable", "ProbHazardTable", "Traceable"],
+    source: "ClinicalSeries / Hazard table / CompoundCurve",
+    fields: "function_type, cycle_window, inputs_ref, transform_notes",
+    generatedBy: "Runtime compiler",
+    usedBy: "Solver, plot, calibration, sensitivity analysis",
+  },
+  {
+    tone: "review",
+    name: "RunArtifact",
+    en: "Review-ready outputs",
+    status: "Shareable",
+    tags: ["PNG", "CSV", "Run notes"],
+    source: "Completed Markov / PSA / calibration run",
+    fields: "artifact_type, file_key, run_id, version, reviewer_note",
+    generatedBy: "Run pipeline + export layer",
+    usedBy: "Review dashboard, downloads, audit trail",
+  },
+];
+
+const capabilityFilters = [
+  { key: "all", label: "全部" },
+  { key: "evidence", label: "Evidence" },
+  { key: "calibration", label: "Calibration" },
+  { key: "simulation", label: "Simulation" },
+  { key: "review", label: "Review" },
+];
+
 const capabilities = [
   {
-    title: "Clinical Calibration",
-    body: "用 KM / survival 数据自动校准 Markov 参数，让拟合流程从手工试错转向结构化优化。",
-    meta: ["P1", "Markov", "Observed vs Predicted"],
+    key: "probability-runtime",
+    workflow: "evidence",
+    maturity: "core",
+    title: "统一概率运行时 Probability Runtime",
+    summary: "把 survival / hazard / compound curves 统一为可被 solver、plot 和 calibration 重复调用的函数层。",
+    input: "ClinicalSeries / CompoundCurve",
+    output: "Cycle-level event probability",
+    engine: "Runtime compiler",
+    tags: ["P0 Core", "Evidence", "Reusable"],
   },
   {
-    title: "Plot Sensitivity Mode",
-    body: "直接在 Markov Plot 和 Survival Plot 上叠加 low / base / high 曲线，用机制图解释参数影响。",
-    meta: ["P1", "Sensitivity", "Overlay Curves"],
+    key: "clinical-calibration",
+    workflow: "calibration",
+    maturity: "next",
+    title: "临床校准 Clinical Calibration",
+    summary: "用 observed clinical data 自动拟合 Markov 参数，减少手工试错。",
+    input: "KM / survival data + parameter bounds",
+    output: "Best-fit parameter set + overlay fit",
+    engine: "Optimization loop",
+    tags: ["P1 Ready Next", "Observed vs Predicted", "Overlay"],
   },
   {
-    title: "Latin Hypercube PSA",
-    body: "为 PSA 提供更均匀的参数空间覆盖，减少样本浪费，提高稳定性和重复性。",
-    meta: ["P1", "Sampling", "Reproducibility"],
+    key: "plot-sensitivity",
+    workflow: "calibration",
+    maturity: "next",
+    title: "图形敏感性模式 Plot Sensitivity",
+    summary: "在 Survival Plot 和 Markov Plot 上直接叠加 low / base / high 结果，提升解释性。",
+    input: "Scenario deltas",
+    output: "Overlay curves + key driver insight",
+    engine: "Plot layer",
+    tags: ["P1 Ready Next", "Visual sensitivity", "Review"],
   },
   {
-    title: "Patient Tracking Dashboard",
-    body: "把 patient-level event log 汇总成 cohort dashboard，识别异常迁移和结构风险。",
-    meta: ["P2", "Microsimulation", "Review"],
+    key: "lhs-psa",
+    workflow: "simulation",
+    maturity: "next",
+    title: "拉丁超立方 PSA",
+    summary: "更均匀地覆盖参数空间，在较少模拟次数下得到更稳定的 PSA 输出。",
+    input: "Distribution config",
+    output: "LHS sample matrix + stable PSA run",
+    engine: "Sampling engine",
+    tags: ["P1 Ready Next", "Sampling", "Reproducibility"],
   },
   {
-    title: "Custom Scatterplots",
-    body: "任意选择输入样本、输出结果、增量指标做散点图，快速暴露相关性和异常点。",
-    meta: ["P1", "Metrics", "Exploration"],
+    key: "patient-tracking",
+    workflow: "review",
+    maturity: "later",
+    title: "患者追踪仪表盘 Patient Tracking",
+    summary: "把 patient-level event log 聚合成 cohort dashboard，用于发现异常迁移和结构问题。",
+    input: "Patient event log",
+    output: "Cohort dashboard + drill-down trace",
+    engine: "Trace aggregation",
+    tags: ["P2 Later", "Microsimulation", "Dashboard"],
   },
   {
-    title: "Probability Functions",
-    body: "把 survival tables、hazard tables、compound curves 转成统一 probability runtime，供 solver、plot、calibration 复用。",
-    meta: ["P0", "Evidence", "Runtime Core"],
+    key: "scatterplot",
+    workflow: "review",
+    maturity: "next",
+    title: "自定义模拟散点图 Custom Scatterplot",
+    summary: "任意选择输入或输出指标组合，快速识别相关性、异常点和关键驱动因素。",
+    input: "Run metrics catalog",
+    output: "Custom scatterplot",
+    engine: "Analytics layer",
+    tags: ["P1 Ready Next", "Metrics", "Exploration"],
   },
 ];
 
@@ -84,91 +309,625 @@ const lancetWatch = [
   },
 ];
 
-const workspaceViews = [
+const architectureLayers = [
   {
-    key: "evidence",
-    label: "Evidence Workbench",
-    title: "Evidence Workbench",
-    status: "Foundational Layer",
-    description:
-      "负责接收 survival table、hazard table、KM 数据和 compound curve 定义，并把它们标准化成平台内部可引用对象。",
-    objects: ["ClinicalSeries", "CurveFit", "CompoundCurve", "ProbabilityFunction"],
-    outputs: ["Validated evidence objects", "Time-aligned series", "Debuggable function traces"],
-    mock: [
-      ["KM Trial OS", "Upload、校验、标准化 points 和 time unit"],
-      ["Hazard Blend", "用多个 fit / table segment 生成 compound curve"],
-      ["ProbSurvTable", "按 cycle 窗口计算 interval event probability"],
-    ],
+    index: "L1",
+    title: "Experience Layer",
+    body: "公开官网、产品界面、Example Runs 和 Review Surfaces 都属于体验层，负责解释任务流并承接用户操作。",
+    items: ["GitHub Pages public surface", "Workspace navigation", "Example run dashboard"],
   },
   {
-    key: "calibration",
-    label: "Calibration Studio",
-    title: "Calibration Studio",
-    status: "Observed Data Fitting",
-    description:
-      "围绕 observed clinical data 拟合 model parameters，记录参数边界、目标函数、优化轨迹、overlay plot 和最终参数集。",
-    objects: ["CalibrationConfig", "CalibrationParameter", "CalibrationRun", "CalibrationResult"],
-    outputs: ["Best-fit parameter set", "Fit score", "Observed vs predicted overlay"],
-    mock: [
-      ["Target Series", "选择 OS/PFS clinical series 作为 calibration target"],
-      ["Parameter Bounds", "限定 calibratable parameters 的搜索空间"],
-      ["Overlay Plot", "对比 observed curve 与 model prediction 的偏差"],
-    ],
+    index: "L2",
+    title: "Workflow Orchestration",
+    body: "管理 evidence ingest、run queue、parameter configs、artifact exports 和 reviewer notes 的流程编排。",
+    items: ["Workspace state", "Async run orchestration", "Versioned configs"],
   },
   {
-    key: "simulation",
-    label: "Simulation Lab",
-    title: "Simulation Lab",
-    status: "PSA & Runtime",
-    description:
-      "承担 cohort Markov、PSA 和 sample set 批量执行，保留 random seed、sampling method 和 run artifacts。",
-    objects: ["Run", "SampleSet", "RunMetricCatalog", "RunArtifact"],
-    outputs: ["Queued runs", "LHS/random sample matrices", "Metrics catalog"],
-    mock: [
-      ["Run Queue", "异步管理 Markov、PSA、Calibration 等不同 analysis type"],
-      ["Latin Hypercube", "对高维参数分布做均匀覆盖的 sample generation"],
-      ["Artifacts", "存储 plot、CSV、sample matrix 和 report exports"],
-    ],
+    index: "L3",
+    title: "Modeling Engine",
+    body: "平台真正的差异化核心，统一 probability runtime，并驱动 Markov、PSA、calibration 等分析引擎。",
+    items: ["Probability runtime", "Markov cohort engine", "LHS sampler", "Calibration optimizer"],
   },
   {
-    key: "review",
-    label: "Review Surface",
-    title: "Review Surface",
-    status: "Traceability & Explanation",
-    description:
-      "把 metrics catalog、scatterplots、cohort aggregates 和 patient trace 组织成审阅层，让模型结果不仅可算，还可解释。",
-    objects: ["RunMetricValues", "Scatterplot", "CohortAggregates", "PatientStateEvents"],
-    outputs: ["Custom scatterplots", "Cohort dashboard", "Patient drill-down trace"],
-    mock: [
-      ["Scatterplot", "任意选择输入/输出指标做关系探索"],
-      ["Cohort Trace", "按时间显示 occupancy、inflow、outflow"],
-      ["Patient Drill-down", "定位 sample 或 patient 的异常路径"],
-    ],
+    index: "L4",
+    title: "Data & Artifact Layer",
+    body: "持久化对象模型、run metadata、sample matrix 和 exported artifacts，保证版本与追溯能力。",
+    items: ["PostgreSQL metadata", "Object storage", "Run metrics", "Artifacts and logs"],
+  },
+  {
+    index: "L5",
+    title: "Governance & Review Layer",
+    body: "把 run notes、review comments、assumptions、artifact versions 组织成可交付、可分享的审阅面。",
+    items: ["Reviewer notes", "Version lineage", "Audit trail", "Share-ready outputs"],
   },
 ];
 
+const roadmapColumns = [
+  {
+    key: "p0",
+    badge: "P0 Core",
+    title: "先闭合 Evidence 到 Probability 的底座",
+    copy: "只要这条底层闭环可用，平台就不再是概念展示，而是一个真的能运行的分析系统。",
+    items: ["上传 survival / hazard / KM 数据", "对象标准化与校验日志", "输出 cycle probability", "Traceable function runtime"],
+  },
+  {
+    key: "p1",
+    badge: "P1 Ready Next",
+    title: "把 Calibration 和 PSA 做成差异化能力",
+    copy: "这一步决定平台是不是现代 HEOR 工具，而不只是一个建模壳子。",
+    items: ["Observed vs predicted calibration", "LHS for PSA", "Plot sensitivity mode", "Run metadata and artifact exports"],
+  },
+  {
+    key: "p2",
+    badge: "P2 Later",
+    title: "补齐 Patient-level 与协作审阅层",
+    copy: "当底层引擎稳定后，再把 patient trace、review comments 和分享工作流完整拉起来。",
+    items: ["Patient event log", "Cohort dashboard", "Reviewer comment workflow", "Collaboration and approvals"],
+  },
+];
+
+const outputMetrics = [
+  { label: "Incremental cost", value: "$18,440", note: "Societal perspective" },
+  { label: "Incremental QALY", value: "0.62", note: "Discounted at 3%" },
+  { label: "ICER", value: "$29,742 / QALY", note: "Below $50k threshold" },
+  { label: "Net monetary benefit", value: "$12,860", note: "WTP $50,000" },
+];
+
+const artifactItems = [
+  { name: "overlay-fit-v3.png", meta: "calibration artifact · versioned" },
+  { name: "psa-sample-matrix.csv", meta: "8,000 samples · lhs" },
+  { name: "cohort-trace-cycle-24.csv", meta: "review extract" },
+  { name: "assumptions-and-notes.md", meta: "reviewer comment ready" },
+];
+
+const scatterOptions = {
+  incrementalCost: "Incremental cost",
+  incrementalQaly: "Incremental QALY",
+  nmb: "Net monetary benefit",
+  osGain: "OS gain (months)",
+  pfsGain: "PFS gain (months)",
+};
+
+const scatterPoints = [
+  { incrementalCost: 11200, incrementalQaly: 0.32, nmb: 4800, osGain: 2.7, pfsGain: 1.9 },
+  { incrementalCost: 11850, incrementalQaly: 0.36, nmb: 6120, osGain: 3.2, pfsGain: 2.1 },
+  { incrementalCost: 12620, incrementalQaly: 0.42, nmb: 8360, osGain: 3.6, pfsGain: 2.4 },
+  { incrementalCost: 13100, incrementalQaly: 0.39, nmb: 6400, osGain: 3.5, pfsGain: 2.3 },
+  { incrementalCost: 14380, incrementalQaly: 0.49, nmb: 10120, osGain: 4.3, pfsGain: 2.9 },
+  { incrementalCost: 15250, incrementalQaly: 0.54, nmb: 11750, osGain: 4.8, pfsGain: 3.3 },
+  { incrementalCost: 15880, incrementalQaly: 0.58, nmb: 13120, osGain: 5.1, pfsGain: 3.7 },
+  { incrementalCost: 16620, incrementalQaly: 0.61, nmb: 13880, osGain: 5.6, pfsGain: 4.1 },
+  { incrementalCost: 17140, incrementalQaly: 0.65, nmb: 15360, osGain: 6.1, pfsGain: 4.2 },
+  { incrementalCost: 18260, incrementalQaly: 0.69, nmb: 16240, osGain: 6.7, pfsGain: 4.6 },
+  { incrementalCost: 19050, incrementalQaly: 0.71, nmb: 16450, osGain: 6.9, pfsGain: 4.9 },
+  { incrementalCost: 19780, incrementalQaly: 0.74, nmb: 17220, osGain: 7.3, pfsGain: 5.2 },
+];
+
+const ceacThresholds = [20000, 40000, 60000, 80000, 100000, 120000, 150000];
+const ceacProbabilities = [0.44, 0.58, 0.68, 0.76, 0.83, 0.87, 0.91];
+
+const cohortTimeline = [
+  { label: "Cycle 0 · Month 0", pfs: 100, pd: 0, dead: 0 },
+  { label: "Cycle 4 · Month 2", pfs: 84, pd: 12, dead: 4 },
+  { label: "Cycle 8 · Month 4", pfs: 71, pd: 21, dead: 8 },
+  { label: "Cycle 12 · Month 6", pfs: 58, pd: 28, dead: 14 },
+  { label: "Cycle 18 · Month 9", pfs: 42, pd: 34, dead: 24 },
+  { label: "Cycle 24 · Month 12", pfs: 31, pd: 35, dead: 34 },
+  { label: "Cycle 36 · Month 18", pfs: 18, pd: 30, dead: 52 },
+];
+
+const state = {
+  activeSurface: "evidence",
+  capabilityFilter: "all",
+  evidenceLoaded: false,
+  surfaceScenario: "base",
+  exampleScenario: "base",
+  runProgress: 0,
+  runTimer: null,
+  reviewX: "incrementalCost",
+  reviewY: "incrementalQaly",
+  exampleX: "incrementalCost",
+  exampleY: "incrementalQaly",
+  reviewCohortIndex: 3,
+  exampleCohortIndex: 2,
+};
+
+const workflowRail = document.getElementById("workflow-rail");
+const surfaceNav = document.getElementById("surface-nav");
+const surfaceKicker = document.getElementById("surface-kicker");
+const surfaceTitle = document.getElementById("surface-title");
+const surfaceStatus = document.getElementById("surface-status");
+const surfaceDescription = document.getElementById("surface-description");
+const surfaceInputs = document.getElementById("surface-inputs");
+const surfaceSystem = document.getElementById("surface-system");
+const surfaceOutputs = document.getElementById("surface-outputs");
+const surfaceExperience = document.getElementById("surface-experience");
+const metricCards = document.getElementById("metric-cards");
+const exampleScenarioToggle = document.getElementById("example-scenario-toggle");
+const exampleCalibration = document.getElementById("example-calibration");
+const exampleScatter = document.getElementById("example-scatter");
+const exampleScatterX = document.getElementById("example-scatter-x");
+const exampleScatterY = document.getElementById("example-scatter-y");
+const exampleCeac = document.getElementById("example-ceac");
+const exampleCohort = document.getElementById("example-cohort");
+const cohortSlider = document.getElementById("cohort-slider");
+const cohortTime = document.getElementById("cohort-time");
+const artifactList = document.getElementById("artifact-list");
+const objectGrid = document.getElementById("object-grid");
+const filterBar = document.getElementById("filter-bar");
 const capabilityGrid = document.getElementById("capability-grid");
 const lancetCount = document.getElementById("lancet-count");
 const lancetGrid = document.getElementById("lancet-grid");
-const workspaceNav = document.getElementById("workspace-nav");
-const workspaceTitle = document.getElementById("workspace-title");
-const workspaceStatus = document.getElementById("workspace-status");
-const workspaceDescription = document.getElementById("workspace-description");
-const workspaceObjects = document.getElementById("workspace-objects");
-const workspaceOutputs = document.getElementById("workspace-outputs");
-const workspaceMock = document.getElementById("workspace-mock");
+const architectureStack = document.getElementById("architecture-stack");
+const roadmapGrid = document.getElementById("roadmap-grid");
+const heroChart = document.getElementById("hero-chart");
+
+function listMarkup(items) {
+  return items.map((item) => `<li>${item}</li>`).join("");
+}
+
+function toneClass(tone) {
+  return `tone-${tone}`;
+}
+
+function maturityClass(maturity) {
+  if (maturity === "core") return "core";
+  if (maturity === "next") return "next";
+  return "later";
+}
+
+function maturityLabel(maturity) {
+  if (maturity === "core") return "P0 Core";
+  if (maturity === "next") return "P1 Ready Next";
+  return "P2 Later";
+}
+
+function renderWorkflow() {
+  workflowRail.innerHTML = workflowSteps
+    .map(
+      (step) => `
+        <article class="workflow-step">
+          <div class="workflow-step-head">
+            <span class="workflow-index">${step.index}</span>
+            <span class="mini-label ${toneClass(step.tone)}">${step.tone}</span>
+          </div>
+          <div class="workflow-copy">
+            <h3>${step.title}</h3>
+            <p>${step.summary}</p>
+          </div>
+          <div class="workflow-detail">
+            <div class="detail-block">
+              <span>输入</span>
+              <strong>${step.input}</strong>
+            </div>
+            <div class="detail-block">
+              <span>系统动作</span>
+              <strong>${step.system}</strong>
+            </div>
+            <div class="detail-block">
+              <span>输出</span>
+              <strong>${step.output}</strong>
+            </div>
+          </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderHeroChart() {
+  heroChart.innerHTML = makeCalibrationSvg("base", { compact: true, note: "Observed vs predicted" });
+}
+
+function renderSurfaceNav() {
+  surfaceNav.innerHTML = Object.values(surfaces)
+    .map(
+      (surface) => `
+        <button class="${surface.key === state.activeSurface ? "active" : ""}" data-surface="${surface.key}">
+          ${surface.label}
+        </button>
+      `
+    )
+    .join("");
+
+  surfaceNav.querySelectorAll("button").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.activeSurface = button.dataset.surface;
+      renderSurfaceNav();
+      renderSurfaceView();
+    });
+  });
+}
+
+function currentSurfaceStatus() {
+  if (state.activeSurface === "evidence") {
+    return state.evidenceLoaded ? "3 files staged · 4 objects generated" : surfaces.evidence.status;
+  }
+  if (state.activeSurface === "simulation") {
+    if (state.runProgress === 0) return surfaces.simulation.status;
+    if (state.runProgress < 100) return `Run in progress · ${state.runProgress}%`;
+    return "Run completed · artifacts stored";
+  }
+  return surfaces[state.activeSurface].status;
+}
+
+function renderSurfaceView() {
+  const surface = surfaces[state.activeSurface];
+  surfaceKicker.textContent = surface.kicker;
+  surfaceTitle.textContent = surface.title;
+  surfaceStatus.textContent = currentSurfaceStatus();
+  surfaceDescription.textContent = surface.description;
+  surfaceInputs.innerHTML = listMarkup(surface.inputs);
+  surfaceSystem.innerHTML = listMarkup(surface.system);
+  surfaceOutputs.innerHTML = listMarkup(surface.outputs);
+  surfaceExperience.innerHTML = surfaceTemplate(surface.key);
+  attachSurfaceInteractions(surface.key);
+}
+
+function surfaceTemplate(key) {
+  if (key === "evidence") {
+    return `
+      <div class="experience-grid">
+        <section class="input-card">
+          <span class="mini-label tone-evidence">Drag and drop</span>
+          <div class="dropzone">
+            <div>
+              <strong>${state.evidenceLoaded ? "3 份证据文件已加入 staging" : "把 KM / hazard / survival 文件拖进这里"}</strong>
+              <p>${state.evidenceLoaded ? "Time alignment、字段校验和 provenance log 已生成。" : "支持 KM table、hazard table、compound curve 片段和 trial metadata。"}</p>
+              <button id="load-demo-evidence" class="fake-button">${state.evidenceLoaded ? "Reset demo evidence" : "Load demo evidence"}</button>
+            </div>
+          </div>
+          <p id="evidence-stage-status">${state.evidenceLoaded ? "ClinicalSeries、CurveFit、CompoundCurve 和 ProbabilityFunction draft 已被标准化。" : "当前状态：等待示例证据导入。点击按钮可进入高保真假交互。 "}</p>
+        </section>
+        <section class="control-card">
+          <div class="mini-topline">
+            <span>Normalized objects</span>
+            <span>${state.evidenceLoaded ? "Validated" : "Draft"}</span>
+          </div>
+          <ul class="stack-list">
+            <li><div><strong>KM Trial OS</strong><br /><small>points: 8 · unit: month</small></div><span class="pill ${state.evidenceLoaded ? "core" : "neutral"}">${state.evidenceLoaded ? "Ready" : "Waiting"}</span></li>
+            <li><div><strong>Hazard Segment A</strong><br /><small>window: 0-12 month</small></div><span class="pill ${state.evidenceLoaded ? "core" : "neutral"}">${state.evidenceLoaded ? "Validated" : "Draft"}</span></li>
+            <li><div><strong>CompoundCurve v0.2</strong><br /><small>blend rule: curve-fit + table</small></div><span class="pill ${state.evidenceLoaded ? "core" : "neutral"}">${state.evidenceLoaded ? "Versioned" : "Pending"}</span></li>
+            <li><div><strong>ProbSurvTable draft</strong><br /><small>cycle window: 1 month</small></div><span class="pill ${state.evidenceLoaded ? "core" : "neutral"}">${state.evidenceLoaded ? "Traceable" : "Not compiled"}</span></li>
+          </ul>
+        </section>
+      </div>
+    `;
+  }
+
+  if (key === "calibration") {
+    return `
+      <div class="experience-grid">
+        <section class="input-card">
+          <div class="panel-heading">
+            <div>
+              <span class="panel-kicker">Overlay Plot</span>
+              <h3>Observed vs predicted</h3>
+            </div>
+            <div id="surface-scenario-toggle" class="segmented"></div>
+          </div>
+          <div id="surface-calibration-chart" class="chart-frame large-frame"></div>
+          <div class="object-tags">
+            <span class="metric-line">Observed points</span>
+            <span class="metric-line">Predicted line</span>
+            <span class="metric-line">Uncertainty band</span>
+            <span class="metric-line">GOF tracked with run id</span>
+          </div>
+        </section>
+        <section class="control-card">
+          <span class="mini-label tone-calibration">Parameter bounds</span>
+          <div class="table-card">
+            <table>
+              <thead>
+                <tr>
+                  <th>Parameter</th>
+                  <th>Min</th>
+                  <th>Start</th>
+                  <th>Max</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>p_progression</td>
+                  <td>0.08</td>
+                  <td>0.12</td>
+                  <td>0.21</td>
+                </tr>
+                <tr>
+                  <td>p_death</td>
+                  <td>0.02</td>
+                  <td>0.04</td>
+                  <td>0.09</td>
+                </tr>
+                <tr>
+                  <td>utility_pfs</td>
+                  <td>0.62</td>
+                  <td>0.72</td>
+                  <td>0.82</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <ul class="stack-list">
+            <li><div><strong>Target series</strong><br /><small>OS observed from clinical data</small></div><span class="pill core">Linked</span></li>
+            <li><div><strong>Run metadata</strong><br /><small>24 iterations · optimizer = Nelder-Mead</small></div><span class="pill next">Tracked</span></li>
+            <li><div><strong>Goodness-of-fit</strong><br /><small>RMSE 0.018 · R² 0.91</small></div><span class="pill next">Visible</span></li>
+          </ul>
+        </section>
+      </div>
+    `;
+  }
+
+  if (key === "simulation") {
+    const buttonLabel = state.runProgress === 0 ? "Run Markov + PSA" : state.runProgress < 100 ? "Running..." : "Rerun Analysis";
+    return `
+      <div class="experience-grid">
+        <section class="input-card">
+          <span class="mini-label tone-simulation">Run orchestration</span>
+          <p>点击运行按钮后，状态条、样本数、queue 状态和 artifact 生成都会变化，让页面更像真的在执行模型，而不是只有静态文案。</p>
+          <button id="run-psa-button" class="run-button">${buttonLabel}</button>
+          <div class="mini-topline">
+            <span id="run-status-text">${state.runProgress === 0 ? "Ready to start" : state.runProgress < 100 ? "Markov + PSA executing" : "Completed and stored"}</span>
+            <span id="run-progress-label">${state.runProgress}%</span>
+          </div>
+          <div class="progress-bar"><span id="run-progress-bar" style="width:${state.runProgress}%"></span></div>
+          <div class="run-meta">
+            <div><span>Sampling</span><strong>${state.runProgress === 0 ? "LHS pending" : "Latin hypercube"}</strong></div>
+            <div><span>Samples</span><strong>${state.runProgress === 0 ? "0" : state.runProgress < 100 ? "8,000 staged" : "8,000 completed"}</strong></div>
+            <div><span>Seed</span><strong>874211</strong></div>
+          </div>
+        </section>
+        <section class="control-card">
+          <span class="mini-label tone-simulation">Queue and artifacts</span>
+          <ul class="stack-list">
+            <li><div><strong>RUN-2026-0315-014</strong><br /><small>analysis: cohort Markov + PSA</small></div><span class="pill ${state.runProgress === 100 ? "core" : "next"}">${state.runProgress === 100 ? "Done" : "Queued"}</span></li>
+            <li><div><strong>Sample matrix</strong><br /><small>lhs_samples_v2.csv</small></div><span class="pill ${state.runProgress > 20 ? "core" : "neutral"}">${state.runProgress > 20 ? "Saved" : "Waiting"}</span></li>
+            <li><div><strong>Artifact bundle</strong><br /><small>icer_summary.json · ce_plane.png</small></div><span class="pill ${state.runProgress === 100 ? "core" : "neutral"}">${state.runProgress === 100 ? "Ready" : "Pending"}</span></li>
+          </ul>
+        </section>
+      </div>
+    `;
+  }
+
+  return `
+    <div class="experience-grid">
+      <section class="input-card">
+        <span class="mini-label tone-review">Interactive review</span>
+        <div class="review-controls">
+          <label>
+            X axis
+            <select id="surface-review-x"></select>
+          </label>
+          <label>
+            Y axis
+            <select id="surface-review-y"></select>
+          </label>
+          <label>
+            Cohort slice
+            <input id="surface-cohort-slider" class="cohort-slider" type="range" min="0" max="6" value="${state.reviewCohortIndex}" />
+          </label>
+        </div>
+        <div id="surface-review-scatter" class="chart-frame"></div>
+      </section>
+      <section class="control-card">
+        <div class="mini-topline">
+          <span>Cohort trace</span>
+          <span id="surface-cohort-time" class="pill neutral"></span>
+        </div>
+        <div id="surface-cohort-board" class="cohort-board"></div>
+        <ul class="stack-list">
+          <li><div><strong>Versioned notes</strong><br /><small>assumptions-and-notes.md</small></div><span class="pill core">v0.3</span></li>
+          <li><div><strong>Artifact export</strong><br /><small>overlay-fit-v3.png</small></div><span class="pill core">downloadable</span></li>
+          <li><div><strong>Reviewer comment</strong><br /><small>“Check p_death sensitivity above month 18”</small></div><span class="pill next">open</span></li>
+        </ul>
+      </section>
+    </div>
+  `;
+}
+
+function attachSurfaceInteractions(key) {
+  if (key === "evidence") {
+    const button = document.getElementById("load-demo-evidence");
+    button.addEventListener("click", () => {
+      state.evidenceLoaded = !state.evidenceLoaded;
+      renderSurfaceView();
+    });
+    return;
+  }
+
+  if (key === "calibration") {
+    mountScenarioToggle(document.getElementById("surface-scenario-toggle"), state.surfaceScenario, (value) => {
+      state.surfaceScenario = value;
+      attachSurfaceInteractions("calibration");
+    });
+    renderCalibrationInto(document.getElementById("surface-calibration-chart"), state.surfaceScenario, false);
+    return;
+  }
+
+  if (key === "simulation") {
+    const button = document.getElementById("run-psa-button");
+    button.addEventListener("click", startRunAnimation);
+    return;
+  }
+
+  populateScatterSelect(document.getElementById("surface-review-x"), state.reviewX);
+  populateScatterSelect(document.getElementById("surface-review-y"), state.reviewY);
+  document.getElementById("surface-review-x").addEventListener("change", (event) => {
+    state.reviewX = event.target.value;
+    renderScatterInto(document.getElementById("surface-review-scatter"), state.reviewX, state.reviewY);
+  });
+  document.getElementById("surface-review-y").addEventListener("change", (event) => {
+    state.reviewY = event.target.value;
+    renderScatterInto(document.getElementById("surface-review-scatter"), state.reviewX, state.reviewY);
+  });
+  const slider = document.getElementById("surface-cohort-slider");
+  slider.addEventListener("input", (event) => {
+    state.reviewCohortIndex = Number(event.target.value);
+    renderCohortInto(document.getElementById("surface-cohort-board"), document.getElementById("surface-cohort-time"), state.reviewCohortIndex);
+  });
+  renderScatterInto(document.getElementById("surface-review-scatter"), state.reviewX, state.reviewY);
+  renderCohortInto(document.getElementById("surface-cohort-board"), document.getElementById("surface-cohort-time"), state.reviewCohortIndex);
+}
+
+function mountScenarioToggle(container, active, onSelect) {
+  const scenarios = [
+    { key: "low", label: "low" },
+    { key: "base", label: "base" },
+    { key: "high", label: "high" },
+  ];
+  container.innerHTML = scenarios
+    .map(
+      (item) => `
+        <button class="${item.key === active ? "active" : ""}" data-scenario="${item.key}">
+          ${item.label}
+        </button>
+      `
+    )
+    .join("");
+
+  container.querySelectorAll("button").forEach((button) => {
+    button.onclick = () => onSelect(button.dataset.scenario);
+  });
+}
+
+function renderMetrics() {
+  metricCards.innerHTML = outputMetrics
+    .map(
+      (metric, index) => `
+        <article class="metric-card">
+          <span class="mini-label ${index === 0 ? "tone-evidence" : index === 1 ? "tone-simulation" : index === 2 ? "tone-calibration" : "tone-review"}">${metric.label}</span>
+          <strong>${metric.value}</strong>
+          <small>${metric.note}</small>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderExampleControls() {
+  mountScenarioToggle(exampleScenarioToggle, state.exampleScenario, (value) => {
+    state.exampleScenario = value;
+    renderExampleControls();
+    renderCalibrationInto(exampleCalibration, state.exampleScenario, false);
+  });
+
+  populateScatterSelect(exampleScatterX, state.exampleX);
+  populateScatterSelect(exampleScatterY, state.exampleY);
+  exampleScatterX.onchange = (event) => {
+    state.exampleX = event.target.value;
+    renderScatterInto(exampleScatter, state.exampleX, state.exampleY);
+  };
+  exampleScatterY.onchange = (event) => {
+    state.exampleY = event.target.value;
+    renderScatterInto(exampleScatter, state.exampleX, state.exampleY);
+  };
+  cohortSlider.oninput = (event) => {
+    state.exampleCohortIndex = Number(event.target.value);
+    renderCohortInto(exampleCohort, cohortTime, state.exampleCohortIndex);
+  };
+}
+
+function renderArtifactList() {
+  artifactList.innerHTML = artifactItems
+    .map((item) => `<li><span>${item.name}</span><small>${item.meta}</small></li>`)
+    .join("");
+}
+
+function renderObjectCards() {
+  objectGrid.innerHTML = objectCards
+    .map(
+      (item) => `
+        <article class="object-card">
+          <div class="object-card-head">
+            <div>
+              <span class="mini-label ${toneClass(item.tone)}">${item.en}</span>
+              <h3>${item.name}</h3>
+            </div>
+            <span class="pill core">${item.status}</span>
+          </div>
+          <div class="object-tags">
+            ${item.tags.map((tag) => `<span>${tag}</span>`).join("")}
+          </div>
+          <dl class="object-meta">
+            <div>
+              <dt>来源</dt>
+              <dd>${item.source}</dd>
+            </div>
+            <div>
+              <dt>输入字段</dt>
+              <dd>${item.fields}</dd>
+            </div>
+            <div>
+              <dt>生成方式</dt>
+              <dd>${item.generatedBy}</dd>
+            </div>
+            <div>
+              <dt>被谁调用</dt>
+              <dd>${item.usedBy}</dd>
+            </div>
+          </dl>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderFilterBar() {
+  filterBar.innerHTML = capabilityFilters
+    .map(
+      (filter) => `
+        <button class="filter-button ${filter.key === state.capabilityFilter ? "active" : ""}" data-filter="${filter.key}">
+          ${filter.label}
+        </button>
+      `
+    )
+    .join("");
+
+  filterBar.querySelectorAll("button").forEach((button) => {
+    button.addEventListener("click", () => {
+      state.capabilityFilter = button.dataset.filter;
+      renderFilterBar();
+      renderCapabilities();
+    });
+  });
+}
 
 function renderCapabilities() {
-  capabilityGrid.innerHTML = capabilities
+  const filtered = state.capabilityFilter === "all"
+    ? capabilities
+    : capabilities.filter((item) => item.workflow === state.capabilityFilter);
+
+  capabilityGrid.innerHTML = filtered
     .map(
       (item) => `
         <article class="capability-card">
-          <span class="card-label">Platform Block</span>
-          <h3>${item.title}</h3>
-          <p>${item.body}</p>
-          <div class="capability-meta">
-            ${item.meta.map((meta) => `<span class="meta-chip">${meta}</span>`).join("")}
+          <div class="capability-card-head">
+            <span class="mini-label ${toneClass(item.workflow)}">${item.workflow}</span>
+            <span class="pill ${maturityClass(item.maturity)}">${maturityLabel(item.maturity)}</span>
           </div>
+          <h3>${item.title}</h3>
+          <p>${item.summary}</p>
+          <div class="capability-tags">
+            ${item.tags.map((tag) => `<span>${tag}</span>`).join("")}
+          </div>
+          <dl class="capability-meta">
+            <div>
+              <dt>输入</dt>
+              <dd>${item.input}</dd>
+            </div>
+            <div>
+              <dt>输出</dt>
+              <dd>${item.output}</dd>
+            </div>
+            <div>
+              <dt>引擎</dt>
+              <dd>${item.engine}</dd>
+            </div>
+            <div>
+              <dt>归属</dt>
+              <dd>${surfaces[item.workflow] ? surfaces[item.workflow].label : "Core engine"}</dd>
+            </div>
+          </dl>
         </article>
       `
     )
@@ -182,15 +941,17 @@ function renderLancetWatch() {
       (item) => `
         <article class="lancet-card">
           <div class="lancet-meta">
-            <span class="lancet-chip">${item.journal}</span>
-            <span class="lancet-chip">${item.published}</span>
-            <span class="lancet-chip">${item.lens}</span>
+            <span class="mini-label tone-review">${item.journal}</span>
+            <span class="pill neutral">${item.published}</span>
           </div>
           <h3>${item.title}</h3>
           <p>${item.summary}</p>
+          <div class="object-tags">
+            <span>${item.lens}</span>
+          </div>
           <div class="lancet-links">
             <a class="text-link" href="${item.doi}" target="_blank" rel="noreferrer">打开 DOI</a>
-            <a class="text-link secondary" href="${item.source}" target="_blank" rel="noreferrer">查看来源页</a>
+            <a class="text-link" href="${item.source}" target="_blank" rel="noreferrer">查看来源页</a>
           </div>
         </article>
       `
@@ -198,52 +959,264 @@ function renderLancetWatch() {
     .join("");
 }
 
-function renderWorkspaceTabs() {
-  workspaceNav.innerHTML = workspaceViews
+function renderArchitecture() {
+  architectureStack.innerHTML = architectureLayers
     .map(
-      (view, index) => `
-        <button class="${index === 0 ? "active" : ""}" data-key="${view.key}">
-          ${view.label}
-        </button>
+      (layer) => `
+        <article class="architecture-layer">
+          <span class="layer-index">${layer.index}</span>
+          <div>
+            <h3>${layer.title}</h3>
+            <p>${layer.body}</p>
+          </div>
+          <ul class="layer-list">
+            ${layer.items.map((item) => `<li>${item}</li>`).join("")}
+          </ul>
+        </article>
       `
     )
     .join("");
-
-  workspaceNav.querySelectorAll("button").forEach((button) => {
-    button.addEventListener("click", () => {
-      workspaceNav.querySelectorAll("button").forEach((node) => node.classList.remove("active"));
-      button.classList.add("active");
-      const target = workspaceViews.find((view) => view.key === button.dataset.key);
-      if (target) {
-        renderWorkspaceView(target);
-      }
-    });
-  });
 }
 
-function renderWorkspaceView(view) {
-  workspaceTitle.textContent = view.title;
-  workspaceStatus.textContent = view.status;
-  workspaceDescription.textContent = view.description;
-  workspaceObjects.innerHTML = view.objects.map((item) => `<li>${item}</li>`).join("");
-  workspaceOutputs.innerHTML = view.outputs.map((item) => `<li>${item}</li>`).join("");
-  workspaceMock.innerHTML = `
-    <div class="mock-grid">
-      ${view.mock
-        .map(
-          ([title, text]) => `
-            <div class="mock-card">
-              <strong>${title}</strong>
-              <span>${text}</span>
-            </div>
-          `
-        )
-        .join("")}
-    </div>
+function renderRoadmap() {
+  roadmapGrid.innerHTML = roadmapColumns
+    .map(
+      (column) => `
+        <article class="roadmap-column ${column.key}">
+          <span class="roadmap-badge">${column.badge}</span>
+          <h3>${column.title}</h3>
+          <p>${column.copy}</p>
+          <ul>
+            ${column.items.map((item) => `<li>${item}</li>`).join("")}
+          </ul>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function populateScatterSelect(select, value) {
+  select.innerHTML = Object.entries(scatterOptions)
+    .map(([key, label]) => `<option value="${key}" ${key === value ? "selected" : ""}>${label}</option>`)
+    .join("");
+}
+
+function renderCalibrationInto(target, mode, compact) {
+  target.innerHTML = makeCalibrationSvg(mode, { compact, note: compact ? "Preview run" : `Scenario: ${mode}` });
+}
+
+function makeCalibrationSvg(mode, { compact = false, note = "" } = {}) {
+  const width = compact ? 560 : 720;
+  const height = compact ? 260 : 360;
+  const padding = compact ? 34 : 44;
+  const predicted = calibrationPredicted[mode];
+  const scenarioColor = mode === "low" ? palette.simulation : mode === "base" ? palette.calibration : palette.review;
+  const gridYs = [0, 0.25, 0.5, 0.75, 1];
+  const xLabels = ["0", "3", "6", "9", "12", "15", "18", "21"];
+
+  const toPoint = (value, index) => {
+    const x = padding + (index / (calibrationObserved.length - 1)) * (width - padding * 2);
+    const y = height - padding - value * (height - padding * 2);
+    return [x, y];
+  };
+
+  const linePath = (values) =>
+    values
+      .map((value, index) => {
+        const [x, y] = toPoint(value, index);
+        return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+      })
+      .join(" ");
+
+  const bandPath = () => {
+    const upper = calibrationBand.upper.map((value, index) => toPoint(value, index));
+    const lower = calibrationBand.lower.map((value, index) => toPoint(value, index)).reverse();
+    const points = [...upper, ...lower];
+    return points.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`).join(" ") + " Z";
+  };
+
+  const observedDots = calibrationObserved
+    .map((value, index) => {
+      const [x, y] = toPoint(value, index);
+      return `<circle cx="${x}" cy="${y}" r="${compact ? 3.6 : 4.5}" fill="${palette.navy}" />`;
+    })
+    .join("");
+
+  const xTicks = xLabels
+    .map((label, index) => {
+      const [x] = toPoint(0, index);
+      return `
+        <text class="axis-label" x="${x}" y="${height - 12}" text-anchor="middle">${label}</text>
+      `;
+    })
+    .join("");
+
+  const yTicks = gridYs
+    .map((tick) => {
+      const y = height - padding - tick * (height - padding * 2);
+      return `
+        <line class="gridline" x1="${padding}" y1="${y}" x2="${width - padding}" y2="${y}" />
+        <text class="axis-label" x="${padding - 10}" y="${y + 4}" text-anchor="end">${tick.toFixed(2)}</text>
+      `;
+    })
+    .join("");
+
+  return `
+    <svg class="svg-root" viewBox="0 0 ${width} ${height}" role="img" aria-label="Calibration plot">
+      ${yTicks}
+      <line class="axis-line" x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" />
+      <line class="axis-line" x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" />
+      <path d="${bandPath()}" fill="rgba(47, 111, 237, 0.12)" />
+      <path d="${linePath(predicted)}" fill="none" stroke="${scenarioColor}" stroke-width="${compact ? 3 : 4}" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="${linePath(calibrationObserved)}" fill="none" stroke="${palette.navy}" stroke-width="${compact ? 1.8 : 2.2}" stroke-dasharray="5 6" opacity="0.7" />
+      ${observedDots}
+      ${xTicks}
+      <text class="chart-label" x="${padding}" y="${compact ? 20 : 22}">Observed points</text>
+      <text class="chart-label" x="${width - padding}" y="${compact ? 20 : 22}" text-anchor="end">Predicted ${mode}</text>
+      <text class="chart-note" x="${padding}" y="${height - 24}">Time (months)</text>
+      <text class="chart-note" x="${width - padding}" y="${height - 24}" text-anchor="end">${note}</text>
+    </svg>
   `;
 }
 
+function renderScatterInto(target, xKey, yKey) {
+  target.innerHTML = makeScatterSvg(xKey, yKey);
+}
+
+function makeScatterSvg(xKey, yKey) {
+  const width = 420;
+  const height = 280;
+  const padding = 38;
+  const xValues = scatterPoints.map((point) => point[xKey]);
+  const yValues = scatterPoints.map((point) => point[yKey]);
+  const xMin = Math.min(...xValues) * 0.92;
+  const xMax = Math.max(...xValues) * 1.06;
+  const yMin = Math.min(...yValues) * 0.9;
+  const yMax = Math.max(...yValues) * 1.08;
+
+  const normalizeX = (value) => padding + ((value - xMin) / (xMax - xMin)) * (width - padding * 2);
+  const normalizeY = (value) => height - padding - ((value - yMin) / (yMax - yMin)) * (height - padding * 2);
+
+  const points = scatterPoints
+    .map((point, index) => {
+      const x = normalizeX(point[xKey]);
+      const y = normalizeY(point[yKey]);
+      const fill = index % 3 === 0 ? palette.evidence : index % 3 === 1 ? palette.calibration : palette.simulation;
+      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.2" fill="${fill}" fill-opacity="0.82" />`;
+    })
+    .join("");
+
+  return `
+    <svg class="svg-root" viewBox="0 0 ${width} ${height}" role="img" aria-label="Scatterplot">
+      <line class="gridline" x1="${padding}" y1="${height / 2}" x2="${width - padding}" y2="${height / 2}" />
+      <line class="gridline" x1="${width / 2}" y1="${padding}" x2="${width / 2}" y2="${height - padding}" />
+      <line class="axis-line" x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" />
+      <line class="axis-line" x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" />
+      ${points}
+      <text class="chart-label" x="${padding}" y="22">${scatterOptions[xKey]} vs ${scatterOptions[yKey]}</text>
+      <text class="chart-note" x="${width - padding}" y="22" text-anchor="end">12 samples shown</text>
+      <text class="axis-label" x="${width / 2}" y="${height - 12}" text-anchor="middle">${scatterOptions[xKey]}</text>
+      <text class="axis-label" x="18" y="${height / 2}" transform="rotate(-90 18 ${height / 2})" text-anchor="middle">${scatterOptions[yKey]}</text>
+    </svg>
+  `;
+}
+
+function renderCeacInto(target) {
+  const width = 420;
+  const height = 280;
+  const padding = 38;
+  const xMin = ceacThresholds[0];
+  const xMax = ceacThresholds[ceacThresholds.length - 1];
+  const yMin = 0.35;
+  const yMax = 0.95;
+  const normalizeX = (value) => padding + ((value - xMin) / (xMax - xMin)) * (width - padding * 2);
+  const normalizeY = (value) => height - padding - ((value - yMin) / (yMax - yMin)) * (height - padding * 2);
+  const path = ceacThresholds
+    .map((threshold, index) => `${index === 0 ? "M" : "L"} ${normalizeX(threshold).toFixed(1)} ${normalizeY(ceacProbabilities[index]).toFixed(1)}`)
+    .join(" ");
+  const points = ceacThresholds
+    .map((threshold, index) => `<circle cx="${normalizeX(threshold)}" cy="${normalizeY(ceacProbabilities[index])}" r="4.5" fill="${palette.review}" />`)
+    .join("");
+
+  target.innerHTML = `
+    <svg class="svg-root" viewBox="0 0 ${width} ${height}" role="img" aria-label="CEAC chart">
+      <line class="gridline" x1="${padding}" y1="${normalizeY(0.5)}" x2="${width - padding}" y2="${normalizeY(0.5)}" />
+      <line class="axis-line" x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" />
+      <line class="axis-line" x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" />
+      <path d="${path}" fill="none" stroke="${palette.review}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" />
+      ${points}
+      <text class="chart-label" x="${padding}" y="22">Probability cost-effective</text>
+      <text class="chart-note" x="${width - padding}" y="22" text-anchor="end">WTP threshold</text>
+      <text class="axis-label" x="${width / 2}" y="${height - 12}" text-anchor="middle">Threshold (USD / QALY)</text>
+      <text class="axis-label" x="18" y="${height / 2}" transform="rotate(-90 18 ${height / 2})" text-anchor="middle">Probability</text>
+    </svg>
+  `;
+}
+
+function renderCohortInto(target, labelNode, index) {
+  const point = cohortTimeline[index];
+  labelNode.textContent = point.label;
+  target.innerHTML = [
+    { name: "Progression-free", value: point.pfs, color: palette.evidence },
+    { name: "Progressed disease", value: point.pd, color: palette.calibration },
+    { name: "Dead", value: point.dead, color: palette.review },
+  ]
+    .map(
+      (item) => `
+        <div class="cohort-bar">
+          <strong>${item.name}</strong>
+          <div class="cohort-track"><span style="width:${item.value}%; background:${item.color};"></span></div>
+          <span>${item.value}%</span>
+        </div>
+      `
+    )
+    .join("");
+}
+
+function startRunAnimation() {
+  if (state.runTimer) {
+    clearInterval(state.runTimer);
+  }
+
+  state.runProgress = 0;
+  renderSurfaceView();
+
+  const step = [8, 16, 27, 39, 52, 68, 79, 91, 100];
+  let pointer = 0;
+  state.runTimer = setInterval(() => {
+    state.runProgress = step[pointer];
+    const progressBar = document.getElementById("run-progress-bar");
+    const progressLabel = document.getElementById("run-progress-label");
+    const statusLabel = document.getElementById("run-status-text");
+    if (progressBar && progressLabel && statusLabel) {
+      progressBar.style.width = `${state.runProgress}%`;
+      progressLabel.textContent = `${state.runProgress}%`;
+      statusLabel.textContent = state.runProgress < 100 ? "Markov + PSA executing" : "Completed and stored";
+      surfaceStatus.textContent = currentSurfaceStatus();
+    }
+    pointer += 1;
+    if (pointer >= step.length) {
+      clearInterval(state.runTimer);
+      state.runTimer = null;
+      renderSurfaceView();
+    }
+  }, 380);
+}
+
+renderWorkflow();
+renderHeroChart();
+renderSurfaceNav();
+renderSurfaceView();
+renderMetrics();
+renderExampleControls();
+renderCalibrationInto(exampleCalibration, state.exampleScenario, false);
+renderScatterInto(exampleScatter, state.exampleX, state.exampleY);
+renderCeacInto(exampleCeac);
+renderCohortInto(exampleCohort, cohortTime, state.exampleCohortIndex);
+renderArtifactList();
+renderObjectCards();
+renderFilterBar();
 renderCapabilities();
 renderLancetWatch();
-renderWorkspaceTabs();
-renderWorkspaceView(workspaceViews[0]);
+renderArchitecture();
+renderRoadmap();

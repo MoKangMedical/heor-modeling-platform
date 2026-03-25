@@ -6,215 +6,373 @@
     <title>HEOR Modeling Platform</title>
     <meta
       name="description"
-      content="面向 HEOR / HTA 团队的在线建模平台原型，覆盖 evidence、Markov、PSA、calibration、patient tracking。"
+      content="面向 HEOR / HTA 团队的在线建模平台原型，覆盖证据处理、概率函数、Markov / PSA、临床校准和审阅工作流。"
     />
     <link
       rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%239a2b23'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23fff7f0'%3EHM%3C/text%3E%3C/svg%3E"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E"
     />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
-    <div class="grain"></div>
+    <div class="backdrop"></div>
     <header class="topbar">
       <div class="brand">
         <span class="brand-mark">HM</span>
         <span class="brand-copy">
           <strong>HEOR Modeling Platform</strong>
-          <small>Strategy to System</small>
+          <small>Precise, Traceable, Review-ready</small>
         </span>
       </div>
       <nav class="nav">
-        <a href="#capabilities">Capabilities</a>
-        <a href="#lancet-watch">Lancet Watch</a>
-        <a href="#workspace">Prototype</a>
-        <a href="#architecture">Architecture</a>
-        <a href="#roadmap">Roadmap</a>
+        <a href="#workflow">工作流 Workflow</a>
+        <a href="#workspace">产品界面 Surfaces</a>
+        <a href="#outputs">结果输出 Outputs</a>
+        <a href="#objects">对象模型 Objects</a>
+        <a href="#lancet-watch">Lancet 2026</a>
+        <a href="#architecture">平台分层</a>
       </nav>
     </header>
 
     <main>
       <section class="hero">
-        <div class="hero-copy">
-          <p class="eyebrow">Online Modeling for HEOR / HTA</p>
-          <h1>
-            把 <span>证据</span>、<span>建模</span>、<span>校准</span> 和
-            <span>审阅</span> 放进同一个在线平台。
-          </h1>
+        <div class="hero-copy card">
+          <p class="eyebrow">在线 HEOR / HTA 决策建模平台</p>
+          <h1>把证据处理、概率计算、Markov / PSA 运行和结果审阅，连接成一条可执行工作流。</h1>
           <p class="hero-text">
-            这不是一个只会画图的网页工具，而是一套面向现代卫生经济学团队的
-            evidence layer、probability runtime、Markov/PSA engine 和 review workflow。
+            它不再把建模拆散在 Excel、脚本和截图里，而是把证据标准化、概率函数、临床校准、
+            运行记录和审阅输出放进同一个连续界面，让模型更可复现、更可解释，也更适合团队协作。
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="#workspace">查看平台原型</a>
-            <a class="button secondary" href="#architecture">查看架构</a>
-            <a class="button secondary" href="./openapi.yaml">下载 OpenAPI 草案</a>
+            <a class="button primary" href="#workspace">View Prototype</a>
+            <a class="button secondary" href="#workflow">Explore Workflow</a>
+            <a class="button secondary" href="#outputs">Open Example Run</a>
+          </div>
+          <div class="hero-proof">
+            <div>
+              <strong>1</strong>
+              <span>Unified probability runtime</span>
+            </div>
+            <div>
+              <strong>4</strong>
+              <span>核心工作台 surfaces</span>
+            </div>
+            <div>
+              <strong>6</strong>
+              <span>端到端任务步骤</span>
+            </div>
+            <div>
+              <strong>Review-ready</strong>
+              <span>输出与审阅同层呈现</span>
+            </div>
           </div>
         </div>
-        <div class="hero-panel">
-          <div class="hero-card hero-card-a">
-            <span class="card-label">Evidence Layer</span>
-            <h3>Survival / Hazard / Compound Curves</h3>
-            <p>把 KM table、hazard table 和复合曲线直接转成可计算对象。</p>
-          </div>
-          <div class="hero-card hero-card-b">
-            <span class="card-label">Calibration</span>
-            <h3>Observed vs Predicted</h3>
-            <p>校准目标数据、参数边界、优化日志和 overlay plot 全部可回溯。</p>
-          </div>
-          <div class="hero-card hero-card-c">
-            <span class="card-label">Analytics</span>
-            <h3>PSA / Scatterplots / Cohort Trace</h3>
-            <p>从 run metrics 到 patient event log，支持更深的解释与审阅。</p>
+
+        <div class="hero-product card">
+          <div class="app-shell">
+            <div class="app-chrome">
+              <span>Run R-2026-0315</span>
+              <span class="live-status"><i></i> Calibration 82% complete</span>
+              <span>Version v0.3 · Seed 874211</span>
+            </div>
+            <div class="hero-app-grid">
+              <aside class="hero-nav">
+                <button class="active">证据层</button>
+                <button>校准</button>
+                <button>模拟</button>
+                <button>审阅</button>
+              </aside>
+              <div class="hero-main">
+                <div class="hero-main-card">
+                  <div class="mini-topline">
+                    <span>Observed vs predicted</span>
+                    <span>RMSE 0.018</span>
+                  </div>
+                  <div id="hero-chart" class="chart-frame hero-chart"></div>
+                </div>
+                <div class="hero-mini-grid">
+                  <article>
+                    <span class="mini-label tone-evidence">Evidence</span>
+                    <strong>3 staged files</strong>
+                    <p>KM OS, Hazard Table, Compound Curve</p>
+                  </article>
+                  <article>
+                    <span class="mini-label tone-calibration">Calibration</span>
+                    <strong>24 iterations</strong>
+                    <p>Bounds saved, overlay generated</p>
+                  </article>
+                  <article>
+                    <span class="mini-label tone-simulation">Simulation</span>
+                    <strong>8,000 PSA samples</strong>
+                    <p>LHS matrix stored with run artifact</p>
+                  </article>
+                </div>
+              </div>
+              <aside class="hero-side">
+                <div class="side-card">
+                  <div class="mini-topline">
+                    <span>Parameters</span>
+                    <span>3 active</span>
+                  </div>
+                  <ul class="parameter-list">
+                    <li><span>p_progression</span><strong>0.128</strong></li>
+                    <li><span>p_death</span><strong>0.041</strong></li>
+                    <li><span>utility_pfs</span><strong>0.744</strong></li>
+                  </ul>
+                </div>
+                <div class="side-card">
+                  <div class="mini-topline">
+                    <span>Artifacts</span>
+                    <span>Validated</span>
+                  </div>
+                  <ul class="artifact-snippet">
+                    <li>overlay-fit-v3.png</li>
+                    <li>lhs-samples.csv</li>
+                    <li>run-notes.md</li>
+                  </ul>
+                </div>
+              </aside>
+            </div>
           </div>
         </div>
       </section>
 
       <section class="signal-strip">
         <div>
-          <strong>6</strong>
-          <span>核心能力</span>
+          <strong>证据上传</strong>
+          <span>KM / survival / hazard / compound curves</span>
         </div>
         <div>
-          <strong>1</strong>
-          <span>统一概率运行时</span>
+          <strong>概率函数</strong>
+          <span>统一到 cycle-level event probabilities</span>
         </div>
         <div>
-          <strong>4</strong>
-          <span>关键引擎层</span>
+          <strong>Markov / PSA</strong>
+          <span>异步运行、保留 sample matrix 与 run log</span>
         </div>
         <div>
-          <strong>v0.1</strong>
-          <span>代码骨架已建立</span>
+          <strong>审阅输出</strong>
+          <span>overlay、scatterplot、cohort trace、artifacts</span>
         </div>
+      </section>
+
+      <section id="workflow" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">端到端工作流 Workflow</p>
+            <h2>首页先展示真实任务链，而不是只列模块名词。</h2>
+          </div>
+          <p class="section-note">
+            每一步都清楚标出输入、系统动作和输出对象，让访问者先理解“怎么做分析”，再理解“平台内部怎么实现”。
+          </p>
+        </div>
+        <div id="workflow-rail" class="workflow-rail"></div>
+      </section>
+
+      <section id="workspace" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">产品界面 Product Surfaces</p>
+            <h2>四个工作台直接模拟真实操作，而不是停留在抽象说明。</h2>
+          </div>
+          <p class="section-note">
+            这里包含上传区、参数边界设置、运行状态条、overlay plot、scatterplot 轴选择器、cohort 时间滑块和 artifact 面板。
+          </p>
+        </div>
+
+        <div class="surface-shell card">
+          <aside id="surface-nav" class="surface-nav"></aside>
+          <div class="surface-stage">
+            <div class="surface-stage-top">
+              <div>
+                <p id="surface-kicker" class="surface-kicker"></p>
+                <h3 id="surface-title"></h3>
+              </div>
+              <div id="surface-status" class="surface-status"></div>
+            </div>
+            <p id="surface-description" class="surface-description"></p>
+            <div class="surface-summary">
+              <article>
+                <span class="summary-label">输入</span>
+                <ul id="surface-inputs" class="summary-list"></ul>
+              </article>
+              <article>
+                <span class="summary-label">系统动作</span>
+                <ul id="surface-system" class="summary-list"></ul>
+              </article>
+              <article>
+                <span class="summary-label">输出</span>
+                <ul id="surface-outputs" class="summary-list"></ul>
+              </article>
+            </div>
+            <div id="surface-experience" class="surface-experience"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="outputs" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">示例结果 Example Outputs</p>
+            <h2>平台不只处理输入，更直接生成 review-ready outputs。</h2>
+          </div>
+          <p class="section-note">
+            展示一个完整 run 结束后会看到的 ICER / QALY summary、校准图、PSA 散点、cohort trace、run metadata 和下载产物。
+          </p>
+        </div>
+
+        <div class="outputs-shell">
+          <div id="metric-cards" class="metric-cards"></div>
+          <div class="outputs-grid">
+            <article class="dashboard-panel span-2">
+              <div class="panel-heading">
+                <div>
+                  <span class="panel-kicker">Calibration Fit</span>
+                  <h3>Observed vs predicted with uncertainty band</h3>
+                </div>
+                <div id="example-scenario-toggle" class="segmented"></div>
+              </div>
+              <div id="example-calibration" class="chart-frame large-frame"></div>
+            </article>
+
+            <article class="dashboard-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="panel-kicker">PSA Scatterplot</span>
+                  <h3>Custom x / y metrics</h3>
+                </div>
+              </div>
+              <div class="axis-controls">
+                <label>
+                  X
+                  <select id="example-scatter-x"></select>
+                </label>
+                <label>
+                  Y
+                  <select id="example-scatter-y"></select>
+                </label>
+              </div>
+              <div id="example-scatter" class="chart-frame"></div>
+            </article>
+
+            <article class="dashboard-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="panel-kicker">CEAC</span>
+                  <h3>WTP threshold response</h3>
+                </div>
+              </div>
+              <div id="example-ceac" class="chart-frame"></div>
+            </article>
+
+            <article class="dashboard-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="panel-kicker">Cohort Trace</span>
+                  <h3>State occupancy by cycle</h3>
+                </div>
+                <span id="cohort-time" class="pill neutral"></span>
+              </div>
+              <input id="cohort-slider" class="cohort-slider" type="range" min="0" max="6" value="2" />
+              <div id="example-cohort" class="cohort-board"></div>
+            </article>
+
+            <article class="dashboard-panel">
+              <div class="panel-heading">
+                <div>
+                  <span class="panel-kicker">Artifacts & Notes</span>
+                  <h3>审阅和分享所需的信息也在同一页</h3>
+                </div>
+              </div>
+              <div class="artifact-board">
+                <div class="meta-stack">
+                  <div><span>Run ID</span><strong>RUN-2026-0315-014</strong></div>
+                  <div><span>Sampling</span><strong>LHS · 8,000 samples</strong></div>
+                  <div><span>Version</span><strong>model_v0.3.4</strong></div>
+                  <div><span>Reviewer</span><strong>HTA team</strong></div>
+                </div>
+                <ul id="artifact-list" class="artifact-list"></ul>
+              </div>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="objects" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">对象模型 Data Objects</p>
+            <h2>平台处理的是可追溯对象，而不是散落的文件和截图。</h2>
+          </div>
+          <p class="section-note">
+            每个对象都说明来源、输入字段、生成方式、被谁调用以及当前状态，强化“系统感”和“可复现感”。
+          </p>
+        </div>
+        <div id="object-grid" class="object-grid"></div>
       </section>
 
       <section id="capabilities" class="section">
         <div class="section-head">
-          <p class="eyebrow">Capability Matrix</p>
-          <h2>首批落地能力围绕一个原则展开：证据必须能被标准化、复现和解释。</h2>
+          <div>
+            <p class="eyebrow">能力浏览 Capability Explorer</p>
+            <h2>技术能力继续保留，但改成可筛选、可比较的产品组件视图。</h2>
+          </div>
+          <p class="section-note">
+            可以按工作流查看 P0 / P1 / P2 能力，而不是平铺一组抽象术语。
+          </p>
         </div>
+        <div id="filter-bar" class="filter-bar"></div>
         <div id="capability-grid" class="capability-grid"></div>
       </section>
 
       <section id="lancet-watch" class="section">
         <div class="section-head">
-          <p class="eyebrow">Lancet 2026 Watch</p>
-          <h2>
-            截至 2026 年 3 月 25 日，按既定检索口径收录 Lancet 家族期刊中与 HEOR、
-            政策建模和经济评价最相关的 <span id="lancet-count"></span> 篇 2026 论文。
-          </h2>
-        </div>
-        <div class="watch-note">
-          检索口径：Lancet family journals + modelling study / economic evaluation / cost-effectiveness /
-          budget impact / simulation 相关关键词；仅纳入官方文章页核实为 2026 年发表的研究。
+          <div>
+            <p class="eyebrow">Lancet 2026 Watch</p>
+            <h2>截至 2026 年 3 月 25 日，按既定检索口径收录 Lancet 家族期刊中与 HEOR、政策建模和经济评价最相关的 <span id="lancet-count"></span> 篇 2026 论文。</h2>
+          </div>
+          <p class="section-note">
+            检索口径：Lancet family journals + modelling study / economic evaluation / cost-effectiveness / budget impact / simulation 相关关键词；仅纳入官方文章页核实为 2026 年发表的研究。
+          </p>
         </div>
         <div id="lancet-grid" class="lancet-grid"></div>
       </section>
 
-      <section id="workspace" class="section workspace-section">
+      <section id="architecture" class="section">
         <div class="section-head">
-          <p class="eyebrow">Product Prototype</p>
-          <h2>平台首版界面围绕 Evidence、Calibration、Simulation、Review 四条工作流设计。</h2>
-        </div>
-        <div class="workspace-shell">
-          <aside class="workspace-nav" id="workspace-nav"></aside>
-          <div class="workspace-main">
-            <div class="workspace-mast">
-              <div>
-                <span class="workspace-tag">Prototype Surface</span>
-                <h3 id="workspace-title"></h3>
-              </div>
-              <div class="workspace-status" id="workspace-status"></div>
-            </div>
-            <p id="workspace-description" class="workspace-description"></p>
-            <div class="workspace-panels">
-              <div class="workspace-panel">
-                <span class="panel-label">Core Objects</span>
-                <ul id="workspace-objects" class="token-list"></ul>
-              </div>
-              <div class="workspace-panel">
-                <span class="panel-label">Key Outputs</span>
-                <ul id="workspace-outputs" class="token-list"></ul>
-              </div>
-            </div>
-            <div class="workspace-mock" id="workspace-mock"></div>
+          <div>
+            <p class="eyebrow">平台分层 Architecture</p>
+            <h2>对外展示不只写技术栈，而是明确平台分层与职责边界。</h2>
           </div>
+          <p class="section-note">
+            这种写法更接近真正的产品系统，而不是单纯工程说明。
+          </p>
         </div>
+        <div id="architecture-stack" class="architecture-stack"></div>
       </section>
 
-      <section id="architecture" class="section architecture-section">
+      <section id="roadmap" class="section">
         <div class="section-head">
-          <p class="eyebrow">System Architecture</p>
-          <h2>GitHub Pages 承载公开展示面，真正的产品内核继续由后端和计算引擎推进。</h2>
+          <div>
+            <p class="eyebrow">交付路线 Roadmap</p>
+            <h2>优先把 Evidence、Calibration、Review 三个闭环做成可用产品。</h2>
+          </div>
+          <p class="section-note">
+            P0 先闭合底座，P1 拉升分析深度，P2 再补 patient-level 与协作能力。
+          </p>
         </div>
-        <div class="architecture-grid">
-          <article class="architecture-card emphasis">
-            <span>Public Surface</span>
-            <h3>GitHub Pages</h3>
-            <p>承载产品说明、原型页面、能力地图、技术路线和对外展示内容。</p>
-          </article>
-          <article class="architecture-card">
-            <span>Model API</span>
-            <h3>FastAPI</h3>
-            <p>负责 model versions、evidence objects、runs、metrics、calibration configs。</p>
-          </article>
-          <article class="architecture-card">
-            <span>Persistence</span>
-            <h3>PostgreSQL + Object Storage</h3>
-            <p>数据库存元数据，artifact 和 sample matrix 进入对象存储。</p>
-          </article>
-          <article class="architecture-card">
-            <span>Compute</span>
-            <h3>Probability / Markov / PSA</h3>
-            <p>统一 probability runtime，避免 plot、solver、calibration 算法分叉。</p>
-          </article>
-          <article class="architecture-card">
-            <span>Tracking</span>
-            <h3>Run Metrics / Patient Event Log</h3>
-            <p>为 scatterplot、cohort dashboard 和审阅 trace 提供基础数据层。</p>
-          </article>
-        </div>
-      </section>
-
-      <section id="roadmap" class="section roadmap-section">
-        <div class="section-head">
-          <p class="eyebrow">Build Sequence</p>
-          <h2>从可展示、可解释、可复现的静态原型，逐步进入可执行平台。</h2>
-        </div>
-        <div class="roadmap">
-          <article>
-            <span class="roadmap-step">01</span>
-            <h3>Repository & Pages</h3>
-            <p>建立仓库结构、GitHub Pages 展示站、技术文档和后端骨架。</p>
-          </article>
-          <article>
-            <span class="roadmap-step">02</span>
-            <h3>Evidence Runtime</h3>
-            <p>实现 survival/hazard tables、compound curves 和 probability functions。</p>
-          </article>
-          <article>
-            <span class="roadmap-step">03</span>
-            <h3>Solver Layer</h3>
-            <p>接入 Markov cohort、PSA sampler 和 calibration orchestration。</p>
-          </article>
-          <article>
-            <span class="roadmap-step">04</span>
-            <h3>Review Surface</h3>
-            <p>上线 scatterplots、cohort dashboard、artifacts 和 share workflow。</p>
-          </article>
-        </div>
+        <div id="roadmap-grid" class="roadmap-grid"></div>
       </section>
     </main>
 
     <footer class="footer">
-      <p>HEOR Modeling Platform · GitHub Pages prototype for a decision modeling system.</p>
+      <p>HEOR Modeling Platform · GitHub Pages prototype for a modern decision modeling system.</p>
     </footer>
 
     <script src="./app.js"></script>
