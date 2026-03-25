@@ -13,4 +13,5 @@ backend/.pytest_cache/
 backend/.ruff_cache/
 backend/.mypy_cache/
 backend/.venv/
-
+backend/.venv312/
+backend/*.db

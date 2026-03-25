@@ -1,9 +1,10 @@
 from fastapi import APIRouter
 
-from app.api.routes import analytics, calibration, evidence, probability_functions, runs
+from app.api.routes import analytics, calibration, demo, evidence, probability_functions, runs
 
 
 api_router = APIRouter()
+api_router.include_router(demo.router, tags=["demo"])
 api_router.include_router(evidence.router, prefix="/projects", tags=["evidence"])
 api_router.include_router(evidence.lookup_router, tags=["evidence"])
 api_router.include_router(probability_functions.router, tags=["probability"])

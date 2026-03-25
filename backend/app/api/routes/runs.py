@@ -12,6 +12,11 @@ from app.services import run_service
 router = APIRouter()
 
 
+@router.get("/model-versions/{model_version_id}/runs", response_model=list[RunRead])
+def list_runs(model_version_id: UUID, db: Session = Depends(get_db)) -> list[RunRead]:
+    return run_service.list_runs(db, model_version_id)
+
+
 @router.post(
     "/model-versions/{model_version_id}/runs",
     response_model=RunRead,
@@ -41,4 +46,3 @@ def list_run_artifacts(run_id: UUID, db: Session = Depends(get_db)) -> list[Arti
 @router.get("/runs/{run_id}/metrics", response_model=list[MetricCatalogRead])
 def list_run_metrics(run_id: UUID, db: Session = Depends(get_db)) -> list[MetricCatalogRead]:
     return run_service.list_metric_catalog(db, run_id)
-

@@ -12,6 +12,15 @@ from app.models.evidence import (
 from app.schemas.evidence import ClinicalSeriesCreate, CompoundCurveCreate
 
 
+def list_clinical_series(db: Session, project_id: UUID) -> list[ClinicalSeries]:
+    stmt = (
+        select(ClinicalSeries)
+        .where(ClinicalSeries.project_id == project_id)
+        .order_by(ClinicalSeries.created_at.desc())
+    )
+    return list(db.scalars(stmt).all())
+
+
 def create_clinical_series(db: Session, project_id: UUID, payload: ClinicalSeriesCreate) -> ClinicalSeries:
     series = ClinicalSeries(
         project_id=project_id,
@@ -86,4 +95,3 @@ def create_compound_curve(db: Session, project_id: UUID, payload: CompoundCurveC
 def get_compound_curve(db: Session, curve_id: UUID) -> CompoundCurve | None:
     stmt = select(CompoundCurve).where(CompoundCurve.id == curve_id)
     return db.scalar(stmt)
-

@@ -64,7 +64,7 @@ def get_cohort_dashboard(
     stmt = select(CohortAggregate).where(CohortAggregate.run_id == run_id)
     if subgroup_key is not None:
         stmt = stmt.where(CohortAggregate.subgroup_key == subgroup_key)
-    rows = list(db.scalars(stmt).all())
+    rows = list(db.scalars(stmt.order_by(CohortAggregate.bucket_time.asc(), CohortAggregate.state_code.asc())).all())
     points = [
         CohortPoint(
             bucket_time=float(row.bucket_time),
@@ -103,4 +103,3 @@ def get_patient_trace(db: Session, run_id: UUID, patient_index: int) -> PatientT
         for row in rows
     ]
     return PatientTraceResponse(run_id=run_id, patient_index=patient_index, events=events)
-

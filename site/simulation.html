@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Simulation Lab Demo</title>
+    <meta
+      name="description"
+      content="HEOR Modeling Platform 多页面产品 demo：Simulation Lab。"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./demo.css" />
+    <script defer src="./demo.js"></script>
+  </head>
+  <body data-page="simulation">
+    <div class="demo-backdrop"></div>
+    <header class="demo-topbar">
+      <div class="brand">
+        <span class="brand-mark">HM</span>
+        <span class="brand-copy">
+          <strong>HEOR Modeling Platform</strong>
+          <small>Simulation Lab Demo</small>
+        </span>
+      </div>
+      <nav class="top-links">
+        <a href="./index.html">Overview</a>
+        <a href="./evidence.html">Evidence</a>
+        <a href="./runtime.html">Probability Runtime</a>
+        <a href="./review.html">Review Surface</a>
+      </nav>
+    </header>
+
+    <main class="workspace-shell">
+      <aside class="workspace-sidebar">
+        <section class="sidebar-card">
+          <div class="workspace-links">
+            <a class="workspace-link" href="./evidence.html">
+              <div>
+                <span>Step 01</span>
+                <strong>Evidence</strong>
+              </div>
+            </a>
+            <a class="workspace-link" href="./runtime.html">
+              <div>
+                <span>Step 02</span>
+                <strong>Runtime</strong>
+              </div>
+            </a>
+            <a class="workspace-link is-active" href="./simulation.html">
+              <div>
+                <span>Step 03</span>
+                <strong>Simulation</strong>
+              </div>
+              <span class="tone-pill simulation">Run</span>
+            </a>
+            <a class="workspace-link" href="./review.html">
+              <div>
+                <span>Step 04</span>
+                <strong>Review</strong>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>Workspace Context</h3>
+          <ul class="context-list">
+            <li>
+              <span>Project</span>
+              <strong id="context-project">Connecting...</strong>
+            </li>
+            <li>
+              <span>Model</span>
+              <strong id="context-model">Waiting for demo context</strong>
+            </li>
+            <li>
+              <span>Mode</span>
+              <strong id="context-mode">Live API pending</strong>
+            </li>
+          </ul>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>Object Counts</h3>
+          <ul class="count-list">
+            <li>
+              <span>ClinicalSeries</span>
+              <strong id="sidebar-series-count">0</strong>
+            </li>
+            <li>
+              <span>ProbabilityFunctions</span>
+              <strong id="sidebar-function-count">0</strong>
+            </li>
+            <li>
+              <span>Runs</span>
+              <strong id="sidebar-run-count">0</strong>
+            </li>
+          </ul>
+        </section>
+      </aside>
+
+      <section class="workspace-main">
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="kicker">Step 03 · Configure -> Run -> Store</span>
+            <h1>从 ProbabilityFunction 直接启动真实 run。</h1>
+            <p>
+              这个页面对接 `Run API`。在 live 模式下会真实创建 run，并返回 summary、metrics、artifact 入口；离线模式也会按相同流程生成本地样本结果。
+            </p>
+            <div class="hero-meta">
+              <article>
+                <strong>Input</strong>
+                <span>ProbabilityFunction + config</span>
+              </article>
+              <article>
+                <strong>System</strong>
+                <span>Cohort Markov + LHS / random sampling</span>
+              </article>
+              <article>
+                <strong>Output</strong>
+                <span>Run summary, metrics, artifacts</span>
+              </article>
+            </div>
+          </div>
+
+          <div class="connection-panel">
+            <div class="connection-top">
+              <div>
+                <span class="kicker">API Bridge</span>
+                <h3 class="panel-title">Connect Demo Backend</h3>
+              </div>
+              <span id="connection-badge" class="status-badge warning">Connecting</span>
+            </div>
+            <p id="connection-copy" class="status-copy">
+              默认尝试连接本地 `FastAPI`。如果不可达，会进入离线样本模式。
+            </p>
+            <div class="connection-form">
+              <label>
+                API Base
+                <input id="api-base" type="text" value="http://127.0.0.1:8000/api/v1" />
+              </label>
+              <div class="action-row">
+                <button id="connect-api" class="button-primary">Reconnect API</button>
+                <a class="button button-secondary" href="./review.html">Next: Review</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-grid">
+          <article class="panel span-7">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Run Configuration</span>
+                <h3>Launch a cohort Markov run</h3>
+              </div>
+              <span class="panel-chip">Run API</span>
+            </div>
+            <div class="form-grid two">
+              <label>
+                ProbabilityFunction
+                <select id="run-function-select"></select>
+              </label>
+              <label>
+                Sampling Method
+                <select id="run-sampling-method">
+                  <option value="lhs">lhs</option>
+                  <option value="random">random</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-grid three">
+              <label>
+                Cycles
+                <input id="run-cycles" type="number" min="3" step="1" value="12" />
+              </label>
+              <label>
+                Population
+                <input id="run-population" type="number" min="100" step="100" value="1000" />
+              </label>
+              <label>
+                Sample Size
+                <input id="run-sample-size" type="number" min="8" step="4" value="16" />
+              </label>
+            </div>
+            <div class="action-row">
+              <button id="launch-run" class="button-primary">Run Markov + PSA</button>
+              <a class="button button-secondary" href="./runtime.html">Back to Runtime</a>
+            </div>
+            <div class="progress-track">
+              <div id="run-progress" class="progress-value"></div>
+            </div>
+            <div id="run-status" class="preview-card">
+              <strong>Ready to launch</strong>
+              <p class="helper">点击按钮后会显示运行进度，并在结束后展示 summary cards。</p>
+            </div>
+          </article>
+
+          <article class="panel span-5">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Summary</span>
+                <h3>Latest run cards</h3>
+              </div>
+              <span class="tone-pill simulation">Metrics</span>
+            </div>
+            <div id="run-summary" class="empty-state">
+              还没有 run 结果。先选择一个 ProbabilityFunction 并启动分析。
+            </div>
+          </article>
+
+          <article class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Run Registry</span>
+                <h3>Recent runs</h3>
+              </div>
+              <a class="nav-chip" href="./review.html">Inspect latest run</a>
+            </div>
+            <div id="run-list" class="empty-state">
+              暂无 run。创建第一个模拟结果后，这里会出现 run 列表。
+            </div>
+          </article>
+
+          <article class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Artifact Preview</span>
+                <h3>Expected review payload</h3>
+              </div>
+              <span class="panel-chip">Artifacts</span>
+            </div>
+            <div id="run-artifact-preview" class="empty-state">
+              运行完成后，这里会预览 `probability-trace`、`cohort-trace` 和 `run-config` artifacts。
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <footer class="demo-footer">
+      <p>Simulation Lab demo · Run configuration, progress state, summary cards and artifact preview.</p>
+    </footer>
+  </body>
+</html>

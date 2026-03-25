@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Evidence Workbench Demo</title>
+    <meta
+      name="description"
+      content="HEOR Modeling Platform 多页面产品 demo：Evidence Workbench。"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./demo.css" />
+    <script defer src="./demo.js"></script>
+  </head>
+  <body data-page="evidence">
+    <div class="demo-backdrop"></div>
+    <header class="demo-topbar">
+      <div class="brand">
+        <span class="brand-mark">HM</span>
+        <span class="brand-copy">
+          <strong>HEOR Modeling Platform</strong>
+          <small>Evidence Workbench Demo</small>
+        </span>
+      </div>
+      <nav class="top-links">
+        <a href="./index.html">Overview</a>
+        <a href="./runtime.html">Probability Runtime</a>
+        <a href="./simulation.html">Simulation Lab</a>
+        <a href="./review.html">Review Surface</a>
+      </nav>
+    </header>
+
+    <main class="workspace-shell">
+      <aside class="workspace-sidebar">
+        <section class="sidebar-card">
+          <div class="workspace-links">
+            <a class="workspace-link is-active" href="./evidence.html">
+              <div>
+                <span>Step 01</span>
+                <strong>Evidence</strong>
+              </div>
+              <span class="tone-pill evidence">Live</span>
+            </a>
+            <a class="workspace-link" href="./runtime.html">
+              <div>
+                <span>Step 02</span>
+                <strong>Runtime</strong>
+              </div>
+            </a>
+            <a class="workspace-link" href="./simulation.html">
+              <div>
+                <span>Step 03</span>
+                <strong>Simulation</strong>
+              </div>
+            </a>
+            <a class="workspace-link" href="./review.html">
+              <div>
+                <span>Step 04</span>
+                <strong>Review</strong>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>Workspace Context</h3>
+          <ul class="context-list">
+            <li>
+              <span>Project</span>
+              <strong id="context-project">Connecting...</strong>
+            </li>
+            <li>
+              <span>Model</span>
+              <strong id="context-model">Waiting for demo context</strong>
+            </li>
+            <li>
+              <span>Mode</span>
+              <strong id="context-mode">Live API pending</strong>
+            </li>
+          </ul>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>Object Counts</h3>
+          <ul class="count-list">
+            <li>
+              <span>ClinicalSeries</span>
+              <strong id="sidebar-series-count">0</strong>
+            </li>
+            <li>
+              <span>ProbabilityFunctions</span>
+              <strong id="sidebar-function-count">0</strong>
+            </li>
+            <li>
+              <span>Runs</span>
+              <strong id="sidebar-run-count">0</strong>
+            </li>
+          </ul>
+        </section>
+      </aside>
+
+      <section class="workspace-main">
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="kicker">Step 01 · Upload -> Validate -> Standardize</span>
+            <h1>把 survival / hazard / KM 证据先变成可追溯对象。</h1>
+            <p>
+              这个页面直接消费真实后端接口。能连上本地 API 时，会把文本中的 KM 点真正创建为
+              `ClinicalSeries`；连不上时，则自动回退到本地离线样本，让整条操作链依然可点击。
+            </p>
+            <div class="hero-meta">
+              <article>
+                <strong>Input</strong>
+                <span>KM / survival / hazard table</span>
+              </article>
+              <article>
+                <strong>System</strong>
+                <span>Validation, normalization, versioning</span>
+              </article>
+              <article>
+                <strong>Output</strong>
+                <span>ClinicalSeries object</span>
+              </article>
+            </div>
+          </div>
+
+          <div class="connection-panel">
+            <div class="connection-top">
+              <div>
+                <span class="kicker">API Bridge</span>
+                <h3 class="panel-title">Connect Demo Backend</h3>
+              </div>
+              <span id="connection-badge" class="status-badge warning">Connecting</span>
+            </div>
+            <p id="connection-copy" class="status-copy">
+              默认尝试连接本地 `FastAPI`。如果不可达，会进入离线样本模式。
+            </p>
+            <div class="connection-form">
+              <label>
+                API Base
+                <input id="api-base" type="text" value="http://127.0.0.1:8000/api/v1" />
+              </label>
+              <div class="action-row">
+                <button id="connect-api" class="button-primary">Reconnect API</button>
+                <a class="button button-secondary" href="./runtime.html">Next: Runtime</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="page-grid">
+          <article class="panel span-8">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Evidence Intake</span>
+                <h3>Paste or load a KM sample</h3>
+              </div>
+              <span class="panel-chip">ClinicalSeries</span>
+            </div>
+            <div class="dropzone">
+              <strong>示例格式</strong>
+              <p class="panel-copy">
+                第一行使用 `seq_no,time_value,estimate_value` 作为表头。点击按钮可载入示例 PFS KM。
+              </p>
+            </div>
+            <div class="form-grid two">
+              <label>
+                Series Name
+                <input id="series-name" type="text" value="Demo PFS KM" />
+              </label>
+              <label>
+                Series Kind
+                <select id="series-kind">
+                  <option value="km_survival">km_survival</option>
+                  <option value="survival_table">survival_table</option>
+                  <option value="hazard_table">hazard_table</option>
+                </select>
+              </label>
+            </div>
+            <label>
+              Points CSV
+              <textarea id="sample-csv"></textarea>
+            </label>
+            <div class="action-row">
+              <button id="load-sample-csv" class="button-secondary">Load Sample KM</button>
+              <button id="create-series" class="button-primary">Create ClinicalSeries</button>
+            </div>
+            <div id="series-output" class="result-card">
+              <strong>尚未创建对象</strong>
+              <p class="helper">创建成功后，这里会显示对象 id、点数、来源和下一步建议。</p>
+            </div>
+          </article>
+
+          <article class="panel span-4">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Validation Log</span>
+                <h3>Staging status</h3>
+              </div>
+              <span class="tone-pill evidence">Evidence</span>
+            </div>
+            <div id="series-status-strip" class="preview-card">
+              <strong>Waiting for upload</strong>
+              <p class="helper">Time alignment、字段完整性和对象标准化结果会显示在这里。</p>
+            </div>
+            <div class="micro-grid">
+              <article class="micro-card">
+                <strong>Units</strong>
+                <span>Month aligned</span>
+              </article>
+              <article class="micro-card">
+                <strong>Source</strong>
+                <span>KM curve points</span>
+              </article>
+              <article class="micro-card">
+                <strong>Status</strong>
+                <span>Version-ready</span>
+              </article>
+            </div>
+          </article>
+
+          <article class="panel span-12">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">Recent Objects</span>
+                <h3>ClinicalSeries registry</h3>
+              </div>
+              <a class="nav-chip" href="./runtime.html">Compile into ProbabilityFunction</a>
+            </div>
+            <div id="series-list" class="table-scroll empty-state">
+              暂无对象。先在上方创建一个 `ClinicalSeries`。
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <footer class="demo-footer">
+      <p>Evidence Workbench demo · Backed by FastAPI when available, offline sample mode otherwise.</p>
+    </footer>
+  </body>
+</html>

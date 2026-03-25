@@ -5,7 +5,7 @@
 当前仓库包含两部分：
 
 - `site/`：发布到 GitHub Pages 的平台官网与产品原型站点
-- `backend/`：FastAPI + PostgreSQL 后端骨架
+- `backend/`：FastAPI + PostgreSQL/SQLite 后端服务骨架
 
 ## 当前目标
 
@@ -28,6 +28,10 @@ docs/
   strategy/
 site/
   index.html
+  evidence.html
+  runtime.html
+  simulation.html
+  review.html
   styles.css
   app.js
 .github/workflows/pages.yml
@@ -42,17 +46,27 @@ cd site
 python3 -m http.server 8080
 ```
 
-然后访问 `http://localhost:8080`
+然后访问：
 
-### 后端骨架
+- `http://localhost:8080/index.html`
+- `http://localhost:8080/evidence.html`
+- `http://localhost:8080/runtime.html`
+- `http://localhost:8080/simulation.html`
+- `http://localhost:8080/review.html`
+
+### 后端服务
 
 ```bash
 cd backend
-pip install -e .
-docker compose up -d db
-cp .env.example .env
+python3.12 -m venv .venv312
+. .venv312/bin/activate
+python -m pip install --upgrade pip
+python -m pip install .
 uvicorn app.main:app --reload
 ```
+
+默认配置会直接使用 `SQLite` 并自动创建 demo seed，因此本地联调不需要先起 PostgreSQL。
+如需切回 PostgreSQL，再设置 `DATABASE_URL` 并按需启动 `docker compose up -d db`。
 
 ## 文档
 
@@ -73,8 +87,7 @@ uvicorn app.main:app --reload
 
 ## 下一步
 
-1. 将 `site/` 的原型页面逐步接入真实 API
-2. 用 Alembic 管理后端迁移
-3. 把 `probability-runtime` 与 `markov-solver` 从占位实现升级为可验证实现
-4. 增加认证、组织权限和异步任务队列
-
+1. 用 Alembic 管理后端迁移
+2. 把 `probability-runtime` 与 `markov-solver` 从 demo 实现升级为可验证实现
+3. 增加认证、组织权限和异步任务队列
+4. 给 calibration 配置、优化日志和 overlay artifact 接入真实计算

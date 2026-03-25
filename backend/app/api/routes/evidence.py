@@ -17,6 +17,11 @@ router = APIRouter()
 lookup_router = APIRouter()
 
 
+@router.get("/{project_id}/clinical-series", response_model=list[ClinicalSeriesRead])
+def list_clinical_series(project_id: UUID, db: Session = Depends(get_db)) -> list[ClinicalSeriesRead]:
+    return evidence_service.list_clinical_series(db, project_id)
+
+
 @router.post(
     "/{project_id}/clinical-series",
     response_model=ClinicalSeriesRead,
@@ -57,4 +62,3 @@ def get_compound_curve(curve_id: UUID, db: Session = Depends(get_db)) -> Compoun
     if not curve:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Compound curve not found")
     return curve
-
