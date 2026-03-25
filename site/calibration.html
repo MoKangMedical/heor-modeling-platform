@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>运行模拟 | Simulation Lab</title>
+    <title>临床校准 | Calibration Studio</title>
     <meta
       name="description"
-      content="HEOR Modeling Platform 多页面产品 demo：运行真实 Run API，并以动态方式呈现 Markov 模型结果。"
+      content="HEOR Modeling Platform 多页面产品 demo：利用真实 API 运行 observed vs predicted 校准闭环。"
     />
     <link
       rel="icon"
@@ -21,21 +21,21 @@
     <link rel="stylesheet" href="./demo.css" />
     <script defer src="./demo.js"></script>
   </head>
-  <body data-page="simulation">
+  <body data-page="calibration">
     <div class="demo-backdrop"></div>
     <header class="demo-topbar">
       <div class="brand">
         <span class="brand-mark">HM</span>
         <span class="brand-copy">
           <strong>HEOR Modeling Platform</strong>
-          <small>Step 04 · 跑一条真实模拟任务</small>
+          <small>Step 03 · 用 observed data 校准模型</small>
         </span>
       </div>
       <nav class="top-links">
         <a href="./index.html">Overview</a>
         <a href="./evidence.html">Evidence</a>
         <a href="./runtime.html">Probability Runtime</a>
-        <a href="./calibration.html">Calibration Studio</a>
+        <a href="./simulation.html">Simulation Lab</a>
         <a href="./review.html">Review Surface</a>
       </nav>
     </header>
@@ -56,18 +56,18 @@
                 <strong>构建概率函数</strong>
               </div>
             </a>
-            <a class="workspace-link" href="./calibration.html">
+            <a class="workspace-link is-active" href="./calibration.html">
               <div>
                 <span>Step 03</span>
                 <strong>临床校准</strong>
               </div>
+              <span class="tone-pill calibration">Fit</span>
             </a>
-            <a class="workspace-link is-active" href="./simulation.html">
+            <a class="workspace-link" href="./simulation.html">
               <div>
                 <span>Step 04</span>
                 <strong>运行模拟</strong>
               </div>
-              <span class="tone-pill simulation">Run</span>
             </a>
             <a class="workspace-link" href="./review.html">
               <div>
@@ -118,24 +118,24 @@
       <section class="workspace-main">
         <section class="hero-panel">
           <div class="hero-copy">
-            <span class="kicker">Step 04 · Configure -> Queue -> Play back</span>
-            <h1>把 ProbabilityFunction 真正跑起来，然后用动态画面看患者队列如何在状态间流动。</h1>
+            <span class="kicker">Step 03 · Target -> Bounds -> Queue calibration</span>
+            <h1>先把模型拉到和 observed clinical data 更接近的位置，再去大规模跑模拟。</h1>
             <p>
-              这里会真实调用 `Run API`。你启动任务后，平台会展示异步 job 状态、run summary、artifact
-              入口，并把 Markov 结果用动态剧场的形式呈现出来，而不只是给你一堆静态表格。
+              你可以选择目标曲线、参数边界和迭代次数，平台会真实创建 calibration config、异步排队运行校准任务，
+              最后把 observed vs predicted overlay、best-fit 参数和优化记录一起返回给你。
             </p>
             <div class="hero-meta">
               <article>
                 <strong>你提供什么</strong>
-                <span>ProbabilityFunction + run config</span>
+                <span>Target series + parameter bounds</span>
               </article>
               <article>
                 <strong>平台帮你做什么</strong>
-                <span>Queued run, cohort Markov, LHS / random sampling</span>
+                <span>Queued optimization, overlay generation, run log</span>
               </article>
               <article>
                 <strong>你得到什么</strong>
-                <span>Run summary, artifacts, dynamic Markov motion</span>
+                <span>Best-fit params + calibration artifact</span>
               </article>
             </div>
           </div>
@@ -158,7 +158,7 @@
               </label>
               <div class="action-row">
                 <button id="connect-api" class="button-primary">重新连接 API</button>
-                <a class="button button-secondary" href="./review.html">下一步：审阅结果</a>
+                <a class="button button-secondary" href="./simulation.html">下一步：运行模拟</a>
               </div>
             </div>
           </div>
@@ -168,98 +168,157 @@
           <article class="panel span-7">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Run Configuration</span>
-                <h3>先跑一条队列模拟</h3>
+                <span class="panel-kicker">Calibration Setup</span>
+                <h3>设定目标数据和参数边界</h3>
               </div>
-              <span class="panel-chip">Run API</span>
+              <span class="panel-chip">Calibration API</span>
             </div>
             <div class="form-grid two">
               <label>
-                ProbabilityFunction
-                <select id="run-function-select"></select>
+                Calibration name
+                <input id="calibration-name" type="text" value="Observed vs Predicted PFS Fit" />
               </label>
               <label>
-                Sampling Method
-                <select id="run-sampling-method">
-                  <option value="lhs">lhs</option>
-                  <option value="random">random</option>
-                </select>
+                Target ClinicalSeries
+                <select id="calibration-target-series"></select>
               </label>
             </div>
             <div class="form-grid three">
               <label>
-                Cycles
-                <input id="run-cycles" type="number" min="3" step="1" value="12" />
+                ProbabilityFunction
+                <select id="calibration-function-select"></select>
               </label>
+              <label>
+                Max Iterations
+                <input id="calibration-max-iterations" type="number" min="3" step="1" value="12" />
+              </label>
+              <label>
+                Cycles
+                <input id="calibration-cycles" type="number" min="6" step="1" value="15" />
+              </label>
+            </div>
+            <div class="form-grid three">
               <label>
                 Population
-                <input id="run-population" type="number" min="100" step="100" value="1000" />
+                <input id="calibration-population" type="number" min="100" step="100" value="1000" />
               </label>
               <label>
-                Sample Size
-                <input id="run-sample-size" type="number" min="8" step="4" value="16" />
+                Objective
+                <input type="text" value="rmse" disabled />
+              </label>
+              <label>
+                Optimizer
+                <input type="text" value="deterministic_grid" disabled />
               </label>
             </div>
+
+            <div class="result-card">
+              <strong>建议先校准 3 个参数</strong>
+              <p class="helper">这 3 个参数足够让你看到 observed vs predicted overlay 的变化趋势。</p>
+              <div class="form-grid three">
+                <label>
+                  event_scale lower
+                  <input id="calibration-event-scale-lower" type="number" step="0.01" value="0.7" />
+                </label>
+                <label>
+                  event_scale upper
+                  <input id="calibration-event-scale-upper" type="number" step="0.01" value="1.3" />
+                </label>
+                <label>
+                  event_scale initial
+                  <input id="calibration-event-scale-initial" type="number" step="0.01" value="1.0" />
+                </label>
+              </div>
+              <div class="form-grid three">
+                <label>
+                  pf_death lower
+                  <input id="calibration-pf-death-lower" type="number" step="0.001" value="0.004" />
+                </label>
+                <label>
+                  pf_death upper
+                  <input id="calibration-pf-death-upper" type="number" step="0.001" value="0.03" />
+                </label>
+                <label>
+                  pf_death initial
+                  <input id="calibration-pf-death-initial" type="number" step="0.001" value="0.01" />
+                </label>
+              </div>
+              <div class="form-grid three">
+                <label>
+                  pd_death lower
+                  <input id="calibration-pd-death-lower" type="number" step="0.001" value="0.04" />
+                </label>
+                <label>
+                  pd_death upper
+                  <input id="calibration-pd-death-upper" type="number" step="0.001" value="0.14" />
+                </label>
+                <label>
+                  pd_death initial
+                  <input id="calibration-pd-death-initial" type="number" step="0.001" value="0.08" />
+                </label>
+              </div>
+            </div>
+
             <div class="action-row">
-              <button id="launch-run" class="button-primary">启动 Markov + PSA</button>
-              <a class="button button-secondary" href="./calibration.html">返回 Calibration</a>
+              <button id="load-calibration-template" class="button-secondary">载入推荐边界</button>
+              <button id="launch-calibration" class="button-primary">启动 Calibration</button>
             </div>
             <div class="progress-track">
-              <div id="run-progress" class="progress-value"></div>
+              <div id="calibration-progress" class="progress-value"></div>
             </div>
-            <div id="run-status" class="preview-card">
-              <strong>准备好启动</strong>
-              <p class="helper">点击后会显示 job 进度、run 状态和本次结果的落库情况。</p>
+            <div id="calibration-status" class="preview-card">
+              <strong>准备好开始校准</strong>
+              <p class="helper">点击后会先创建 calibration config，再以异步 job 方式启动 observed vs predicted 校准。</p>
             </div>
           </article>
 
           <article class="panel span-5">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Summary</span>
-                <h3>这次运行给你的核心结果</h3>
+                <span class="panel-kicker">Best Fit</span>
+                <h3>这次校准先给你什么结论</h3>
               </div>
-              <span class="tone-pill simulation">Metrics</span>
+              <span class="tone-pill calibration">Overlay</span>
             </div>
-            <div id="run-summary" class="empty-state">
-              还没有 run 结果。先选择一个 ProbabilityFunction 并启动分析。
+            <div id="calibration-best" class="empty-state">
+              还没有校准结果。先设置参数边界并启动 Calibration。
             </div>
           </article>
 
           <article class="panel span-12">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Dynamic Markov Motion</span>
-                <h3>动态看患者从 progression-free 流向 progressed disease 与 death</h3>
+                <span class="panel-kicker">Observed vs Predicted</span>
+                <h3>一眼看拟合程度，而不是只看一个数值目标函数</h3>
               </div>
-              <span id="simulation-flow-label" class="hero-chip">等待运行结果</span>
+              <span id="calibration-overlay-label" class="hero-chip">等待 overlay</span>
             </div>
-            <div id="simulation-markov-motion" class="chart-frame"></div>
+            <div id="calibration-overlay-chart" class="chart-frame"></div>
           </article>
 
           <article class="panel span-6">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Run Registry</span>
-                <h3>你最近跑过的分析</h3>
+                <span class="panel-kicker">Config Registry</span>
+                <h3>你最近创建的 calibration configs</h3>
               </div>
-              <a class="nav-chip" href="./review.html">去看完整 Review Surface</a>
+              <a class="nav-chip" href="./simulation.html">用校准后的设定去跑 Simulation</a>
             </div>
-            <div id="run-list" class="empty-state">
-              暂无 run。创建第一个模拟结果后，这里会出现 run 列表。
+            <div id="calibration-config-list" class="empty-state">
+              暂无 calibration config。先提交一组参数边界。
             </div>
           </article>
 
           <article class="panel span-6">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Artifact Preview</span>
-                <h3>这次运行会留下哪些可审阅产物</h3>
+                <span class="panel-kicker">Diagnostics</span>
+                <h3>把这次拟合过程讲清楚</h3>
               </div>
-              <span class="panel-chip">Artifacts</span>
+              <span class="panel-chip">History</span>
             </div>
-            <div id="run-artifact-preview" class="empty-state">
-              运行完成后，这里会预览 `probability-trace`、`cohort-trace` 和 `run-config` artifacts。
+            <div id="calibration-diagnostics" class="empty-state">
+              运行结束后，这里会显示 optimizer、候选次数和 best-fit 参数。
             </div>
           </article>
         </section>
@@ -267,7 +326,7 @@
     </main>
 
     <footer class="demo-footer">
-      <p>模拟不只输出一组数字；你会直接看到异步运行状态、关键指标和动态的 Markov 状态流动。</p>
+      <p>校准页先帮你回答一个问题：模型现在和真实临床数据离得有多远，以及如何更接近。</p>
     </footer>
   </body>
 </html>

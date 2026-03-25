@@ -29,6 +29,7 @@ docs/
 site/
   index.html
   evidence.html
+  calibration.html
   runtime.html
   simulation.html
   review.html
@@ -51,6 +52,7 @@ python3 -m http.server 8080
 - `http://localhost:8080/index.html`
 - `http://localhost:8080/evidence.html`
 - `http://localhost:8080/runtime.html`
+- `http://localhost:8080/calibration.html`
 - `http://localhost:8080/simulation.html`
 - `http://localhost:8080/review.html`
 
@@ -62,11 +64,20 @@ python3.12 -m venv .venv312
 . .venv312/bin/activate
 python -m pip install --upgrade pip
 python -m pip install .
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
 默认配置会直接使用 `SQLite` 并自动创建 demo seed，因此本地联调不需要先起 PostgreSQL。
 如需切回 PostgreSQL，再设置 `DATABASE_URL` 并按需启动 `docker compose up -d db`。
+
+如果你希望把异步 run / calibration job 从 Web 进程里独立出来，还可以单独启动 worker：
+
+```bash
+python -m app.workers.job_worker --once
+# 或持续轮询
+python -m app.workers.job_worker
+```
 
 ## 文档
 
@@ -87,7 +98,7 @@ uvicorn app.main:app --reload
 
 ## 下一步
 
-1. 用 Alembic 管理后端迁移
-2. 把 `probability-runtime` 与 `markov-solver` 从 demo 实现升级为可验证实现
-3. 增加认证、组织权限和异步任务队列
-4. 给 calibration 配置、优化日志和 overlay artifact 接入真实计算
+1. 把 `probability-runtime` 与 `markov-solver` 从 demo 实现升级为可验证实现
+2. 增加认证、组织权限和更稳健的任务编排
+3. 给 calibration 配置、优化日志和 overlay artifact 接入更完整的求解器
+4. 增加 benchmark-backed integration tests 和可观测性

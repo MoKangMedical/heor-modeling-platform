@@ -1,5 +1,6 @@
 from app.models.analysis import (
     AnalysisTemplate,
+    AsyncJob,
     CalibrationConfig,
     CalibrationParameter,
     CalibrationResult,
@@ -32,6 +33,7 @@ from app.models.platform import (
 
 __all__ = [
     "AnalysisTemplate",
+    "AsyncJob",
     "CalibrationConfig",
     "CalibrationParameter",
     "CalibrationResult",
@@ -57,4 +59,3 @@ __all__ = [
     "RunMetricValue",
     "SampleSet",
 ]
-

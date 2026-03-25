@@ -9,7 +9,9 @@ This scaffold covers:
 - API contract aligned route layout
 - SQLAlchemy 2.0 ORM models for the core planning entities
 - Pydantic request/response schemas
-- Demo-ready evidence, probability function, run, and analytics flows
+- Demo-ready evidence, probability function, run, calibration, and analytics flows
+- Async job orchestration for runs and calibration requests
+- Alembic migration scaffold for schema evolution
 - OpenAPI draft in `openapi.yaml`
 
 This is still a demo foundation, not a production implementation.
@@ -45,10 +47,19 @@ python -m pip install .
 3. Run the API:
 
 ```bash
+alembic upgrade head
 uvicorn app.main:app --reload
 ```
 
 By default, the app now uses `sqlite:///./treeage_platform.db` and auto-seeds a demo organization, project, and model version on startup. You only need PostgreSQL if you explicitly switch `DATABASE_URL`.
+
+4. Optional: run the async worker separately when you want run/calibration jobs to be processed outside the web process.
+
+```bash
+python -m app.workers.job_worker --once
+# or continuous polling
+python -m app.workers.job_worker
+```
 
 ## Docs
 
@@ -59,8 +70,8 @@ By default, the app now uses `sqlite:///./treeage_platform.db` and auto-seeds a 
 
 ## Next Recommended Steps
 
-1. Add Alembic migrations.
-2. Replace demo run logic with validated modeling workflows.
-3. Implement async job orchestration for runs and calibration.
-4. Add auth, tenancy, and permission checks.
-5. Add benchmark-backed integration tests.
+1. Replace demo run logic with validated modeling workflows.
+2. Add auth, tenancy, and permission checks.
+3. Expand worker orchestration and retry policy.
+4. Add benchmark-backed integration tests.
+5. Add artifact/object storage integration beyond inline demo payloads.

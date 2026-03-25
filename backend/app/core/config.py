@@ -10,6 +10,8 @@ class Settings(BaseSettings):
     database_url: str = "sqlite:///./treeage_platform.db"
     auto_create_tables: bool = True
     seed_demo_data: bool = True
+    async_jobs_auto_start: bool = True
+    job_poll_interval_seconds: float = 1.0
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 

@@ -3,6 +3,7 @@ const STORAGE_KEYS = {
   series: "heor-demo.offline.series",
   functions: "heor-demo.offline.functions",
   runs: "heor-demo.offline.runs",
+  calibrationConfigs: "heor-demo.offline.calibration-configs",
 };
 
 const DEFAULT_API_BASE = "http://127.0.0.1:8000/api/v1";
@@ -14,9 +15,6 @@ const OFFLINE_CONTEXT = {
   model_id: "offline-model",
   model_version_id: "offline-model-version",
   model_name: "Offline Oncology Model",
-  latest_series_id: null,
-  latest_probability_function_id: null,
-  latest_run_id: null,
 };
 
 const SAMPLE_POINTS = [
@@ -38,12 +36,17 @@ const PALETTE = {
   muted: "#607185",
   line: "rgba(19, 32, 51, 0.14)",
   evidence: "#2f6fed",
+  evidenceSoft: "rgba(47, 111, 237, 0.12)",
   calibration: "#7c5ce0",
+  calibrationSoft: "rgba(124, 92, 224, 0.12)",
   simulation: "#18a6a0",
+  simulationSoft: "rgba(24, 166, 160, 0.14)",
   review: "#d9852c",
+  reviewSoft: "rgba(217, 133, 44, 0.14)",
   success: "#2e9d6b",
+  successSoft: "rgba(46, 157, 107, 0.14)",
   warning: "#c58b28",
-  fill: "rgba(47, 111, 237, 0.12)",
+  warningSoft: "rgba(197, 139, 40, 0.14)",
 };
 
 const DEFAULT_METRIC_OPTIONS = [
@@ -54,6 +57,12 @@ const DEFAULT_METRIC_OPTIONS = [
   { key: "mean_transition_probability", label: "Mean Transition Probability" },
 ];
 
+const DEFAULT_CALIBRATION_TEMPLATE = {
+  event_scale: { lower: 0.7, upper: 1.3, initial: 1.0 },
+  pf_death_probability: { lower: 0.004, upper: 0.03, initial: 0.01 },
+  pd_death_probability: { lower: 0.04, upper: 0.14, initial: 0.08 },
+};
+
 const state = {
   page: document.body.dataset.page,
   apiBase: localStorage.getItem(STORAGE_KEYS.apiBase) || DEFAULT_API_BASE,
@@ -62,21 +71,30 @@ const state = {
   series: [],
   functions: [],
   runs: [],
+  calibrationConfigs: [],
   selectedSeriesId: null,
   selectedFunctionId: null,
   selectedRunId: null,
+  selectedCalibrationId: null,
   scatterX: "total_cost",
   scatterY: "total_qalys",
   patientIndex: 0,
   cycleFocusIndex: 0,
   currentReview: null,
+  currentCalibration: null,
+  currentSimulation: null,
+  simulationCycleIndex: 0,
   runProgressTimer: null,
+  calibrationProgressTimer: null,
+  simulationMotionTimer: null,
+  reviewAutoplayTimer: null,
+  reviewAutoplay: false,
 };
 
 document.addEventListener("DOMContentLoaded", () => {
   bootstrap().catch((error) => {
     console.error(error);
-    setConnectionStatus("offline", "页面加载失败，已回退到离线样本模式。");
+    setConnectionStatus("offline", "页面加载失败，已自动切换到离线样本模式。");
   });
 });
 
@@ -91,6 +109,9 @@ async function bootstrap() {
   }
   if (state.page === "runtime") {
     initRuntimePage();
+  }
+  if (state.page === "calibration") {
+    initCalibrationPage();
   }
   if (state.page === "simulation") {
     initSimulationPage();
@@ -124,18 +145,18 @@ function bindApiControls() {
 }
 
 async function connectAndLoad() {
-  setConnectionStatus("warning", "正在尝试连接本地 FastAPI；若不可达会自动回退到离线样本模式。");
+  setConnectionStatus("warning", "平台正在尝试连接你的本地 FastAPI；如果不可达，会自动回退到离线样本模式。");
 
   try {
     const context = await request("/demo/context");
     state.live = true;
     state.context = context;
-    setConnectionStatus("live", "已连接真实 API。当前页面会直接创建对象、概率函数和 run。");
+    setConnectionStatus("live", "已连接到真实 API。你现在的上传、编译、校准和运行都会直接写入后端。");
   } catch (error) {
     console.warn("Falling back to offline mode", error);
     state.live = false;
     state.context = { ...OFFLINE_CONTEXT };
-    setConnectionStatus("offline", "未连接到后端，当前使用离线样本模式。页面仍可完整演示整条任务流。");
+    setConnectionStatus("offline", "当前未连接到后端，平台已切换到离线样本模式。你仍然可以完整体验整条任务流。");
   }
 
   await refreshCollections();
@@ -143,27 +164,35 @@ async function connectAndLoad() {
 
 async function refreshCollections() {
   if (state.live) {
-    const [series, functions, runs] = await Promise.all([
+    const [series, functions, runs, calibrationConfigs] = await Promise.all([
       request(`/projects/${state.context.project_id}/clinical-series`).catch(() => []),
       request(`/model-versions/${state.context.model_version_id}/probability-functions`).catch(() => []),
       request(`/model-versions/${state.context.model_version_id}/runs`).catch(() => []),
+      request(`/model-versions/${state.context.model_version_id}/calibration-configs`).catch(() => []),
     ]);
     state.series = series;
     state.functions = functions;
     state.runs = runs;
+    state.calibrationConfigs = calibrationConfigs;
   } else {
     state.series = readStore(STORAGE_KEYS.series, []);
     state.functions = readStore(STORAGE_KEYS.functions, []);
     state.runs = readStore(STORAGE_KEYS.runs, []);
+    state.calibrationConfigs = readStore(STORAGE_KEYS.calibrationConfigs, []);
   }
 
   state.selectedSeriesId = pickLatestId(state.series, state.selectedSeriesId);
   state.selectedFunctionId = pickLatestId(state.functions, state.selectedFunctionId);
-  state.selectedRunId = pickLatestId(state.runs, state.selectedRunId);
+  state.selectedCalibrationId = pickLatestId(state.calibrationConfigs, state.selectedCalibrationId);
+  state.selectedRunId =
+    pickLatestId(
+      state.runs.filter((run) => run.analysis_type === "cohort_markov" && run.status === "completed"),
+      state.selectedRunId
+    ) || pickLatestId(state.runs, state.selectedRunId);
 }
 
 function pickLatestId(items, currentId) {
-  if (currentId && items.some((item) => item.id === currentId)) {
+  if (currentId && items.some((item) => String(item.id) === String(currentId))) {
     return currentId;
   }
   return items[0]?.id || null;
@@ -176,6 +205,9 @@ function rerenderPage() {
   if (state.page === "runtime") {
     renderRuntimePage();
   }
+  if (state.page === "calibration") {
+    renderCalibrationPage();
+  }
   if (state.page === "simulation") {
     renderSimulationPage();
   }
@@ -187,7 +219,7 @@ function rerenderPage() {
 function renderSharedChrome() {
   setText("context-project", state.context.project_slug || state.context.project_id);
   setText("context-model", state.context.model_name || state.context.model_version_id);
-  setText("context-mode", state.live ? "Live API mode" : "Offline sample mode");
+  setText("context-mode", state.live ? "已连接真实 API" : "离线样本模式");
   setText("sidebar-series-count", String(state.series.length));
   setText("sidebar-function-count", String(state.functions.length));
   setText("sidebar-run-count", String(state.runs.length));
@@ -228,7 +260,7 @@ function initEvidencePage() {
       await refreshCollections();
       renderSharedChrome();
       renderEvidenceRegistry();
-      renderSeriesOutput(series, "ClinicalSeries created and ready for runtime compilation.");
+      renderSeriesOutput(series, "这份证据已经标准化完成。下一步可以把它编译成 ProbabilityFunction。");
     } catch (error) {
       renderSeriesOutput(null, extractMessage(error));
     }
@@ -238,7 +270,7 @@ function initEvidencePage() {
 }
 
 function renderEvidenceRegistry() {
-  renderSeriesOutput(null, state.selectedSeriesId ? "" : "等待创建对象。");
+  renderSeriesOutput(null, state.selectedSeriesId ? "" : "还没有证据对象。先贴入一份表格。");
   renderSeriesStatus();
   renderSeriesTable();
 }
@@ -247,7 +279,7 @@ function buildSeriesPayload() {
   const rawCsv = document.getElementById("sample-csv")?.value || "";
   const points = parseCsvPoints(rawCsv);
   if (!points.length) {
-    renderSeriesOutput(null, "CSV 中没有可解析的点。请检查表头和数值列。");
+    renderSeriesOutput(null, "没有解析到有效数据点。请检查 CSV 表头和数值列。");
     return null;
   }
 
@@ -271,11 +303,11 @@ function renderSeriesOutput(series, message) {
     return;
   }
 
-  const selected = series || state.series.find((item) => item.id === state.selectedSeriesId);
+  const selected = series || state.series.find((item) => String(item.id) === String(state.selectedSeriesId));
   if (!selected) {
     container.innerHTML = `
-      <strong>尚未创建对象</strong>
-      <p class="helper">${message || "创建成功后，这里会显示对象 id、点数、来源和下一步建议。"}</p>
+      <strong>还没有证据对象</strong>
+      <p class="helper">${message || "创建成功后，这里会显示对象 id、点数、来源和建议的下一步动作。"}</p>
     `;
     return;
   }
@@ -283,7 +315,7 @@ function renderSeriesOutput(series, message) {
   container.innerHTML = `
     <span class="panel-kicker">Latest ClinicalSeries</span>
     <strong>${selected.name}</strong>
-    <p class="helper">${message || "该对象已经标准化，可以直接在下一页编译为 ProbabilityFunction。"}</p>
+    <p class="helper">${message || "这份对象已经可以直接拿去构建 ProbabilityFunction。"} </p>
     <div class="pill-row">
       <span class="tone-pill evidence">${selected.series_kind}</span>
       <span class="hero-chip">${selected.points.length} points</span>
@@ -306,21 +338,21 @@ function renderSeriesStatus() {
   if (!container) {
     return;
   }
-  const selected = state.series.find((item) => item.id === state.selectedSeriesId);
+  const selected = state.series.find((item) => String(item.id) === String(state.selectedSeriesId));
   if (!selected) {
     container.innerHTML = `
-      <strong>Waiting for upload</strong>
-      <p class="helper">Time alignment、字段完整性和对象标准化结果会显示在这里。</p>
+      <strong>等待上传</strong>
+      <p class="helper">这里会先告诉你字段是否完整、时间是否对齐、对象是否可版本化。</p>
     `;
     return;
   }
 
   container.innerHTML = `
     <strong>${selected.name}</strong>
-    <p class="helper">Validation passed. ${selected.points.length} points were aligned at ${selected.time_unit} granularity.</p>
+    <p class="helper">校验已通过。${selected.points.length} 个点已按 ${selected.time_unit} 粒度对齐，并准备进入下一步。</p>
     <div class="pill-row">
       <span class="tone-pill evidence">Validated</span>
-      <span class="hero-chip">${state.live ? "Persisted in API" : "Stored offline"}</span>
+      <span class="hero-chip">${state.live ? "已写入 API" : "已保存到本地样本"}</span>
     </div>
   `;
 }
@@ -332,7 +364,7 @@ function renderSeriesTable() {
   }
   if (!state.series.length) {
     container.className = "table-scroll empty-state";
-    container.textContent = "暂无对象。先在上方创建一个 ClinicalSeries。";
+    container.textContent = "还没有对象。先在上方创建一份 ClinicalSeries。";
     return;
   }
 
@@ -371,7 +403,7 @@ function initRuntimePage() {
   document.getElementById("compile-function")?.addEventListener("click", async () => {
     const seriesId = document.getElementById("series-select")?.value;
     if (!seriesId) {
-      renderFunctionOutput(null, "请先在 Evidence 页面创建一个 ClinicalSeries。");
+      renderFunctionOutput(null, "先在 Evidence 页面创建一份 ClinicalSeries，再来编译函数。");
       return;
     }
 
@@ -395,7 +427,7 @@ function initRuntimePage() {
       await refreshCollections();
       renderSharedChrome();
       renderRuntimePage();
-      renderFunctionOutput(probabilityFunction, "ProbabilityFunction compiled successfully.");
+      renderFunctionOutput(probabilityFunction, "这层概率函数已经生成完成。你可以先验证一个区间，再进入 Calibration。");
     } catch (error) {
       renderFunctionOutput(null, extractMessage(error));
     }
@@ -406,7 +438,7 @@ function initRuntimePage() {
     const t0 = Number(document.getElementById("debug-t0")?.value || 0);
     const t1 = Number(document.getElementById("debug-t1")?.value || 1);
     if (!functionId) {
-      renderDebugResult(null, "请先编译一个 ProbabilityFunction。");
+      renderDebugResult(null, "先生成一个 ProbabilityFunction。");
       return;
     }
     try {
@@ -454,11 +486,11 @@ function renderFunctionOutput(functionRecord, message) {
   if (!container) {
     return;
   }
-  const selected = functionRecord || state.functions.find((item) => item.id === state.selectedFunctionId);
+  const selected = functionRecord || state.functions.find((item) => String(item.id) === String(state.selectedFunctionId));
   if (!selected) {
     container.innerHTML = `
-      <strong>尚未生成函数</strong>
-      <p class="helper">${message || "编译成功后，这里会显示 source ref、cycle length、compiled kind 和状态。"}</p>
+      <strong>还没有 ProbabilityFunction</strong>
+      <p class="helper">${message || "生成后，这里会显示 source ref、cycle length、compiled kind 和当前可用状态。"}</p>
     `;
     return;
   }
@@ -467,7 +499,7 @@ function renderFunctionOutput(functionRecord, message) {
   container.innerHTML = `
     <span class="panel-kicker">Latest ProbabilityFunction</span>
     <strong>${selected.name}</strong>
-    <p class="helper">${message || "该函数已经可调试，并可直接在 Simulation Lab 中运行。"} </p>
+    <p class="helper">${message || "你现在可以直接验证任意区间，或把它送去做 Calibration 和 Simulation。"} </p>
     <div class="pill-row">
       <span class="tone-pill calibration">${compiled?.compiled_kind || "compiled"}</span>
       <span class="hero-chip">${selected.cycle_length} ${selected.time_unit}</span>
@@ -492,7 +524,7 @@ function renderFunctionRegistry() {
   }
   if (!state.functions.length) {
     container.className = "empty-state";
-    container.textContent = "暂无函数。先从一个 ClinicalSeries 编译生成。";
+    container.textContent = "还没有函数。先从一份 ClinicalSeries 开始编译。";
     return;
   }
 
@@ -519,17 +551,17 @@ function renderDebugResult(debug, message) {
 
   if (!debug) {
     result.innerHTML = `
-      <strong>等待调试</strong>
-      <p class="helper">${message || "会显示 interval probability 和 trace 元数据。"}</p>
+      <strong>等待验证</strong>
+      <p class="helper">${message || "这里会显示 interval probability 和本次求值的 trace 信息。"}</p>
     `;
-    chart.innerHTML = makeEmptyChartSvg("Compile a function first");
+    chart.innerHTML = makeEmptyChartSvg("先生成一个 ProbabilityFunction");
     return;
   }
 
-  const selected = state.functions.find((item) => item.id === debug.function_id);
+  const selected = state.functions.find((item) => String(item.id) === String(debug.function_id));
   result.innerHTML = `
     <strong>Probability = ${(debug.probability * 100).toFixed(2)}%</strong>
-    <p class="helper">Interval [${debug.t0}, ${debug.t1}] evaluated against ${debug.trace.compiled_kind || "compiled"} source.</p>
+    <p class="helper">区间 [${debug.t0}, ${debug.t1}] 已完成求值。你可以拿这个结果去判断函数层是否足够稳定。</p>
     <ul class="context-list">
       <li>
         <span>Function ID</span>
@@ -547,11 +579,285 @@ function renderDebugResult(debug, message) {
   chart.innerHTML = makeProbabilityChartSvg(selected, debug);
 }
 
+function initCalibrationPage() {
+  document.getElementById("load-calibration-template")?.addEventListener("click", () => {
+    hydrateCalibrationTemplate();
+    renderCalibrationStatus("推荐边界已载入。现在可以直接启动校准。");
+  });
+
+  document.getElementById("launch-calibration")?.addEventListener("click", async () => {
+    const configPayload = buildCalibrationConfigPayload();
+    if (!configPayload) {
+      return;
+    }
+
+    const runPayload = {
+      project_id: state.context.project_id,
+      config_json: {
+        probability_function_id: document.getElementById("calibration-function-select")?.value || "",
+        cycles: Number(document.getElementById("calibration-cycles")?.value || 15),
+        initial_population: Number(document.getElementById("calibration-population")?.value || 1000),
+      },
+    };
+
+    startProgress("calibration");
+    renderCalibrationStatus("正在创建 calibration config，并准备把任务送进异步队列。");
+
+    try {
+      const bundle = state.live
+        ? await launchCalibrationLive(configPayload, runPayload)
+        : await launchCalibrationOffline(configPayload, runPayload);
+      state.currentCalibration = bundle;
+      state.selectedCalibrationId = bundle.config.id;
+      await refreshCollections();
+      renderSharedChrome();
+      renderCalibrationPage();
+      stopProgress("calibration", 100);
+      renderCalibrationStatus("校准已完成。现在可以先看 overlay，再进入 Simulation。");
+    } catch (error) {
+      stopProgress("calibration", 0);
+      renderCalibrationStatus(extractMessage(error));
+    }
+  });
+
+  hydrateCalibrationTemplate();
+  renderCalibrationPage();
+}
+
+function renderCalibrationPage() {
+  populateSelect(
+    document.getElementById("calibration-target-series"),
+    state.series.map((series) => ({
+      value: series.id,
+      label: `${series.name} · ${series.series_kind}`,
+    })),
+    state.selectedSeriesId
+  );
+
+  populateSelect(
+    document.getElementById("calibration-function-select"),
+    state.functions.map((fn) => ({
+      value: fn.id,
+      label: `${fn.name} · ${fn.function_kind}`,
+    })),
+    state.selectedFunctionId
+  );
+
+  renderCalibrationStatus();
+  renderCalibrationBest();
+  renderCalibrationOverlay();
+  renderCalibrationConfigs();
+  renderCalibrationDiagnostics();
+}
+
+function hydrateCalibrationTemplate() {
+  setInputValue("calibration-event-scale-lower", DEFAULT_CALIBRATION_TEMPLATE.event_scale.lower);
+  setInputValue("calibration-event-scale-upper", DEFAULT_CALIBRATION_TEMPLATE.event_scale.upper);
+  setInputValue("calibration-event-scale-initial", DEFAULT_CALIBRATION_TEMPLATE.event_scale.initial);
+  setInputValue("calibration-pf-death-lower", DEFAULT_CALIBRATION_TEMPLATE.pf_death_probability.lower);
+  setInputValue("calibration-pf-death-upper", DEFAULT_CALIBRATION_TEMPLATE.pf_death_probability.upper);
+  setInputValue("calibration-pf-death-initial", DEFAULT_CALIBRATION_TEMPLATE.pf_death_probability.initial);
+  setInputValue("calibration-pd-death-lower", DEFAULT_CALIBRATION_TEMPLATE.pd_death_probability.lower);
+  setInputValue("calibration-pd-death-upper", DEFAULT_CALIBRATION_TEMPLATE.pd_death_probability.upper);
+  setInputValue("calibration-pd-death-initial", DEFAULT_CALIBRATION_TEMPLATE.pd_death_probability.initial);
+}
+
+function buildCalibrationConfigPayload() {
+  const targetSeriesId = document.getElementById("calibration-target-series")?.value;
+  const functionId = document.getElementById("calibration-function-select")?.value;
+  if (!targetSeriesId) {
+    renderCalibrationStatus("先选择一条 target ClinicalSeries。");
+    return null;
+  }
+  if (!functionId) {
+    renderCalibrationStatus("先选择一条 ProbabilityFunction，校准才能开始。");
+    return null;
+  }
+
+  return {
+    name: document.getElementById("calibration-name")?.value.trim() || "Observed vs Predicted Fit",
+    target_series_id: targetSeriesId,
+    objective_type: "rmse",
+    optimizer_type: "deterministic_grid",
+    max_iterations: Number(document.getElementById("calibration-max-iterations")?.value || 12),
+    config_json: {
+      probability_function_id: functionId,
+    },
+    parameters: [
+      {
+        parameter_code: "event_scale",
+        lower_bound: Number(document.getElementById("calibration-event-scale-lower")?.value || 0.7),
+        upper_bound: Number(document.getElementById("calibration-event-scale-upper")?.value || 1.3),
+        initial_value: Number(document.getElementById("calibration-event-scale-initial")?.value || 1.0),
+        transform_type: "identity",
+        is_fixed: false,
+      },
+      {
+        parameter_code: "pf_death_probability",
+        lower_bound: Number(document.getElementById("calibration-pf-death-lower")?.value || 0.004),
+        upper_bound: Number(document.getElementById("calibration-pf-death-upper")?.value || 0.03),
+        initial_value: Number(document.getElementById("calibration-pf-death-initial")?.value || 0.01),
+        transform_type: "identity",
+        is_fixed: false,
+      },
+      {
+        parameter_code: "pd_death_probability",
+        lower_bound: Number(document.getElementById("calibration-pd-death-lower")?.value || 0.04),
+        upper_bound: Number(document.getElementById("calibration-pd-death-upper")?.value || 0.14),
+        initial_value: Number(document.getElementById("calibration-pd-death-initial")?.value || 0.08),
+        transform_type: "identity",
+        is_fixed: false,
+      },
+    ],
+  };
+}
+
+function renderCalibrationStatus(message) {
+  const container = document.getElementById("calibration-status");
+  if (!container) {
+    return;
+  }
+
+  const bundle = state.currentCalibration;
+  if (!bundle) {
+    container.innerHTML = `
+      <strong>${message || "准备好开始校准"}</strong>
+      <p class="helper">先设置 target series 和 parameter bounds。平台会用异步 job 方式跑完 observed vs predicted 校准。</p>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <strong>${message || "最近一次校准已经完成"}</strong>
+    <p class="helper">Run ${shortId(bundle.run.id)} · ${bundle.run.status} · ${bundle.result.convergence_status}</p>
+    <div class="pill-row">
+      <span class="tone-pill calibration">Best RMSE ${Number(bundle.result.best_objective_value).toFixed(4)}</span>
+      <span class="hero-chip">${bundle.config.max_iterations} candidates</span>
+    </div>
+  `;
+}
+
+function renderCalibrationBest() {
+  const container = document.getElementById("calibration-best");
+  if (!container) {
+    return;
+  }
+
+  const bundle = state.currentCalibration;
+  if (!bundle) {
+    container.className = "empty-state";
+    container.textContent = "还没有校准结果。先设置参数边界并启动 Calibration。";
+    return;
+  }
+
+  const bestParams = bundle.result.best_params_json || {};
+  container.className = "result-card";
+  container.innerHTML = `
+    <span class="panel-kicker">Latest Calibration Result</span>
+    <strong>Best RMSE = ${Number(bundle.result.best_objective_value).toFixed(4)}</strong>
+    <p class="helper">这组参数已经让模型输出更接近 target series。你可以直接看 overlay，或继续去跑 Simulation。</p>
+    <ul class="context-list">
+      <li>
+        <span>event_scale</span>
+        <strong>${formatShortNumber(bestParams.event_scale)}</strong>
+      </li>
+      <li>
+        <span>pf_death_probability</span>
+        <strong>${formatShortNumber(bestParams.pf_death_probability)}</strong>
+      </li>
+      <li>
+        <span>pd_death_probability</span>
+        <strong>${formatShortNumber(bestParams.pd_death_probability)}</strong>
+      </li>
+    </ul>
+  `;
+}
+
+function renderCalibrationOverlay() {
+  const chart = document.getElementById("calibration-overlay-chart");
+  const label = document.getElementById("calibration-overlay-label");
+  if (!chart || !label) {
+    return;
+  }
+
+  const bundle = state.currentCalibration;
+  if (!bundle) {
+    chart.innerHTML = makeEmptyChartSvg("先启动一次 Calibration");
+    label.textContent = "等待 overlay";
+    return;
+  }
+
+  const overlayArtifact = bundle.overlayArtifact;
+  const metadata = overlayArtifact?.metadata_json || {};
+  chart.innerHTML = makeCalibrationOverlaySvg({
+    observedPoints: metadata.observed_points || [],
+    predictedPoints: metadata.predicted_points || [],
+    fullPredictedCurve: metadata.full_predicted_curve || [],
+    bestObjectiveValue: bundle.result.best_objective_value,
+  });
+  label.textContent = `Observed vs predicted · RMSE ${Number(bundle.result.best_objective_value).toFixed(4)}`;
+}
+
+function renderCalibrationConfigs() {
+  const container = document.getElementById("calibration-config-list");
+  if (!container) {
+    return;
+  }
+
+  if (!state.calibrationConfigs.length) {
+    container.className = "empty-state";
+    container.textContent = "还没有 calibration config。先提交一组参数边界。";
+    return;
+  }
+
+  container.className = "list-table";
+  container.innerHTML = state.calibrationConfigs
+    .map(
+      (config) => `
+        <li>
+          <strong>${config.name}</strong>
+          <span class="list-meta">${config.objective_type} · ${config.optimizer_type}</span>
+          <span class="list-meta">${config.parameters?.length || 0} parameters · ${config.max_iterations} iterations</span>
+        </li>
+      `
+    )
+    .join("");
+}
+
+function renderCalibrationDiagnostics() {
+  const container = document.getElementById("calibration-diagnostics");
+  if (!container) {
+    return;
+  }
+
+  const bundle = state.currentCalibration;
+  if (!bundle) {
+    container.className = "empty-state";
+    container.textContent = "运行结束后，这里会显示 optimizer、候选次数和 best-fit 参数。";
+    return;
+  }
+
+  const history = bundle.result.diagnostics_json?.history || [];
+  container.className = "list-table";
+  container.innerHTML = history
+    .slice(0, 6)
+    .map(
+      (candidate) => `
+        <li>
+          <strong>Iteration ${candidate.iteration} · RMSE ${Number(candidate.objective).toFixed(4)}</strong>
+          <span class="list-meta">event_scale ${formatShortNumber(candidate.parameter_values?.event_scale)}</span>
+          <span class="list-meta">pf_death ${formatShortNumber(candidate.parameter_values?.pf_death_probability)} · pd_death ${formatShortNumber(candidate.parameter_values?.pd_death_probability)}</span>
+        </li>
+      `
+    )
+    .join("");
+}
+
 function initSimulationPage() {
   document.getElementById("launch-run")?.addEventListener("click", async () => {
     const functionId = document.getElementById("run-function-select")?.value;
     if (!functionId) {
-      renderRunStatus("请先在 Runtime 页面创建一个 ProbabilityFunction。");
+      renderRunStatus("先在 Runtime 页面生成一条 ProbabilityFunction。");
       return;
     }
 
@@ -568,19 +874,19 @@ function initSimulationPage() {
       },
     };
 
-    animateRunProgress();
-    renderRunStatus("Run queued. The demo is preparing summary cards and artifacts.");
+    startProgress("run");
+    renderRunStatus("任务已排队。平台正在准备 cohort、sample matrix 和 review artifacts。");
 
     try {
-      const run = state.live ? await createRunLive(payload) : createRunOffline(payload);
-      stopRunProgress(100);
+      const run = state.live ? await launchRunLive(payload) : await launchRunOffline(payload);
       state.selectedRunId = run.id;
       await refreshCollections();
       renderSharedChrome();
       await renderSimulationPage();
-      renderRunStatus(`Run ${shortId(run.id)} completed.`);
+      stopProgress("run", 100);
+      renderRunStatus(`Run ${shortId(run.id)} 已完成。你现在可以先看动态 Markov 流，再进入 Review Surface。`);
     } catch (error) {
-      stopRunProgress(0);
+      stopProgress("run", 0);
       renderRunStatus(extractMessage(error));
     }
   });
@@ -601,6 +907,7 @@ async function renderSimulationPage() {
   renderRunSummary();
   renderRunRegistry();
   await renderArtifactPreview();
+  await renderSimulationMotion();
 }
 
 function renderRunStatus(message) {
@@ -610,36 +917,8 @@ function renderRunStatus(message) {
   }
   container.innerHTML = `
     <strong>${message}</strong>
-    <p class="helper">Run API returns summary cards, metrics and artifact references that Review Surface can directly consume.</p>
+    <p class="helper">真实后端会返回异步 job 状态、summary cards、cohort 数据和 artifact references，后续能直接被 Review Surface 消费。</p>
   `;
-}
-
-function animateRunProgress() {
-  stopRunProgress(0);
-  let progress = 6;
-  state.runProgressTimer = window.setInterval(() => {
-    progress = Math.min(progress + 7, 90);
-    setProgress(progress);
-    if (progress >= 90) {
-      window.clearInterval(state.runProgressTimer);
-      state.runProgressTimer = null;
-    }
-  }, 180);
-}
-
-function stopRunProgress(finalValue) {
-  if (state.runProgressTimer) {
-    window.clearInterval(state.runProgressTimer);
-    state.runProgressTimer = null;
-  }
-  setProgress(finalValue);
-}
-
-function setProgress(value) {
-  const progress = document.getElementById("run-progress");
-  if (progress) {
-    progress.style.width = `${value}%`;
-  }
 }
 
 function renderRunSummary() {
@@ -648,7 +927,7 @@ function renderRunSummary() {
     return;
   }
 
-  const run = state.runs.find((item) => item.id === state.selectedRunId) || state.runs[0];
+  const run = getSelectedCohortRun();
   if (!run) {
     container.className = "empty-state";
     container.textContent = "还没有 run 结果。先选择一个 ProbabilityFunction 并启动分析。";
@@ -656,6 +935,12 @@ function renderRunSummary() {
   }
 
   const cards = run.summary_json?.cards || [];
+  if (!cards.length) {
+    container.className = "empty-state";
+    container.textContent = `${run.analysis_type} · ${run.status}。结果卡片会在运行完成后出现。`;
+    return;
+  }
+
   container.className = "metric-grid four";
   container.innerHTML = cards
     .map(
@@ -701,7 +986,7 @@ async function renderArtifactPreview() {
   if (!container) {
     return;
   }
-  const run = state.runs.find((item) => item.id === state.selectedRunId) || state.runs[0];
+  const run = getSelectedCohortRun();
   if (!run) {
     container.className = "empty-state";
     container.textContent = "运行完成后，这里会预览 probability-trace、cohort-trace 和 run-config artifacts。";
@@ -711,7 +996,7 @@ async function renderArtifactPreview() {
   const artifacts = state.live ? await request(`/runs/${run.id}/artifacts`).catch(() => []) : run._artifacts || [];
   if (!artifacts.length) {
     container.className = "empty-state";
-    container.textContent = "该 run 暂无 artifacts。";
+    container.textContent = "这条 run 还没有 artifacts。";
     return;
   }
 
@@ -729,6 +1014,55 @@ async function renderArtifactPreview() {
     .join("");
 }
 
+async function renderSimulationMotion() {
+  const container = document.getElementById("simulation-markov-motion");
+  const label = document.getElementById("simulation-flow-label");
+  if (!container || !label) {
+    return;
+  }
+
+  const run = getSelectedCohortRun();
+  if (!run || run.status !== "completed") {
+    stopSimulationMotion();
+    container.innerHTML = makeEmptyChartSvg("先完成一条 cohort Markov run");
+    label.textContent = "等待运行结果";
+    return;
+  }
+
+  if (!state.currentSimulation || String(state.currentSimulation.run.id) !== String(run.id)) {
+    const cohort = state.live
+      ? (await request(`/runs/${run.id}/cohort-dashboard`).catch(() => ({ points: [] }))).points || []
+      : run._cohort || [];
+    state.currentSimulation = { run, cohort };
+    state.simulationCycleIndex = 0;
+    startSimulationMotion();
+  }
+
+  const buckets = getUniqueBucketTimes(state.currentSimulation.cohort || []);
+  const focus = buckets[state.simulationCycleIndex] ?? buckets.at(-1) ?? 0;
+  container.innerHTML = makeMarkovMotionSvg(state.currentSimulation.cohort || [], state.simulationCycleIndex);
+  label.textContent = `Cycle ${focus} · 动态状态流`;
+}
+
+function startSimulationMotion() {
+  stopSimulationMotion();
+  state.simulationMotionTimer = window.setInterval(() => {
+    const buckets = getUniqueBucketTimes(state.currentSimulation?.cohort || []);
+    if (!buckets.length) {
+      return;
+    }
+    state.simulationCycleIndex = (state.simulationCycleIndex + 1) % buckets.length;
+    renderSimulationMotion();
+  }, 1500);
+}
+
+function stopSimulationMotion() {
+  if (state.simulationMotionTimer) {
+    window.clearInterval(state.simulationMotionTimer);
+    state.simulationMotionTimer = null;
+  }
+}
+
 function initReviewPage() {
   document.getElementById("load-review")?.addEventListener("click", async () => {
     state.selectedRunId = document.getElementById("review-run-select")?.value || null;
@@ -744,13 +1078,18 @@ function initReviewPage() {
     renderReviewSurface();
   });
 
+  document.getElementById("review-autoplay")?.addEventListener("click", () => {
+    toggleReviewAutoplay();
+  });
+
   renderReviewShell();
 }
 
 function renderReviewShell() {
+  const reviewableRuns = getReviewableRuns();
   populateSelect(
     document.getElementById("review-run-select"),
-    state.runs.map((run) => ({
+    reviewableRuns.map((run) => ({
       value: run.id,
       label: `${shortId(run.id)} · ${run.status}`,
     })),
@@ -768,7 +1107,7 @@ function renderReviewShell() {
     state.scatterY
   );
 
-  if (state.runs.length && !state.currentReview) {
+  if (reviewableRuns.length && !state.currentReview) {
     loadReviewBundle().then(() => renderReviewSurface());
   } else {
     renderReviewSurface();
@@ -776,16 +1115,19 @@ function renderReviewShell() {
 }
 
 async function loadReviewBundle() {
-  const runId = state.selectedRunId || state.runs[0]?.id;
+  const reviewableRuns = getReviewableRuns();
+  const runId = state.selectedRunId || reviewableRuns[0]?.id;
   if (!runId) {
     state.currentReview = null;
+    stopReviewAutoplay();
     return;
   }
 
   state.selectedRunId = runId;
-  const run = state.runs.find((item) => item.id === runId);
+  const run = reviewableRuns.find((item) => String(item.id) === String(runId));
   if (!run) {
     state.currentReview = null;
+    stopReviewAutoplay();
     return;
   }
 
@@ -801,15 +1143,14 @@ async function loadReviewBundle() {
     ]);
     state.currentReview = { run, artifacts, metricCatalog, scatter, cohort, trace };
   } else {
-    const bundle = buildOfflineReviewBundle(runId, state.scatterX, state.scatterY, state.patientIndex);
-    state.currentReview = bundle;
+    state.currentReview = buildOfflineReviewBundle(runId, state.scatterX, state.scatterY, state.patientIndex);
   }
 
   const uniqueBuckets = getUniqueBucketTimes(state.currentReview?.cohort?.points || []);
   const slider = document.getElementById("review-cycle-slider");
   if (slider) {
     slider.max = String(Math.max(uniqueBuckets.length - 1, 0));
-    state.cycleFocusIndex = Math.min(state.cycleFocusIndex, uniqueBuckets.length - 1);
+    state.cycleFocusIndex = Math.min(state.cycleFocusIndex, Math.max(uniqueBuckets.length - 1, 0));
     slider.value = String(Math.max(state.cycleFocusIndex, 0));
   }
 }
@@ -821,36 +1162,44 @@ function renderReviewSurface() {
   const trace = document.getElementById("review-patient-trace");
   const artifacts = document.getElementById("review-artifacts");
   const cycleLabel = document.getElementById("review-cycle-label");
-  if (!summary || !scatter || !cohort || !trace || !artifacts || !cycleLabel) {
+  const motionLabel = document.getElementById("review-motion-label");
+  const motion = document.getElementById("review-markov-motion");
+  if (!summary || !scatter || !cohort || !trace || !artifacts || !cycleLabel || !motionLabel || !motion) {
     return;
   }
 
+  syncReviewAutoplayButton();
+
   if (!state.currentReview) {
     summary.className = "empty-state";
-    summary.textContent = "还没有加载 run。先从上方选择一个 run。";
+    summary.textContent = "还没有加载 run。先从上方选择一条 cohort run。";
     scatter.innerHTML = makeEmptyChartSvg("No scatterplot yet");
     cohort.innerHTML = makeEmptyChartSvg("No cohort data yet");
+    motion.innerHTML = makeEmptyChartSvg("No Markov motion yet");
     trace.className = "empty-state";
     trace.textContent = "选择 run 后，这里会显示 patient event trace。";
     artifacts.className = "empty-state";
     artifacts.textContent = "选择 run 后，这里会显示 artifacts 和 metadata。";
     cycleLabel.textContent = "Cycle focus pending";
+    motionLabel.textContent = "等待 run";
     return;
   }
 
   const cards = state.currentReview.run.summary_json?.cards || [];
-  summary.className = "metric-grid four";
-  summary.innerHTML = cards
-    .map(
-      (card) => `
-        <article class="metric-card">
-          <small>${card.label}</small>
-          <strong>${formatMetricValue(card.value, card.unit)}</strong>
-          <span>${card.unit || ""}</span>
-        </article>
-      `
-    )
-    .join("");
+  summary.className = cards.length ? "metric-grid four" : "empty-state";
+  summary.innerHTML = cards.length
+    ? cards
+        .map(
+          (card) => `
+            <article class="metric-card">
+              <small>${card.label}</small>
+              <strong>${formatMetricValue(card.value, card.unit)}</strong>
+              <span>${card.unit || ""}</span>
+            </article>
+          `
+        )
+        .join("")
+    : "这条 run 还没有 summary cards。";
 
   scatter.innerHTML = makeScatterSvg(
     state.currentReview.scatter?.points || [],
@@ -858,35 +1207,78 @@ function renderReviewSurface() {
     state.scatterY
   );
   cohort.innerHTML = makeCohortSvg(state.currentReview.cohort?.points || [], state.cycleFocusIndex);
+  motion.innerHTML = makeMarkovMotionSvg(state.currentReview.cohort?.points || [], state.cycleFocusIndex);
   trace.className = "trace-list";
-  trace.innerHTML = (state.currentReview.trace?.events || [])
-    .map(
-      (event) => `
-        <li>
-          <strong>${event.event_type} · cycle ${event.cycle_index ?? "-"}</strong>
-          <span class="trace-meta">${event.from_state_code || "start"} -> ${event.to_state_code || "-"}</span>
-          <span class="trace-meta">time ${event.event_time}</span>
-        </li>
-      `
-    )
-    .join("") || "<div class='empty-state'>该 patient index 没有事件。</div>";
+  trace.innerHTML =
+    (state.currentReview.trace?.events || [])
+      .map(
+        (event) => `
+          <li>
+            <strong>${event.event_type} · cycle ${event.cycle_index ?? "-"}</strong>
+            <span class="trace-meta">${event.from_state_code || "start"} -> ${event.to_state_code || "-"}</span>
+            <span class="trace-meta">time ${event.event_time}</span>
+          </li>
+        `
+      )
+      .join("") || "<div class='empty-state'>该 patient index 没有事件。</div>";
 
   artifacts.className = "artifact-list";
-  artifacts.innerHTML = (state.currentReview.artifacts || [])
-    .map(
-      (artifact) => `
-        <li>
-          <strong>${artifact.artifact_type}</strong>
-          <span class="list-meta">${artifact.storage_uri}</span>
-          <span class="list-meta">${artifact.checksum || "no checksum"}</span>
-        </li>
-      `
-    )
-    .join("") || "<div class='empty-state'>该 run 暂无 artifacts。</div>";
+  artifacts.innerHTML =
+    (state.currentReview.artifacts || [])
+      .map(
+        (artifact) => `
+          <li>
+            <strong>${artifact.artifact_type}</strong>
+            <span class="list-meta">${artifact.storage_uri}</span>
+            <span class="list-meta">${artifact.checksum || "no checksum"}</span>
+          </li>
+        `
+      )
+      .join("") || "<div class='empty-state'>该 run 暂无 artifacts。</div>";
 
   const buckets = getUniqueBucketTimes(state.currentReview.cohort?.points || []);
   const focus = buckets[state.cycleFocusIndex] ?? buckets[0] ?? 0;
   cycleLabel.textContent = `Cycle focus · ${focus}`;
+  motionLabel.textContent = `Cycle ${focus} · Dynamic Markov playback`;
+}
+
+function toggleReviewAutoplay() {
+  if (state.reviewAutoplay) {
+    stopReviewAutoplay();
+    return;
+  }
+
+  const buckets = getUniqueBucketTimes(state.currentReview?.cohort?.points || []);
+  if (!buckets.length) {
+    return;
+  }
+
+  state.reviewAutoplay = true;
+  syncReviewAutoplayButton();
+  state.reviewAutoplayTimer = window.setInterval(() => {
+    state.cycleFocusIndex = (state.cycleFocusIndex + 1) % buckets.length;
+    const slider = document.getElementById("review-cycle-slider");
+    if (slider) {
+      slider.value = String(state.cycleFocusIndex);
+    }
+    renderReviewSurface();
+  }, 1500);
+}
+
+function stopReviewAutoplay() {
+  state.reviewAutoplay = false;
+  if (state.reviewAutoplayTimer) {
+    window.clearInterval(state.reviewAutoplayTimer);
+    state.reviewAutoplayTimer = null;
+  }
+  syncReviewAutoplayButton();
+}
+
+function syncReviewAutoplayButton() {
+  const button = document.getElementById("review-autoplay");
+  if (button) {
+    button.textContent = state.reviewAutoplay ? "暂停状态流" : "播放状态流";
+  }
 }
 
 async function createSeriesLive(payload) {
@@ -903,8 +1295,7 @@ function createSeriesOffline(payload) {
     project_id: state.context.project_id,
     created_at: new Date().toISOString(),
   };
-  const seriesStore = [series, ...readStore(STORAGE_KEYS.series, [])];
-  writeStore(STORAGE_KEYS.series, seriesStore);
+  writeStore(STORAGE_KEYS.series, [series, ...readStore(STORAGE_KEYS.series, [])]);
   return series;
 }
 
@@ -916,7 +1307,7 @@ async function createFunctionLive(payload) {
 }
 
 function createFunctionOffline(payload) {
-  const series = state.series.find((item) => item.id === payload.source_ref_id);
+  const series = state.series.find((item) => String(item.id) === String(payload.source_ref_id));
   if (!series) {
     throw new Error("ClinicalSeries not found.");
   }
@@ -931,21 +1322,31 @@ function createFunctionOffline(payload) {
       compiled_source: compiledSource,
     },
   };
-  const functionStore = [probabilityFunction, ...readStore(STORAGE_KEYS.functions, [])];
-  writeStore(STORAGE_KEYS.functions, functionStore);
+  writeStore(STORAGE_KEYS.functions, [probabilityFunction, ...readStore(STORAGE_KEYS.functions, [])]);
   return probabilityFunction;
 }
 
-async function createRunLive(payload) {
-  return request(`/model-versions/${state.context.model_version_id}/runs`, {
+async function launchRunLive(payload) {
+  const queuedRun = await request(`/model-versions/${state.context.model_version_id}/runs`, {
     method: "POST",
     body: JSON.stringify(payload),
   });
+  const jobId = queuedRun.summary_json?.job_id;
+  if (!jobId) {
+    return queuedRun;
+  }
+  await waitForJob(jobId, "run");
+  return request(`/runs/${queuedRun.id}`);
+}
+
+async function launchRunOffline(payload) {
+  await sleep(850);
+  return createRunOffline(payload);
 }
 
 function createRunOffline(payload) {
   const probabilityFunction = state.functions.find(
-    (item) => item.id === payload.config_json.probability_function_id
+    (item) => String(item.id) === String(payload.config_json.probability_function_id)
   );
   if (!probabilityFunction) {
     throw new Error("ProbabilityFunction not found.");
@@ -960,21 +1361,155 @@ function createRunOffline(payload) {
     _cohort: simulation.cohort,
     _patientTraces: simulation.patientTraces,
   };
-  const runStore = [run, ...readStore(STORAGE_KEYS.runs, [])];
-  writeStore(STORAGE_KEYS.runs, runStore);
+  writeStore(STORAGE_KEYS.runs, [run, ...readStore(STORAGE_KEYS.runs, [])]);
   return run;
 }
 
+async function createCalibrationConfigLive(payload) {
+  return request(`/model-versions/${state.context.model_version_id}/calibration-configs`, {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+function createCalibrationConfigOffline(payload) {
+  const config = {
+    ...payload,
+    id: makeId("calibration"),
+    model_version_id: state.context.model_version_id,
+    created_at: new Date().toISOString(),
+  };
+  writeStore(STORAGE_KEYS.calibrationConfigs, [config, ...readStore(STORAGE_KEYS.calibrationConfigs, [])]);
+  return config;
+}
+
+async function launchCalibrationLive(configPayload, runPayload) {
+  const config = await createCalibrationConfigLive(configPayload);
+  const queuedRun = await request(`/calibration-configs/${config.id}/run`, {
+    method: "POST",
+    body: JSON.stringify(runPayload),
+  });
+  const jobId = queuedRun.summary_json?.job_id;
+  if (jobId) {
+    await waitForJob(jobId, "calibration");
+  }
+  const [run, result, artifacts] = await Promise.all([
+    request(`/runs/${queuedRun.id}`),
+    request(`/runs/${queuedRun.id}/calibration-result`),
+    request(`/runs/${queuedRun.id}/artifacts`).catch(() => []),
+  ]);
+  return {
+    config,
+    run,
+    result,
+    artifacts,
+    overlayArtifact: artifacts.find((artifact) => artifact.artifact_type === "calibration-overlay") || null,
+  };
+}
+
+async function launchCalibrationOffline(configPayload, runPayload) {
+  await sleep(900);
+  const config = createCalibrationConfigOffline(configPayload);
+  const bundle = buildOfflineCalibrationBundle(config, runPayload);
+  const runStore = [bundle.run, ...readStore(STORAGE_KEYS.runs, [])];
+  writeStore(STORAGE_KEYS.runs, runStore);
+  return bundle;
+}
+
+async function waitForJob(jobId, kind) {
+  for (let attempt = 0; attempt < 90; attempt += 1) {
+    const job = await request(`/jobs/${jobId}`);
+    updateJobProgress(kind, job, attempt);
+    if (job.status === "completed") {
+      return job;
+    }
+    if (job.status === "failed") {
+      throw new Error(job.error_log || `${kind} job failed`);
+    }
+    await sleep(450);
+  }
+  throw new Error("等待异步任务超时，请稍后重试。");
+}
+
+function updateJobProgress(kind, job, attempt) {
+  const progress = job.status === "queued" ? Math.min(20 + attempt * 2, 42) : job.status === "running" ? Math.min(50 + attempt * 3, 92) : job.status === "completed" ? 100 : 0;
+  setProgress(kind, progress);
+
+  if (kind === "run") {
+    renderRunStatus(
+      job.status === "queued"
+        ? "任务已排队，正在等待执行器接管这次 cohort Markov run。"
+        : job.status === "running"
+          ? "Run 正在执行。平台正在计算 cohort trace、metrics catalog 和 review artifacts。"
+          : "Run 已完成。"
+    );
+  }
+
+  if (kind === "calibration") {
+    renderCalibrationStatus(
+      job.status === "queued"
+        ? "校准任务已排队，正在等待 observed vs predicted 拟合开始。"
+        : job.status === "running"
+          ? "Calibration 正在运行。平台正在比较 target curve 与 predicted curve。"
+          : "Calibration 已完成。"
+    );
+  }
+}
+
+function startProgress(kind) {
+  const timerKey = kind === "run" ? "runProgressTimer" : "calibrationProgressTimer";
+  stopProgress(kind, 0);
+  let progress = 8;
+  state[timerKey] = window.setInterval(() => {
+    progress = Math.min(progress + 6, 88);
+    setProgress(kind, progress);
+    if (progress >= 88) {
+      window.clearInterval(state[timerKey]);
+      state[timerKey] = null;
+    }
+  }, 180);
+}
+
+function stopProgress(kind, finalValue) {
+  const timerKey = kind === "run" ? "runProgressTimer" : "calibrationProgressTimer";
+  if (state[timerKey]) {
+    window.clearInterval(state[timerKey]);
+    state[timerKey] = null;
+  }
+  setProgress(kind, finalValue);
+}
+
+function setProgress(kind, value) {
+  const progress = document.getElementById(kind === "run" ? "run-progress" : "calibration-progress");
+  if (progress) {
+    progress.style.width = `${value}%`;
+  }
+}
+
 function debugFunctionOffline(functionId, t0, t1) {
-  const fn = state.functions.find((item) => item.id === functionId);
+  const fn = state.functions.find((item) => String(item.id) === String(functionId));
   if (!fn) {
     throw new Error("ProbabilityFunction not found.");
   }
   return evaluateFunction(fn, t0, t1);
 }
 
+function getSelectedCohortRun() {
+  return (
+    state.runs.find(
+      (item) =>
+        String(item.id) === String(state.selectedRunId) && item.analysis_type === "cohort_markov"
+    ) ||
+    state.runs.find((item) => item.analysis_type === "cohort_markov")
+  );
+}
+
+function getReviewableRuns() {
+  return state.runs.filter((run) => run.analysis_type === "cohort_markov");
+}
+
 function buildOfflineReviewBundle(runId, xMetric, yMetric, patientIndex) {
-  const run = state.runs.find((item) => item.id === runId);
+  const run = state.runs.find((item) => String(item.id) === String(runId));
   const points = (run?._scatterMap || []).map((sample) => ({
     sample_index: sample.sample_index,
     x: sample[xMetric] ?? 0,
@@ -988,6 +1523,182 @@ function buildOfflineReviewBundle(runId, xMetric, yMetric, patientIndex) {
     cohort: { run_id: runId, points: run?._cohort || [] },
     trace: { run_id: runId, events: run?._patientTraces?.[patientIndex] || [] },
   };
+}
+
+function buildOfflineCalibrationBundle(config, runPayload) {
+  const targetSeries = state.series.find((item) => String(item.id) === String(config.target_series_id));
+  const probabilityFunction = state.functions.find(
+    (item) => String(item.id) === String(runPayload.config_json.probability_function_id)
+  );
+  if (!targetSeries || !probabilityFunction) {
+    throw new Error("Calibration requires both a target series and a probability function.");
+  }
+
+  const targetPoints = targetSeries.points
+    .filter((point) => point.estimate_value !== null && point.estimate_value !== undefined)
+    .sort((left, right) => Number(left.time_value) - Number(right.time_value))
+    .map((point) => ({ time: Number(point.time_value), estimate: Number(point.estimate_value) }));
+
+  const candidates = buildCalibrationCandidates(config.parameters || [], config.max_iterations);
+  const history = [];
+  let best = null;
+  candidates.forEach((candidate, index) => {
+    const evaluated = evaluateCalibrationCandidateOffline(probabilityFunction, targetPoints, runPayload, candidate);
+    evaluated.iteration = index + 1;
+    history.push(evaluated);
+    if (!best || evaluated.objective < best.objective) {
+      best = evaluated;
+    }
+  });
+
+  if (!best) {
+    throw new Error("Calibration did not evaluate any candidates.");
+  }
+
+  const runId = makeId("cal-run");
+  const overlayMetadata = {
+    observed_points: targetPoints,
+    predicted_points: best.predictedPoints,
+    full_predicted_curve: best.sample.survivalPoints,
+    best_params: best.parameterValues,
+    best_objective_value: best.objective,
+  };
+  const overlayArtifact = {
+    id: makeId("artifact"),
+    run_id: runId,
+    artifact_type: "calibration-overlay",
+    storage_uri: "inline://calibration-overlay",
+    checksum: "offline-calibration-overlay",
+    metadata_json: overlayMetadata,
+    created_at: new Date().toISOString(),
+  };
+  const run = {
+    id: runId,
+    project_id: state.context.project_id,
+    model_version_id: state.context.model_version_id,
+    analysis_type: "calibration",
+    template_id: null,
+    random_seed: 20260325,
+    sampling_method: null,
+    input_snapshot_json: {
+      probability_function_id: probabilityFunction.id,
+      target_series_id: targetSeries.id,
+    },
+    config_json: {
+      calibration_config_id: config.id,
+      ...runPayload.config_json,
+    },
+    summary_json: {
+      message: "Calibration completed",
+      calibration_config_id: config.id,
+      cards: [
+        { label: "Best RMSE", value: best.objective, unit: "RMSE" },
+        { label: "Iterations", value: history.length, unit: "candidates" },
+        { label: "Target Series", value: targetSeries.name, unit: "series" },
+        { label: "Best Event Scale", value: best.parameterValues.event_scale || 1.0, unit: "scale" },
+      ],
+      best_params: best.parameterValues,
+    },
+    status: "completed",
+    engine_version: "offline-demo-0.2.0",
+    error_log: null,
+    submitted_at: new Date().toISOString(),
+    started_at: new Date().toISOString(),
+    finished_at: new Date().toISOString(),
+    _artifacts: [overlayArtifact],
+  };
+  const result = {
+    run_id: run.id,
+    calibration_config_id: config.id,
+    convergence_status: "completed",
+    best_objective_value: best.objective,
+    best_params_json: best.parameterValues,
+    diagnostics_json: {
+      history: history.slice(0, 40),
+      optimizer_type: "deterministic_grid",
+    },
+    overlay_artifact_id: overlayArtifact.id,
+    created_at: new Date().toISOString(),
+  };
+  return {
+    config,
+    run,
+    result,
+    artifacts: [overlayArtifact],
+    overlayArtifact,
+  };
+}
+
+function evaluateCalibrationCandidateOffline(probabilityFunction, targetPoints, runPayload, parameterValues) {
+  const config = {
+    cycles: Number(runPayload.config_json.cycles || 15),
+    sample_size: 1,
+    initial_population: Number(runPayload.config_json.initial_population || 1000),
+    pf_state_cost: 4800,
+    pd_state_cost: 9100,
+    transition_cost: 1800,
+    pf_state_utility: 0.82,
+    pd_state_utility: 0.53,
+    pf_death_probability: Number(parameterValues.pf_death_probability ?? 0.01),
+    pd_death_probability: Number(parameterValues.pd_death_probability ?? 0.08),
+    cycle_length: 1,
+    time_unit: probabilityFunction.time_unit,
+  };
+  const sample = runOfflineSample(
+    probabilityFunction,
+    config,
+    {
+      event_scale: Number(parameterValues.event_scale ?? 1),
+      cost_multiplier: 1,
+      utility_shift: 0,
+    },
+    0
+  );
+
+  const predictedPoints = targetPoints.map((point) => ({
+    time: point.time,
+    estimate: interpolateSeries(sample.survivalPoints, point.time, "alive_probability"),
+  }));
+  const squaredErrors = predictedPoints.map((predicted, index) => {
+    const target = targetPoints[index];
+    return (Number(target.estimate) - Number(predicted.estimate)) ** 2;
+  });
+  return {
+    objective: round(Math.sqrt(sum(squaredErrors) / Math.max(squaredErrors.length, 1)), 8),
+    parameterValues,
+    predictedPoints,
+    sample,
+  };
+}
+
+function buildCalibrationCandidates(parameters, maxIterations) {
+  const supported = (parameters || []).filter((parameter) =>
+    ["event_scale", "pf_death_probability", "pd_death_probability"].includes(parameter.parameter_code)
+  );
+  if (!supported.length) {
+    return [{ event_scale: 1 }];
+  }
+  const candidates = [];
+  for (let iteration = 0; iteration < maxIterations; iteration += 1) {
+    const candidate = {};
+    supported.forEach((parameter, index) => {
+      const lower = Number(parameter.lower_bound);
+      const upper = Number(parameter.upper_bound);
+      if (parameter.is_fixed) {
+        candidate[parameter.parameter_code] = Number(parameter.initial_value ?? lower);
+        return;
+      }
+      if (iteration === 0 && parameter.initial_value !== null && parameter.initial_value !== undefined) {
+        candidate[parameter.parameter_code] = Number(parameter.initial_value);
+        return;
+      }
+      const fraction = ((((iteration * (index + 2)) + (index * 3)) % maxIterations) + 0.5) / maxIterations;
+      const value = lower + (upper - lower) * fraction;
+      candidate[parameter.parameter_code] = round(clamp(value, lower, upper), 6);
+    });
+    candidates.push(candidate);
+  }
+  return candidates;
 }
 
 function simulateOfflineRun(probabilityFunction, payload) {
@@ -1052,7 +1763,7 @@ function simulateOfflineRun(probabilityFunction, payload) {
       config: payload.config_json,
     },
     status: "completed",
-    engine_version: "offline-demo-0.1.0",
+    engine_version: "offline-demo-0.2.0",
     error_log: null,
     submitted_at: new Date().toISOString(),
     started_at: new Date().toISOString(),
@@ -1101,6 +1812,7 @@ function runOfflineSample(probabilityFunction, config, sample, sampleIndex) {
   let totalLifeYears = 0;
   const cohort = [];
   const intervalProbabilities = [];
+  const survivalPoints = [{ time: 0, alive_probability: 1 }];
 
   addCohortPoint(cohort, 0, "progression_free", progressionFree, 0, 0);
   addCohortPoint(cohort, 0, "progressed_disease", progressedDisease, 0, 0);
@@ -1132,6 +1844,10 @@ function runOfflineSample(probabilityFunction, config, sample, sampleIndex) {
     progressionFree = Math.max(progressionFree - pfToPd - pfToDead, 0);
     progressedDisease = Math.max(progressedDisease + pfToPd - pdToDead, 0);
     dead += pfToDead + pdToDead;
+    survivalPoints.push({
+      time: t1,
+      alive_probability: round((progressionFree + progressedDisease) / config.initial_population, 6),
+    });
 
     addCohortPoint(cohort, t1, "progression_free", progressionFree, 0, pfToPd + pfToDead);
     addCohortPoint(cohort, t1, "progressed_disease", progressedDisease, pfToPd, pdToDead);
@@ -1152,6 +1868,7 @@ function runOfflineSample(probabilityFunction, config, sample, sampleIndex) {
     },
     intervalProbabilities,
     cohort,
+    survivalPoints,
   };
 }
 
@@ -1391,6 +2108,13 @@ function setText(id, value) {
   }
 }
 
+function setInputValue(id, value) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.value = String(value);
+  }
+}
+
 function extractMessage(error) {
   return error instanceof Error ? error.message : String(error);
 }
@@ -1441,6 +2165,32 @@ function interpolate(points, timeValue) {
   return points.at(-1).value;
 }
 
+function interpolateSeries(points, timeValue, key) {
+  if (!points.length) {
+    return 0;
+  }
+  if (timeValue <= Number(points[0].time)) {
+    return Number(points[0][key] ?? 0);
+  }
+  if (timeValue >= Number(points.at(-1).time)) {
+    return Number(points.at(-1)[key] ?? 0);
+  }
+  for (let index = 0; index < points.length - 1; index += 1) {
+    const left = points[index];
+    const right = points[index + 1];
+    if (Number(left.time) <= timeValue && timeValue <= Number(right.time)) {
+      const leftValue = Number(left[key] ?? 0);
+      const rightValue = Number(right[key] ?? 0);
+      if (Number(right.time) === Number(left.time)) {
+        return rightValue;
+      }
+      const ratio = (timeValue - Number(left.time)) / (Number(right.time) - Number(left.time));
+      return leftValue + (rightValue - leftValue) * ratio;
+    }
+  }
+  return Number(points.at(-1)[key] ?? 0);
+}
+
 function round(value, digits) {
   const factor = 10 ** digits;
   return Math.round(value * factor) / factor;
@@ -1454,6 +2204,10 @@ function sum(values) {
   return values.reduce((total, value) => total + value, 0);
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
 function formatMetricValue(value, unit) {
   if (typeof value !== "number") {
     return String(value);
@@ -1465,6 +2219,13 @@ function formatMetricValue(value, unit) {
     return `${(value * 100).toFixed(2)}%`;
   }
   return Number(value).toLocaleString(undefined, { maximumFractionDigits: 4 });
+}
+
+function formatShortNumber(value) {
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+  return Number(value).toFixed(4).replace(/\.?0+$/, "");
 }
 
 function getUniqueBucketTimes(points) {
@@ -1490,10 +2251,8 @@ function makeProbabilityChartSvg(functionRecord, debug) {
   const padding = 44;
   const minX = 0;
   const maxX = Math.max(...points.map((point) => point.time), debug.t1 + 1);
-  const minY = 0;
-  const maxY = 1;
-  const scaleX = (value) => padding + ((value - minX) / Math.max(maxX - minX, 1)) * (width - padding * 2);
-  const scaleY = (value) => height - padding - ((value - minY) / (maxY - minY)) * (height - padding * 2);
+  const scaleX = (value) => padding + (value / Math.max(maxX, 1)) * (width - padding * 2);
+  const scaleY = (value) => height - padding - value * (height - padding * 2);
   const line = points.map((point, index) => `${index === 0 ? "M" : "L"} ${scaleX(point.time)} ${scaleY(point.value)}`).join(" ");
   return `
     <svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Probability debug chart">
@@ -1510,6 +2269,71 @@ function makeProbabilityChartSvg(functionRecord, debug) {
         .join("")}
       <text x="${padding}" y="${padding - 12}" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">Compiled source</text>
       <text x="${width - padding}" y="${padding - 12}" fill="${PALETTE.calibration}" text-anchor="end" font-family="IBM Plex Mono" font-size="12">p = ${(debug.probability * 100).toFixed(2)}%</text>
+    </svg>
+  `;
+}
+
+function makeCalibrationOverlaySvg({ observedPoints, predictedPoints, fullPredictedCurve, bestObjectiveValue }) {
+  if (!observedPoints.length || !predictedPoints.length) {
+    return makeEmptyChartSvg("No calibration overlay yet");
+  }
+
+  const width = 880;
+  const height = 340;
+  const padding = 48;
+  const allTimes = [...observedPoints.map((point) => Number(point.time)), ...fullPredictedCurve.map((point) => Number(point.time || point.time_value || 0))];
+  const maxX = Math.max(...allTimes, 1);
+  const scaleX = (value) => padding + (Number(value) / maxX) * (width - padding * 2);
+  const scaleY = (value) => height - padding - Number(value) * (height - padding * 2);
+  const predictionPath = predictedPoints
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${scaleX(point.time)} ${scaleY(point.estimate)}`)
+    .join(" ");
+  const fullPath = fullPredictedCurve.length
+    ? fullPredictedCurve
+        .map((point, index) => `${index === 0 ? "M" : "L"} ${scaleX(point.time)} ${scaleY(point.alive_probability || point.estimate || 0)}`)
+        .join(" ")
+    : predictionPath;
+  const upperBand = predictedPoints
+    .map((point) => `${scaleX(point.time)},${scaleY(clamp(Number(point.estimate) + 0.04, 0, 1))}`)
+    .join(" ");
+  const lowerBand = [...predictedPoints]
+    .reverse()
+    .map((point) => `${scaleX(point.time)},${scaleY(clamp(Number(point.estimate) - 0.04, 0, 1))}`)
+    .join(" ");
+
+  return `
+    <svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Calibration overlay">
+      <defs>
+        <linearGradient id="overlay-glow" x1="0" x2="1">
+          <stop offset="0%" stop-color="${PALETTE.calibration}" stop-opacity="0.28" />
+          <stop offset="100%" stop-color="${PALETTE.simulation}" stop-opacity="0.12" />
+        </linearGradient>
+      </defs>
+      <rect x="0" y="0" width="${width}" height="${height}" fill="transparent"></rect>
+      <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="${PALETTE.line}" />
+      <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="${PALETTE.line}" />
+      <polygon points="${upperBand} ${lowerBand}" fill="url(#overlay-glow)" />
+      <path d="${fullPath}" fill="none" stroke="rgba(124, 92, 224, 0.28)" stroke-width="2" stroke-dasharray="8 8" />
+      <path d="${predictionPath}" fill="none" stroke="${PALETTE.calibration}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+        <animate attributeName="stroke-dasharray" values="0 420;420 0" dur="1.4s" begin="0s" fill="freeze" />
+      </path>
+      ${observedPoints
+        .map(
+          (point) => `
+            <circle cx="${scaleX(point.time)}" cy="${scaleY(point.estimate)}" r="5.5" fill="${PALETTE.review}" />
+          `
+        )
+        .join("")}
+      ${predictedPoints
+        .map(
+          (point) => `
+            <circle cx="${scaleX(point.time)}" cy="${scaleY(point.estimate)}" r="4.5" fill="${PALETTE.calibration}" />
+          `
+        )
+        .join("")}
+      <text x="${padding}" y="${padding - 16}" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">Observed points</text>
+      <text x="${width - padding}" y="${padding - 16}" fill="${PALETTE.calibration}" text-anchor="end" font-family="IBM Plex Mono" font-size="12">Predicted curve · RMSE ${Number(bestObjectiveValue).toFixed(4)}</text>
+      <text x="${width - padding}" y="${height - 14}" fill="${PALETTE.muted}" text-anchor="end" font-family="IBM Plex Mono" font-size="12">Time</text>
     </svg>
   `;
 }
@@ -1536,7 +2360,9 @@ function makeScatterSvg(points, xMetric, yMetric) {
       ${points
         .map(
           (point) => `
-            <circle cx="${scaleX(point.x)}" cy="${scaleY(point.y)}" r="6" fill="${PALETTE.review}" fill-opacity="0.8" />
+            <circle cx="${scaleX(point.x)}" cy="${scaleY(point.y)}" r="6" fill="${PALETTE.review}" fill-opacity="0.82">
+              <animate attributeName="r" values="5.2;6.8;5.2" dur="2.6s" repeatCount="indefinite" />
+            </circle>
           `
         )
         .join("")}
@@ -1570,11 +2396,10 @@ function makeCohortSvg(points, focusIndex) {
       return row ? Number(row.occupancy_count) : 0;
     }),
   }));
-  const maxY = Math.max(
-    ...grouped.flatMap((entry) => entry.series),
-    1
-  );
-  const scaleX = (value) => padding + ((value - buckets[0]) / Math.max(buckets.at(-1) - buckets[0], 1)) * (width - padding * 2);
+  const maxY = Math.max(...grouped.flatMap((entry) => entry.series), 1);
+  const scaleX = (value) =>
+    padding +
+    ((value - buckets[0]) / Math.max((buckets.at(-1) || 1) - buckets[0], 1)) * (width - padding * 2);
   const scaleY = (value) => height - padding - (value / maxY) * (height - padding * 2);
   const focusBucket = buckets[focusIndex] ?? buckets[0];
   return `
@@ -1597,6 +2422,119 @@ function makeCohortSvg(points, focusIndex) {
           `
         )
         .join("")}
+    </svg>
+  `;
+}
+
+function makeMarkovMotionSvg(points, focusIndex) {
+  if (!points.length) {
+    return makeEmptyChartSvg("No Markov motion yet");
+  }
+
+  const buckets = getUniqueBucketTimes(points);
+  const focusBucket = buckets[focusIndex] ?? buckets.at(-1) ?? 0;
+  const rows = {
+    progression_free: points.find(
+      (point) => Number(point.bucket_time) === focusBucket && point.state_code === "progression_free"
+    ) || { occupancy_count: 0, inflow_count: 0, outflow_count: 0 },
+    progressed_disease: points.find(
+      (point) => Number(point.bucket_time) === focusBucket && point.state_code === "progressed_disease"
+    ) || { occupancy_count: 0, inflow_count: 0, outflow_count: 0 },
+    dead: points.find(
+      (point) => Number(point.bucket_time) === focusBucket && point.state_code === "dead"
+    ) || { occupancy_count: 0, inflow_count: 0, outflow_count: 0 },
+  };
+
+  const total =
+    Number(rows.progression_free.occupancy_count) +
+    Number(rows.progressed_disease.occupancy_count) +
+    Number(rows.dead.occupancy_count);
+  const safeTotal = Math.max(total, 1);
+  const pfToPd = Number(rows.progressed_disease.inflow_count || 0);
+  const pdToDead = Number(rows.progressed_disease.outflow_count || 0);
+  const pfToDead = Math.max(Number(rows.dead.inflow_count || 0) - pdToDead, 0);
+  const pfWidth = Math.max(140, (Number(rows.progression_free.occupancy_count) / safeTotal) * 240);
+  const pdWidth = Math.max(140, (Number(rows.progressed_disease.occupancy_count) / safeTotal) * 220);
+  const deadWidth = Math.max(140, (Number(rows.dead.occupancy_count) / safeTotal) * 220);
+  const suffix = String(focusIndex).replace(/\D/g, "");
+  const pfPdPath = `pf-pd-${suffix}`;
+  const pfDeadPath = `pf-dead-${suffix}`;
+  const pdDeadPath = `pd-dead-${suffix}`;
+
+  return `
+    <svg viewBox="0 0 920 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Dynamic Markov motion">
+      <defs>
+        <linearGradient id="flow-bg-${suffix}" x1="0" x2="1">
+          <stop offset="0%" stop-color="rgba(47, 111, 237, 0.16)" />
+          <stop offset="100%" stop-color="rgba(24, 166, 160, 0.08)" />
+        </linearGradient>
+        <filter id="glow-${suffix}" x="-30%" y="-30%" width="160%" height="160%">
+          <feGaussianBlur stdDeviation="9" result="blur" />
+          <feMerge>
+            <feMergeNode in="blur" />
+            <feMergeNode in="SourceGraphic" />
+          </feMerge>
+        </filter>
+        <path id="${pfPdPath}" d="M 268 158 C 370 118, 462 118, 558 158" />
+        <path id="${pfDeadPath}" d="M 256 186 C 392 258, 528 286, 742 258" />
+        <path id="${pdDeadPath}" d="M 612 186 C 684 202, 722 218, 770 228" />
+      </defs>
+      <rect x="0" y="0" width="920" height="360" rx="28" fill="rgba(255,255,255,0.02)" />
+      <rect x="46" y="54" width="${pfWidth}" height="122" rx="28" fill="${PALETTE.evidenceSoft}" stroke="rgba(47,111,237,0.22)" />
+      <rect x="362" y="72" width="${pdWidth}" height="110" rx="28" fill="${PALETTE.simulationSoft}" stroke="rgba(24,166,160,0.22)" />
+      <rect x="678" y="124" width="${deadWidth}" height="102" rx="28" fill="${PALETTE.reviewSoft}" stroke="rgba(217,133,44,0.24)" />
+
+      <circle cx="102" cy="114" r="12" fill="${PALETTE.evidence}" filter="url(#glow-${suffix})">
+        <animate attributeName="r" values="11;15;11" dur="2.4s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="418" cy="124" r="11" fill="${PALETTE.simulation}" filter="url(#glow-${suffix})">
+        <animate attributeName="r" values="10;13.5;10" dur="2.2s" repeatCount="indefinite" />
+      </circle>
+      <circle cx="734" cy="174" r="10" fill="${PALETTE.review}" filter="url(#glow-${suffix})">
+        <animate attributeName="r" values="9;12.5;9" dur="2.1s" repeatCount="indefinite" />
+      </circle>
+
+      <path d="M 268 158 C 370 118, 462 118, 558 158" fill="none" stroke="rgba(124,92,224,0.18)" stroke-width="${Math.max(10, pfToPd / 20)}" stroke-linecap="round" />
+      <path d="M 256 186 C 392 258, 528 286, 742 258" fill="none" stroke="rgba(217,133,44,0.16)" stroke-width="${Math.max(8, pfToDead / 20)}" stroke-linecap="round" />
+      <path d="M 612 186 C 684 202, 722 218, 770 228" fill="none" stroke="rgba(217,133,44,0.22)" stroke-width="${Math.max(9, pdToDead / 18)}" stroke-linecap="round" />
+
+      <circle r="6.8" fill="${PALETTE.calibration}">
+        <animateMotion dur="1.6s" repeatCount="indefinite">
+          <mpath href="#${pfPdPath}" />
+        </animateMotion>
+        <animate attributeName="opacity" values="0;1;1;0" dur="1.6s" repeatCount="indefinite" />
+      </circle>
+      <circle r="5.8" fill="${PALETTE.review}">
+        <animateMotion dur="2.4s" repeatCount="indefinite">
+          <mpath href="#${pfDeadPath}" />
+        </animateMotion>
+        <animate attributeName="opacity" values="0;1;1;0" dur="2.4s" repeatCount="indefinite" />
+      </circle>
+      <circle r="5.2" fill="${PALETTE.review}">
+        <animateMotion dur="1.8s" repeatCount="indefinite">
+          <mpath href="#${pdDeadPath}" />
+        </animateMotion>
+        <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" repeatCount="indefinite" />
+      </circle>
+
+      <text x="78" y="102" fill="${PALETTE.evidence}" font-family="IBM Plex Mono" font-size="12">Progression-Free</text>
+      <text x="78" y="142" fill="${PALETTE.ink}" font-family="Newsreader" font-size="34" font-weight="700">${Math.round(Number(rows.progression_free.occupancy_count || 0))}</text>
+      <text x="78" y="166" fill="${PALETTE.muted}" font-family="IBM Plex Sans" font-size="14">patients currently stable</text>
+
+      <text x="394" y="120" fill="${PALETTE.simulation}" font-family="IBM Plex Mono" font-size="12">Progressed Disease</text>
+      <text x="394" y="154" fill="${PALETTE.ink}" font-family="Newsreader" font-size="30" font-weight="700">${Math.round(Number(rows.progressed_disease.occupancy_count || 0))}</text>
+      <text x="394" y="176" fill="${PALETTE.muted}" font-family="IBM Plex Sans" font-size="14">active but progressed</text>
+
+      <text x="710" y="172" fill="${PALETTE.review}" font-family="IBM Plex Mono" font-size="12">Death</text>
+      <text x="710" y="204" fill="${PALETTE.ink}" font-family="Newsreader" font-size="28" font-weight="700">${Math.round(Number(rows.dead.occupancy_count || 0))}</text>
+      <text x="710" y="224" fill="${PALETTE.muted}" font-family="IBM Plex Sans" font-size="14">absorbing state</text>
+
+      <text x="300" y="116" fill="${PALETTE.calibration}" font-family="IBM Plex Mono" font-size="12">${Math.round(pfToPd)} move to PD</text>
+      <text x="502" y="286" fill="${PALETTE.review}" font-family="IBM Plex Mono" font-size="12">${Math.round(pfToDead)} direct deaths</text>
+      <text x="656" y="206" fill="${PALETTE.review}" font-family="IBM Plex Mono" font-size="12">${Math.round(pdToDead)} PD deaths</text>
+
+      <text x="46" y="32" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">Cycle ${focusBucket} · dynamic Markov playback</text>
+      <text x="874" y="32" text-anchor="end" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">Total population ${Math.round(safeTotal)}</text>
     </svg>
   `;
 }

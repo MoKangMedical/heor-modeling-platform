@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Evidence Workbench Demo</title>
+    <title>上传证据 | Evidence Workbench</title>
     <meta
       name="description"
-      content="HEOR Modeling Platform 多页面产品 demo：Evidence Workbench。"
+      content="HEOR Modeling Platform 多页面产品 demo：先把 KM / survival / hazard 证据整理成可追溯对象。"
     />
     <link
       rel="icon"
@@ -28,12 +28,13 @@
         <span class="brand-mark">HM</span>
         <span class="brand-copy">
           <strong>HEOR Modeling Platform</strong>
-          <small>Evidence Workbench Demo</small>
+          <small>Step 01 · 先把证据整理好</small>
         </span>
       </div>
       <nav class="top-links">
         <a href="./index.html">Overview</a>
         <a href="./runtime.html">Probability Runtime</a>
+        <a href="./calibration.html">Calibration Studio</a>
         <a href="./simulation.html">Simulation Lab</a>
         <a href="./review.html">Review Surface</a>
       </nav>
@@ -46,51 +47,57 @@
             <a class="workspace-link is-active" href="./evidence.html">
               <div>
                 <span>Step 01</span>
-                <strong>Evidence</strong>
+                <strong>上传证据</strong>
               </div>
-              <span class="tone-pill evidence">Live</span>
+              <span class="tone-pill evidence">Start here</span>
             </a>
             <a class="workspace-link" href="./runtime.html">
               <div>
                 <span>Step 02</span>
-                <strong>Runtime</strong>
+                <strong>构建概率函数</strong>
+              </div>
+            </a>
+            <a class="workspace-link" href="./calibration.html">
+              <div>
+                <span>Step 03</span>
+                <strong>临床校准</strong>
               </div>
             </a>
             <a class="workspace-link" href="./simulation.html">
               <div>
-                <span>Step 03</span>
-                <strong>Simulation</strong>
+                <span>Step 04</span>
+                <strong>运行模拟</strong>
               </div>
             </a>
             <a class="workspace-link" href="./review.html">
               <div>
-                <span>Step 04</span>
-                <strong>Review</strong>
+                <span>Step 05</span>
+                <strong>审阅结果</strong>
               </div>
             </a>
           </div>
         </section>
 
         <section class="sidebar-card">
-          <h3>Workspace Context</h3>
+          <h3>当前工作区</h3>
           <ul class="context-list">
             <li>
-              <span>Project</span>
+              <span>项目</span>
               <strong id="context-project">Connecting...</strong>
             </li>
             <li>
-              <span>Model</span>
+              <span>模型</span>
               <strong id="context-model">Waiting for demo context</strong>
             </li>
             <li>
-              <span>Mode</span>
+              <span>模式</span>
               <strong id="context-mode">Live API pending</strong>
             </li>
           </ul>
         </section>
 
         <section class="sidebar-card">
-          <h3>Object Counts</h3>
+          <h3>对象数量</h3>
           <ul class="count-list">
             <li>
               <span>ClinicalSeries</span>
@@ -112,22 +119,22 @@
         <section class="hero-panel">
           <div class="hero-copy">
             <span class="kicker">Step 01 · Upload -> Validate -> Standardize</span>
-            <h1>把 survival / hazard / KM 证据先变成可追溯对象。</h1>
+            <h1>先把你手里的 KM / survival 数据整理成平台能直接复用的证据对象。</h1>
             <p>
-              这个页面直接消费真实后端接口。能连上本地 API 时，会把文本中的 KM 点真正创建为
-              `ClinicalSeries`；连不上时，则自动回退到本地离线样本，让整条操作链依然可点击。
+              把样本表贴进来后，你会先看到字段校验、时间对齐和对象标准化结果。连上本地 API
+              时会真实写入 `ClinicalSeries`；没连上时也能继续走离线样本链路，方便你先感受完整流程。
             </p>
             <div class="hero-meta">
               <article>
-                <strong>Input</strong>
+                <strong>你提供什么</strong>
                 <span>KM / survival / hazard table</span>
               </article>
               <article>
-                <strong>System</strong>
+                <strong>平台帮你做什么</strong>
                 <span>Validation, normalization, versioning</span>
               </article>
               <article>
-                <strong>Output</strong>
+                <strong>你得到什么</strong>
                 <span>ClinicalSeries object</span>
               </article>
             </div>
@@ -137,12 +144,12 @@
             <div class="connection-top">
               <div>
                 <span class="kicker">API Bridge</span>
-                <h3 class="panel-title">Connect Demo Backend</h3>
+                <h3 class="panel-title">连接你的 demo backend</h3>
               </div>
               <span id="connection-badge" class="status-badge warning">Connecting</span>
             </div>
             <p id="connection-copy" class="status-copy">
-              默认尝试连接本地 `FastAPI`。如果不可达，会进入离线样本模式。
+              平台会先尝试连接你的本地 FastAPI；如果没有连上，会自动切换到离线样本模式。
             </p>
             <div class="connection-form">
               <label>
@@ -150,8 +157,8 @@
                 <input id="api-base" type="text" value="http://127.0.0.1:8000/api/v1" />
               </label>
               <div class="action-row">
-                <button id="connect-api" class="button-primary">Reconnect API</button>
-                <a class="button button-secondary" href="./runtime.html">Next: Runtime</a>
+                <button id="connect-api" class="button-primary">重新连接 API</button>
+                <a class="button button-secondary" href="./runtime.html">下一步：构建概率函数</a>
               </div>
             </div>
           </div>
@@ -162,23 +169,24 @@
             <div class="panel-heading">
               <div>
                 <span class="panel-kicker">Evidence Intake</span>
-                <h3>Paste or load a KM sample</h3>
+                <h3>把一组生存数据贴进来</h3>
               </div>
               <span class="panel-chip">ClinicalSeries</span>
             </div>
             <div class="dropzone">
-              <strong>示例格式</strong>
+              <strong>建议从一个小样本开始</strong>
               <p class="panel-copy">
-                第一行使用 `seq_no,time_value,estimate_value` 作为表头。点击按钮可载入示例 PFS KM。
+                第一行使用 `seq_no,time_value,estimate_value` 作为表头。你可以直接加载一个示例 PFS KM，
+                看平台怎样把它变成一个可追溯对象。
               </p>
             </div>
             <div class="form-grid two">
               <label>
-                Series Name
+                证据名称
                 <input id="series-name" type="text" value="Demo PFS KM" />
               </label>
               <label>
-                Series Kind
+                证据类型
                 <select id="series-kind">
                   <option value="km_survival">km_survival</option>
                   <option value="survival_table">survival_table</option>
@@ -191,12 +199,12 @@
               <textarea id="sample-csv"></textarea>
             </label>
             <div class="action-row">
-              <button id="load-sample-csv" class="button-secondary">Load Sample KM</button>
-              <button id="create-series" class="button-primary">Create ClinicalSeries</button>
+              <button id="load-sample-csv" class="button-secondary">加载示例 KM</button>
+              <button id="create-series" class="button-primary">创建证据对象</button>
             </div>
             <div id="series-output" class="result-card">
-              <strong>尚未创建对象</strong>
-              <p class="helper">创建成功后，这里会显示对象 id、点数、来源和下一步建议。</p>
+              <strong>还没有证据对象</strong>
+              <p class="helper">创建成功后，这里会告诉你对象 id、点数、来源和建议的下一步动作。</p>
             </div>
           </article>
 
@@ -204,13 +212,13 @@
             <div class="panel-heading">
               <div>
                 <span class="panel-kicker">Validation Log</span>
-                <h3>Staging status</h3>
+                <h3>你刚刚提交的数据是否可用</h3>
               </div>
               <span class="tone-pill evidence">Evidence</span>
             </div>
             <div id="series-status-strip" class="preview-card">
-              <strong>Waiting for upload</strong>
-              <p class="helper">Time alignment、字段完整性和对象标准化结果会显示在这里。</p>
+              <strong>等待上传</strong>
+              <p class="helper">时间粒度、字段完整性和标准化结果会出现在这里。</p>
             </div>
             <div class="micro-grid">
               <article class="micro-card">
@@ -232,9 +240,9 @@
             <div class="panel-heading">
               <div>
                 <span class="panel-kicker">Recent Objects</span>
-                <h3>ClinicalSeries registry</h3>
+                <h3>你已经整理好的证据对象</h3>
               </div>
-              <a class="nav-chip" href="./runtime.html">Compile into ProbabilityFunction</a>
+              <a class="nav-chip" href="./runtime.html">继续去构建 ProbabilityFunction</a>
             </div>
             <div id="series-list" class="table-scroll empty-state">
               暂无对象。先在上方创建一个 `ClinicalSeries`。
@@ -245,7 +253,7 @@
     </main>
 
     <footer class="demo-footer">
-      <p>Evidence Workbench demo · Backed by FastAPI when available, offline sample mode otherwise.</p>
+      <p>先把原始证据整理好，后面的概率函数、校准和模拟才能持续复用同一份对象。</p>
     </footer>
   </body>
 </html>

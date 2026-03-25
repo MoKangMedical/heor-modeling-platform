@@ -1,8 +1,9 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.db.session import get_db
 from app.schemas.calibration import (
     CalibrationConfigCreate,
@@ -11,10 +12,22 @@ from app.schemas.calibration import (
     RunLaunchRequest,
 )
 from app.schemas.runs import RunRead
-from app.services import calibration_service
+from app.services import calibration_service, job_service
 
 
 router = APIRouter()
+settings = get_settings()
+
+
+@router.get(
+    "/model-versions/{model_version_id}/calibration-configs",
+    response_model=list[CalibrationConfigRead],
+)
+def list_calibration_configs(
+    model_version_id: UUID,
+    db: Session = Depends(get_db),
+) -> list[CalibrationConfigRead]:
+    return calibration_service.list_calibration_configs(db, model_version_id)
 
 
 @router.post(
@@ -38,6 +51,7 @@ def create_calibration_config(
 def run_calibration(
     config_id: UUID,
     payload: RunLaunchRequest,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
 ) -> RunRead:
     run = calibration_service.queue_calibration_run(db, config_id, payload)
@@ -45,6 +59,22 @@ def run_calibration(
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Calibration config not found"
         )
+    job = job_service.create_job(
+        db,
+        job_type="calibration",
+        resource_type="run",
+        resource_id=run.id,
+        payload_json={"run_id": str(run.id)},
+    )
+    run.summary_json = {
+        **run.summary_json,
+        "message": "Calibration queued",
+        "job_id": str(job.id),
+    }
+    db.commit()
+    db.refresh(run)
+    if settings.async_jobs_auto_start:
+        background_tasks.add_task(job_service.process_job_by_id, job.id)
     return run
 
 
@@ -56,4 +86,3 @@ def get_calibration_result(run_id: UUID, db: Session = Depends(get_db)) -> Calib
             status_code=status.HTTP_404_NOT_FOUND, detail="Calibration result not found"
         )
     return result
-

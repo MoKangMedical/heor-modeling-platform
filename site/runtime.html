@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Probability Runtime Demo</title>
+    <title>构建概率函数 | Probability Runtime</title>
     <meta
       name="description"
-      content="HEOR Modeling Platform 多页面产品 demo：Probability Runtime。"
+      content="HEOR Modeling Platform 多页面产品 demo：把 ClinicalSeries 编译成可复用的 ProbabilityFunction。"
     />
     <link
       rel="icon"
@@ -28,12 +28,13 @@
         <span class="brand-mark">HM</span>
         <span class="brand-copy">
           <strong>HEOR Modeling Platform</strong>
-          <small>Probability Runtime Demo</small>
+          <small>Step 02 · 把证据编译成函数</small>
         </span>
       </div>
       <nav class="top-links">
         <a href="./index.html">Overview</a>
         <a href="./evidence.html">Evidence</a>
+        <a href="./calibration.html">Calibration Studio</a>
         <a href="./simulation.html">Simulation Lab</a>
         <a href="./review.html">Review Surface</a>
       </nav>
@@ -46,51 +47,57 @@
             <a class="workspace-link" href="./evidence.html">
               <div>
                 <span>Step 01</span>
-                <strong>Evidence</strong>
+                <strong>上传证据</strong>
               </div>
             </a>
             <a class="workspace-link is-active" href="./runtime.html">
               <div>
                 <span>Step 02</span>
-                <strong>Runtime</strong>
+                <strong>构建概率函数</strong>
               </div>
               <span class="tone-pill calibration">Compiler</span>
             </a>
-            <a class="workspace-link" href="./simulation.html">
+            <a class="workspace-link" href="./calibration.html">
               <div>
                 <span>Step 03</span>
-                <strong>Simulation</strong>
+                <strong>临床校准</strong>
+              </div>
+            </a>
+            <a class="workspace-link" href="./simulation.html">
+              <div>
+                <span>Step 04</span>
+                <strong>运行模拟</strong>
               </div>
             </a>
             <a class="workspace-link" href="./review.html">
               <div>
-                <span>Step 04</span>
-                <strong>Review</strong>
+                <span>Step 05</span>
+                <strong>审阅结果</strong>
               </div>
             </a>
           </div>
         </section>
 
         <section class="sidebar-card">
-          <h3>Workspace Context</h3>
+          <h3>当前工作区</h3>
           <ul class="context-list">
             <li>
-              <span>Project</span>
+              <span>项目</span>
               <strong id="context-project">Connecting...</strong>
             </li>
             <li>
-              <span>Model</span>
+              <span>模型</span>
               <strong id="context-model">Waiting for demo context</strong>
             </li>
             <li>
-              <span>Mode</span>
+              <span>模式</span>
               <strong id="context-mode">Live API pending</strong>
             </li>
           </ul>
         </section>
 
         <section class="sidebar-card">
-          <h3>Object Counts</h3>
+          <h3>对象数量</h3>
           <ul class="count-list">
             <li>
               <span>ClinicalSeries</span>
@@ -112,22 +119,22 @@
         <section class="hero-panel">
           <div class="hero-copy">
             <span class="kicker">Step 02 · Compile -> Debug -> Reuse</span>
-            <h1>把生存数据编译成可被 solver 重复调用的概率函数。</h1>
+            <h1>把这组证据编译成一个可被 solver、校准和图形层重复调用的概率函数。</h1>
             <p>
-              这里演示 `ClinicalSeries -> ProbabilityFunction` 的真实闭环。选中一个证据对象之后，系统会创建可调试的
-              cycle-level event probability 函数，并允许直接验证任意时间区间的概率。
+              你只需要选择一份 `ClinicalSeries`，平台就会把它编译成 cycle-level event probability
+              函数。编译完成后，你还能直接验证任意时间区间的事件概率，确认这层运行时是否符合预期。
             </p>
             <div class="hero-meta">
               <article>
-                <strong>Input</strong>
+                <strong>你提供什么</strong>
                 <span>ClinicalSeries / survival data</span>
               </article>
               <article>
-                <strong>System</strong>
+                <strong>平台帮你做什么</strong>
                 <span>Compiler, interpolation, interval evaluation</span>
               </article>
               <article>
-                <strong>Output</strong>
+                <strong>你得到什么</strong>
                 <span>ProbabilityFunction object</span>
               </article>
             </div>
@@ -137,12 +144,12 @@
             <div class="connection-top">
               <div>
                 <span class="kicker">API Bridge</span>
-                <h3 class="panel-title">Connect Demo Backend</h3>
+                <h3 class="panel-title">连接你的 demo backend</h3>
               </div>
               <span id="connection-badge" class="status-badge warning">Connecting</span>
             </div>
             <p id="connection-copy" class="status-copy">
-              默认尝试连接本地 `FastAPI`。如果不可达，会进入离线样本模式。
+              平台会先尝试连接你的本地 FastAPI；如果没有连上，会自动切换到离线样本模式。
             </p>
             <div class="connection-form">
               <label>
@@ -150,8 +157,8 @@
                 <input id="api-base" type="text" value="http://127.0.0.1:8000/api/v1" />
               </label>
               <div class="action-row">
-                <button id="connect-api" class="button-primary">Reconnect API</button>
-                <a class="button button-secondary" href="./simulation.html">Next: Simulation</a>
+                <button id="connect-api" class="button-primary">重新连接 API</button>
+                <a class="button button-secondary" href="./calibration.html">下一步：进入临床校准</a>
               </div>
             </div>
           </div>
@@ -162,17 +169,17 @@
             <div class="panel-heading">
               <div>
                 <span class="panel-kicker">Runtime Compiler</span>
-                <h3>Build a ProbabilityFunction</h3>
+                <h3>从证据对象生成 ProbabilityFunction</h3>
               </div>
               <span class="panel-chip">Compiler</span>
             </div>
             <div class="form-grid two">
               <label>
-                Source ClinicalSeries
+                选择证据对象
                 <select id="series-select"></select>
               </label>
               <label>
-                Function Kind
+                函数类型
                 <select id="function-kind">
                   <option value="survival_interval_probability">survival_interval_probability</option>
                   <option value="hazard_interval_probability">hazard_interval_probability</option>
@@ -181,7 +188,7 @@
             </div>
             <div class="form-grid two">
               <label>
-                Function Name
+                函数名称
                 <input id="function-name" type="text" value="PFS Event Probability" />
               </label>
               <label>
@@ -190,12 +197,12 @@
               </label>
             </div>
             <div class="action-row">
-              <button id="compile-function" class="button-primary">Compile ProbabilityFunction</button>
-              <a class="button button-secondary" href="./evidence.html">Back to Evidence</a>
+              <button id="compile-function" class="button-primary">生成 ProbabilityFunction</button>
+              <a class="button button-secondary" href="./evidence.html">返回证据页</a>
             </div>
             <div id="function-output" class="result-card">
-              <strong>尚未生成函数</strong>
-              <p class="helper">编译成功后，这里会显示 source ref、cycle length、compiled kind 和状态。</p>
+              <strong>还没有 ProbabilityFunction</strong>
+              <p class="helper">生成后，这里会显示 source ref、cycle length、compiled kind 和当前可用状态。</p>
             </div>
           </article>
 
@@ -203,12 +210,12 @@
             <div class="panel-heading">
               <div>
                 <span class="panel-kicker">Registry</span>
-                <h3>ProbabilityFunction list</h3>
+                <h3>你已经可复用的函数层</h3>
               </div>
               <span class="tone-pill calibration">Runtime</span>
             </div>
             <div id="function-list" class="empty-state">
-              暂无函数。先从一个 ClinicalSeries 编译生成。
+              暂无函数。先从一份 ClinicalSeries 开始编译。
             </div>
           </article>
 
@@ -216,9 +223,9 @@
             <div class="panel-heading">
               <div>
                 <span class="panel-kicker">Interval Debug</span>
-                <h3>Evaluate probability over a time window</h3>
+                <h3>先验证一个时间区间的事件概率</h3>
               </div>
-              <a class="nav-chip" href="./simulation.html">Use in Simulation Lab</a>
+              <a class="nav-chip" href="./calibration.html">拿去做 Calibration</a>
             </div>
             <div class="form-grid three">
               <label>
@@ -235,12 +242,12 @@
               </label>
             </div>
             <div class="action-row">
-              <button id="debug-function" class="button-primary">Evaluate Interval</button>
+              <button id="debug-function" class="button-primary">验证这个区间</button>
             </div>
             <div class="result-grid">
               <div id="debug-result" class="result-card">
-                <strong>等待调试</strong>
-                <p class="helper">会显示 interval probability 和 trace 元数据。</p>
+                <strong>等待验证</strong>
+                <p class="helper">这里会显示 interval probability 和本次求值的 trace 信息。</p>
               </div>
               <div id="debug-chart" class="chart-frame"></div>
             </div>
@@ -250,7 +257,7 @@
     </main>
 
     <footer class="demo-footer">
-      <p>Probability Runtime demo · Compile once, debug intervals, then hand off to the solver.</p>
+      <p>函数层一旦稳定，后面的 calibration、simulation 和 review 都会复用同一套概率定义。</p>
     </footer>
   </body>
 </html>
