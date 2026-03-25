@@ -1,0 +1,17 @@
+services:
+  db:
+    image: postgres:16
+    container_name: treeage-platform-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: treeage_platform
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+
