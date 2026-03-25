@@ -31,6 +31,59 @@ const capabilities = [
   },
 ];
 
+const lancetWatch = [
+  {
+    title: "Accelerating cervical cancer elimination in Aboriginal and Torres Strait Islander women",
+    journal: "The Lancet Public Health",
+    published: "March 2026",
+    lens: "Dynamic screening and elimination modelling",
+    summary:
+      "文章把 HPV 传播、疫苗接种、筛查和随访放进同一模拟框架，比较不同 coverage 提升路径对消除时间线的影响。它展示了 screening policy modelling 和 elimination target analysis 的典型做法。",
+    doi: "https://doi.org/10.1016/S2468-2667(26)00005-8",
+    source: "https://www.sciencedirect.com/science/article/pii/S2468266726000058",
+  },
+  {
+    title: "The effect of alcohol minimum unit pricing and cancer warning labels on cancer incidence and mortality in Canada",
+    journal: "The Lancet Public Health",
+    published: "March 2026",
+    lens: "Policy epidemiological modelling",
+    summary:
+      "论文比较最低单位定价和癌症警示标签对癌症发病与死亡的影响，并强调更严格政策对低收入群体和年轻人群的潜在收益。这类研究对应平台中的 policy lever、equity lens 和 multi-scenario comparison。",
+    doi: "https://doi.org/10.1016/S2468-2667(26)00006-X",
+    source: "https://pubmed.ncbi.nlm.nih.gov/41748236/",
+  },
+  {
+    title: "Estimating the costs of informal care for individuals with brain health disorders from 2000 to 2021",
+    journal: "The Lancet Public Health",
+    published: "March 2026",
+    lens: "Global cost modelling",
+    summary:
+      "这篇全球 modelling study 估算了 24 类 brain health disorders 的非正式照护时间和收入损失，是典型的 disease burden 与 societal cost 结合分析。需要注意，该文在 2026-02-25 发布过更正。",
+    doi: "https://doi.org/10.1016/S2468-2667(26)00010-1",
+    source: "https://www.sciencedirect.com/science/article/pii/S2468266726000101",
+  },
+  {
+    title: "Health-economic impacts of age-targeted and sex-targeted Lassa fever vaccination in endemic regions of Nigeria, Guinea, Liberia, and Sierra Leone",
+    journal: "The Lancet Global Health",
+    published: "February 2026",
+    lens: "Health-economic modelling",
+    summary:
+      "文章评估不同年龄和性别人群的 Lassa 疫苗接种策略，并比较不同价格下的 cost-effectiveness。对我们平台而言，这类研究正好对应 vaccine targeting、threshold analysis 和 population-level modelling。",
+    doi: "https://doi.org/10.1016/S2214-109X(25)00450-4",
+    source: "https://www.sciencedirect.com/science/article/pii/S2214109X25004504",
+  },
+  {
+    title: "The potential effect of a geographically focused intervention against tuberculosis in the USA",
+    journal: "The Lancet Public Health",
+    published: "February 2026",
+    lens: "Simulation + Markov economic outcomes",
+    summary:
+      "这篇论文用 simulation modelling 和 Markov cohort lifetime outcomes 评估针对高负担县的结核干预。它非常贴近我们平台未来的 policy scenario、targeted intervention 和 lifetime cost/outcome 分析能力。",
+    doi: "https://doi.org/10.1016/S2468-2667(25)00306-8",
+    source: "https://www.sciencedirect.com/science/article/pii/S2468266725003068",
+  },
+];
+
 const workspaceViews = [
   {
     key: "evidence",
@@ -95,6 +148,8 @@ const workspaceViews = [
 ];
 
 const capabilityGrid = document.getElementById("capability-grid");
+const lancetCount = document.getElementById("lancet-count");
+const lancetGrid = document.getElementById("lancet-grid");
 const workspaceNav = document.getElementById("workspace-nav");
 const workspaceTitle = document.getElementById("workspace-title");
 const workspaceStatus = document.getElementById("workspace-status");
@@ -113,6 +168,29 @@ function renderCapabilities() {
           <p>${item.body}</p>
           <div class="capability-meta">
             ${item.meta.map((meta) => `<span class="meta-chip">${meta}</span>`).join("")}
+          </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderLancetWatch() {
+  lancetCount.textContent = String(lancetWatch.length);
+  lancetGrid.innerHTML = lancetWatch
+    .map(
+      (item) => `
+        <article class="lancet-card">
+          <div class="lancet-meta">
+            <span class="lancet-chip">${item.journal}</span>
+            <span class="lancet-chip">${item.published}</span>
+            <span class="lancet-chip">${item.lens}</span>
+          </div>
+          <h3>${item.title}</h3>
+          <p>${item.summary}</p>
+          <div class="lancet-links">
+            <a class="text-link" href="${item.doi}" target="_blank" rel="noreferrer">打开 DOI</a>
+            <a class="text-link secondary" href="${item.source}" target="_blank" rel="noreferrer">查看来源页</a>
           </div>
         </article>
       `
@@ -166,6 +244,6 @@ function renderWorkspaceView(view) {
 }
 
 renderCapabilities();
+renderLancetWatch();
 renderWorkspaceTabs();
 renderWorkspaceView(workspaceViews[0]);
-
