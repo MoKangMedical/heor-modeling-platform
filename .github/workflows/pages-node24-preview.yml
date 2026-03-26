@@ -1,0 +1,48 @@
+name: Pages Node24 Preview
+
+on:
+  push:
+    branches:
+      - preview
+  workflow_dispatch:
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: "true"
+
+permissions:
+  contents: read
+  pages: write
+
+concurrency:
+  group: pages-node24-preview
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    name: Exercise Pages Actions On Node24
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Verify static payload
+        run: |
+          test -f site/index.html
+          test -f site/evidence.html
+          test -f site/calibration.html
+          test -f site/runtime.html
+          test -f site/simulation.html
+          test -f site/review.html
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: site
+
+      - name: Preview note
+        run: |
+          echo "Node24 preview completed."
+          echo "This workflow intentionally skips deploy-pages so production GitHub Pages stays on the stable main workflow."
