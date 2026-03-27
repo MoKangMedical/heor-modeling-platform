@@ -24,56 +24,38 @@ const workflowSteps = [
   {
     index: "01",
     tone: "evidence",
-    title: "先把临床证据带进来",
-    summary: "把 KM table、hazard table、survival table 和 compound curve 片段导入平台，不再散落在附件和截图里。",
-    input: "你手里的 KM / survival / hazard 数据",
-    system: "时间对齐、字段校验、来源记录、对象标准化",
-    output: "一组可追溯的证据对象",
+    status: "Start here",
+    title: "上传证据",
+    summary: "把 KM / survival / hazard 数据放进平台，先完成字段校验、时间对齐和对象标准化。",
+    action: "上传一份表格，或直接加载 demo 数据",
+    result: "Validated ClinicalSeries",
   },
   {
     index: "02",
     tone: "evidence",
-    title: "把不同来源整理成同一种语言",
-    summary: "平台把分散来源统一到同一时间粒度和引用格式，避免你每次 run 前都手工换算一次。",
-    input: "原始 timepoints、单位和 metadata",
-    system: "单位换算、windowing、transform trace",
-    output: "可版本化的证据层",
+    status: "Ready next",
+    title: "构建概率函数",
+    summary: "把整理好的 survival / hazard 证据转换成每个 cycle 可直接调用的事件概率。",
+    action: "选择一份证据对象并生成 runtime function",
+    result: "Traceable ProbabilityFunction",
   },
   {
     index: "03",
-    tone: "evidence",
-    title: "把证据编译成模型能直接调用的函数",
-    summary: "把 survival / hazard table 和复合曲线转换成 cycle-level event probabilities，后续校准、求解和画图都复用这一层。",
-    input: "已整理的 ClinicalSeries / CompoundCurve",
-    system: "ProbSurvTable、ProbHazardTable、ProbCompCurve",
-    output: "一条可复用的概率函数",
+    tone: "simulation",
+    status: "Core run",
+    title: "运行校准与模拟",
+    summary: "先让模型贴近 observed data，再执行 Markov / PSA，并把样本矩阵、seed 和 artifacts 一起保存。",
+    action: "设置参数边界、抽样方式和周期数，然后启动 run",
+    result: "Calibration fit + run metrics",
   },
   {
     index: "04",
-    tone: "simulation",
-    title: "运行 Markov / PSA",
-    summary: "启动 cohort Markov、PSA 和 sensitivity analysis，并保留样本矩阵、seed、job 状态和 artifacts。",
-    input: "概率函数、模型参数、抽样设置",
-    system: "Markov engine、LHS sampler、queued runs",
-    output: "Costs、QALYs、ICER 和 sample matrix",
-  },
-  {
-    index: "05",
-    tone: "calibration",
-    title: "让模型先贴近 observed clinical data",
-    summary: "根据临床数据拟合参数边界，记录优化轨迹、goodness-of-fit 和 overlay，减少手工试错。",
-    input: "Observed OS/PFS 与 calibration bounds",
-    system: "Optimizer、fit scoring、overlay generation",
-    output: "best-fit 参数与校准记录",
-  },
-  {
-    index: "06",
     tone: "review",
-    title: "把结果讲清楚并交给团队审阅",
-    summary: "统一查看 cohort trace、scatterplots、patient event log 和 downloadable artifacts，不再在图、表、注释之间来回跳转。",
-    input: "Run metrics、patient events 和 notes",
-    system: "Trace view、artifact versioning、review comments",
-    output: "一页可审阅、可分享的结果面",
+    status: "Review-ready",
+    title: "审阅输出结果",
+    summary: "先看 base-case 结论，再看 calibration overlay、PSA scatter、cohort trace 和可导出的 review bundle。",
+    action: "打开一条 run，切换图、看解释、导出产物",
+    result: "Share-ready result page",
   },
 ];
 
@@ -483,30 +465,30 @@ function maturityLabel(maturity) {
 }
 
 function renderWorkflow() {
+  if (!workflowRail) {
+    return;
+  }
+
   workflowRail.innerHTML = workflowSteps
     .map(
       (step) => `
         <article class="workflow-step">
           <div class="workflow-step-head">
             <span class="workflow-index">${step.index}</span>
-            <span class="mini-label ${toneClass(step.tone)}">${step.tone}</span>
+            <span class="mini-label ${toneClass(step.tone)}">${step.status}</span>
           </div>
           <div class="workflow-copy">
             <h3>${step.title}</h3>
             <p>${step.summary}</p>
           </div>
-          <div class="workflow-detail">
+          <div class="workflow-meta">
             <div class="detail-block">
-              <span>输入</span>
-              <strong>${step.input}</strong>
+              <span>你做什么</span>
+              <strong>${step.action}</strong>
             </div>
             <div class="detail-block">
-              <span>系统动作</span>
-              <strong>${step.system}</strong>
-            </div>
-            <div class="detail-block">
-              <span>输出</span>
-              <strong>${step.output}</strong>
+              <span>完成后得到</span>
+              <strong>${step.result}</strong>
             </div>
           </div>
         </article>
@@ -516,10 +498,17 @@ function renderWorkflow() {
 }
 
 function renderHeroChart() {
+  if (!heroChart) {
+    return;
+  }
   heroChart.innerHTML = makeCalibrationSvg("base", { compact: true, note: "Observed vs predicted" });
 }
 
 function renderSurfaceNav() {
+  if (!surfaceNav) {
+    return;
+  }
+
   surfaceNav.innerHTML = Object.values(surfaces)
     .map(
       (surface) => `
@@ -552,6 +541,10 @@ function currentSurfaceStatus() {
 }
 
 function renderSurfaceView() {
+  if (!surfaceKicker || !surfaceTitle || !surfaceStatus || !surfaceDescription || !surfaceInputs || !surfaceSystem || !surfaceOutputs || !surfaceExperience) {
+    return;
+  }
+
   const surface = surfaces[state.activeSurface];
   surfaceKicker.textContent = surface.kicker;
   surfaceTitle.textContent = surface.title;
@@ -728,6 +721,9 @@ function surfaceTemplate(key) {
 function attachSurfaceInteractions(key) {
   if (key === "evidence") {
     const button = document.getElementById("load-demo-evidence");
+    if (!button) {
+      return;
+    }
     button.addEventListener("click", () => {
       state.evidenceLoaded = !state.evidenceLoaded;
       renderSurfaceView();
@@ -736,40 +732,61 @@ function attachSurfaceInteractions(key) {
   }
 
   if (key === "calibration") {
-    mountScenarioToggle(document.getElementById("surface-scenario-toggle"), state.surfaceScenario, (value) => {
+    const scenarioToggle = document.getElementById("surface-scenario-toggle");
+    const chartTarget = document.getElementById("surface-calibration-chart");
+    if (!scenarioToggle || !chartTarget) {
+      return;
+    }
+    mountScenarioToggle(scenarioToggle, state.surfaceScenario, (value) => {
       state.surfaceScenario = value;
       attachSurfaceInteractions("calibration");
     });
-    renderCalibrationInto(document.getElementById("surface-calibration-chart"), state.surfaceScenario, false);
+    renderCalibrationInto(chartTarget, state.surfaceScenario, false);
     return;
   }
 
   if (key === "simulation") {
     const button = document.getElementById("run-psa-button");
+    if (!button) {
+      return;
+    }
     button.addEventListener("click", startRunAnimation);
     return;
   }
 
-  populateScatterSelect(document.getElementById("surface-review-x"), state.reviewX);
-  populateScatterSelect(document.getElementById("surface-review-y"), state.reviewY);
-  document.getElementById("surface-review-x").addEventListener("change", (event) => {
+  const reviewXSelect = document.getElementById("surface-review-x");
+  const reviewYSelect = document.getElementById("surface-review-y");
+  const reviewScatter = document.getElementById("surface-review-scatter");
+  const reviewSlider = document.getElementById("surface-cohort-slider");
+  const reviewBoard = document.getElementById("surface-cohort-board");
+  const reviewTime = document.getElementById("surface-cohort-time");
+  if (!reviewXSelect || !reviewYSelect || !reviewScatter || !reviewSlider || !reviewBoard || !reviewTime) {
+    return;
+  }
+
+  populateScatterSelect(reviewXSelect, state.reviewX);
+  populateScatterSelect(reviewYSelect, state.reviewY);
+  reviewXSelect.addEventListener("change", (event) => {
     state.reviewX = event.target.value;
-    renderScatterInto(document.getElementById("surface-review-scatter"), state.reviewX, state.reviewY);
+    renderScatterInto(reviewScatter, state.reviewX, state.reviewY);
   });
-  document.getElementById("surface-review-y").addEventListener("change", (event) => {
+  reviewYSelect.addEventListener("change", (event) => {
     state.reviewY = event.target.value;
-    renderScatterInto(document.getElementById("surface-review-scatter"), state.reviewX, state.reviewY);
+    renderScatterInto(reviewScatter, state.reviewX, state.reviewY);
   });
-  const slider = document.getElementById("surface-cohort-slider");
-  slider.addEventListener("input", (event) => {
+  reviewSlider.addEventListener("input", (event) => {
     state.reviewCohortIndex = Number(event.target.value);
-    renderCohortInto(document.getElementById("surface-cohort-board"), document.getElementById("surface-cohort-time"), state.reviewCohortIndex);
+    renderCohortInto(reviewBoard, reviewTime, state.reviewCohortIndex);
   });
-  renderScatterInto(document.getElementById("surface-review-scatter"), state.reviewX, state.reviewY);
-  renderCohortInto(document.getElementById("surface-cohort-board"), document.getElementById("surface-cohort-time"), state.reviewCohortIndex);
+  renderScatterInto(reviewScatter, state.reviewX, state.reviewY);
+  renderCohortInto(reviewBoard, reviewTime, state.reviewCohortIndex);
 }
 
 function mountScenarioToggle(container, active, onSelect) {
+  if (!container) {
+    return;
+  }
+
   const scenarios = [
     { key: "low", label: "low" },
     { key: "base", label: "base" },
@@ -791,6 +808,10 @@ function mountScenarioToggle(container, active, onSelect) {
 }
 
 function renderMetrics() {
+  if (!metricCards) {
+    return;
+  }
+
   metricCards.innerHTML = outputMetrics
     .map(
       (metric, index) => `
@@ -805,6 +826,10 @@ function renderMetrics() {
 }
 
 function renderExampleControls() {
+  if (!exampleScenarioToggle || !exampleScatterX || !exampleScatterY) {
+    return;
+  }
+
   mountScenarioToggle(exampleScenarioToggle, state.exampleScenario, (value) => {
     state.exampleScenario = value;
     renderExampleControls();
@@ -821,19 +846,29 @@ function renderExampleControls() {
     state.exampleY = event.target.value;
     renderScatterInto(exampleScatter, state.exampleX, state.exampleY);
   };
-  cohortSlider.oninput = (event) => {
-    state.exampleCohortIndex = Number(event.target.value);
-    renderCohortInto(exampleCohort, cohortTime, state.exampleCohortIndex);
-  };
+  if (cohortSlider) {
+    cohortSlider.oninput = (event) => {
+      state.exampleCohortIndex = Number(event.target.value);
+      renderCohortInto(exampleCohort, cohortTime, state.exampleCohortIndex);
+    };
+  }
 }
 
 function renderArtifactList() {
+  if (!artifactList) {
+    return;
+  }
+
   artifactList.innerHTML = artifactItems
     .map((item) => `<li><span>${item.name}</span><small>${item.meta}</small></li>`)
     .join("");
 }
 
 function renderObjectCards() {
+  if (!objectGrid) {
+    return;
+  }
+
   objectGrid.innerHTML = objectCards
     .map(
       (item) => `
@@ -873,6 +908,10 @@ function renderObjectCards() {
 }
 
 function renderFilterBar() {
+  if (!filterBar) {
+    return;
+  }
+
   filterBar.innerHTML = capabilityFilters
     .map(
       (filter) => `
@@ -893,6 +932,10 @@ function renderFilterBar() {
 }
 
 function renderCapabilities() {
+  if (!capabilityGrid) {
+    return;
+  }
+
   const filtered = state.capabilityFilter === "all"
     ? capabilities
     : capabilities.filter((item) => item.workflow === state.capabilityFilter);
@@ -935,6 +978,10 @@ function renderCapabilities() {
 }
 
 function renderLancetWatch() {
+  if (!lancetCount || !lancetGrid) {
+    return;
+  }
+
   lancetCount.textContent = String(lancetWatch.length);
   lancetGrid.innerHTML = lancetWatch
     .map(
@@ -960,6 +1007,10 @@ function renderLancetWatch() {
 }
 
 function renderArchitecture() {
+  if (!architectureStack) {
+    return;
+  }
+
   architectureStack.innerHTML = architectureLayers
     .map(
       (layer) => `
@@ -979,6 +1030,10 @@ function renderArchitecture() {
 }
 
 function renderRoadmap() {
+  if (!roadmapGrid) {
+    return;
+  }
+
   roadmapGrid.innerHTML = roadmapColumns
     .map(
       (column) => `
@@ -996,12 +1051,20 @@ function renderRoadmap() {
 }
 
 function populateScatterSelect(select, value) {
+  if (!select) {
+    return;
+  }
+
   select.innerHTML = Object.entries(scatterOptions)
     .map(([key, label]) => `<option value="${key}" ${key === value ? "selected" : ""}>${label}</option>`)
     .join("");
 }
 
 function renderCalibrationInto(target, mode, compact) {
+  if (!target) {
+    return;
+  }
+
   target.innerHTML = makeCalibrationSvg(mode, { compact, note: compact ? "Preview run" : `Scenario: ${mode}` });
 }
 
@@ -1080,6 +1143,10 @@ function makeCalibrationSvg(mode, { compact = false, note = "" } = {}) {
 }
 
 function renderScatterInto(target, xKey, yKey) {
+  if (!target) {
+    return;
+  }
+
   target.innerHTML = makeScatterSvg(xKey, yKey);
 }
 
@@ -1122,6 +1189,10 @@ function makeScatterSvg(xKey, yKey) {
 }
 
 function renderCeacInto(target) {
+  if (!target) {
+    return;
+  }
+
   const width = 420;
   const height = 280;
   const padding = 38;
@@ -1154,7 +1225,14 @@ function renderCeacInto(target) {
 }
 
 function renderCohortInto(target, labelNode, index) {
+  if (!target || !labelNode) {
+    return;
+  }
+
   const point = cohortTimeline[index];
+  if (!point) {
+    return;
+  }
   labelNode.textContent = point.label;
   target.innerHTML = [
     { name: "Progression-free", value: point.pfs, color: palette.evidence },

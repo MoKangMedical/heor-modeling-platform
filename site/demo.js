@@ -267,6 +267,10 @@ function initEvidencePage() {
   });
 
   renderEvidenceRegistry();
+
+  if (new URLSearchParams(window.location.search).get("demo") === "1") {
+    ensureDemoSeries();
+  }
 }
 
 function renderEvidenceRegistry() {
@@ -295,6 +299,40 @@ function buildSeriesPayload() {
     },
     points,
   };
+}
+
+async function ensureDemoSeries() {
+  const csv = document.getElementById("sample-csv");
+  if (csv) {
+    csv.value = SAMPLE_CSV;
+  }
+
+  const existing = state.series.find(
+    (item) => item.name === "Demo PFS KM" && item.series_kind === "km_survival"
+  );
+  if (existing) {
+    state.selectedSeriesId = existing.id;
+    renderSharedChrome();
+    renderEvidenceRegistry();
+    renderSeriesOutput(existing, "已为你加载 demo 证据。现在可以继续去生成可运行函数。");
+    return;
+  }
+
+  const payload = buildSeriesPayload();
+  if (!payload) {
+    return;
+  }
+
+  try {
+    const series = state.live ? await createSeriesLive(payload) : createSeriesOffline(payload);
+    state.selectedSeriesId = series.id;
+    await refreshCollections();
+    renderSharedChrome();
+    renderEvidenceRegistry();
+    renderSeriesOutput(series, "demo 证据已经直接准备好。你现在可以继续去生成函数，或停在这里先检查字段。");
+  } catch (error) {
+    renderSeriesOutput(null, extractMessage(error));
+  }
 }
 
 function renderSeriesOutput(series, message) {

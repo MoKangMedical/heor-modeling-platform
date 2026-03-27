@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Platform Details | HEOR Modeling Platform</title>
+    <meta
+      name="description"
+      content="HEOR Modeling Platform 二级页面：工作台、对象模型、能力视图、平台分层和交付路线。"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="backdrop"></div>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">HM</span>
+        <span class="brand-copy">
+          <strong>HEOR Modeling Platform</strong>
+          <small>Platform details and system layers</small>
+        </span>
+      </div>
+      <nav class="nav">
+        <a href="./index.html">Home</a>
+        <a href="./evidence.html">Evidence</a>
+        <a href="./calibration.html">Calibration</a>
+        <a href="./simulation.html">Run</a>
+        <a href="./review.html">Results</a>
+        <a href="./example-run.html">Example Run</a>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-hero card">
+        <div class="page-hero-copy">
+          <p class="eyebrow">Platform Details</p>
+          <h1>把首页移走的专业内容，放回真正适合它的位置。</h1>
+          <p class="hero-text">
+            这一页保留对象模型、能力视图、平台分层和路线图，适合深入理解系统是怎么组织 evidence、probability
+            runtime、Markov / PSA 和 review workflow 的。
+          </p>
+        </div>
+        <div class="page-hero-actions">
+          <a class="button primary" href="./evidence.html">开始一条真实工作流</a>
+          <a class="button secondary" href="./research.html">查看 Research Watch</a>
+        </div>
+      </section>
+
+      <section id="workspace" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">工作台 Product Surfaces</p>
+            <h2>四个工作台仍然保留，但它们已经从首页入口移到产品细节页。</h2>
+          </div>
+          <p class="section-note">
+            这里更适合展示工作台之间的输入、系统动作和输出关系，而不是要求每个第一次访问的用户都先读完它。
+          </p>
+        </div>
+
+        <div class="surface-shell card">
+          <aside id="surface-nav" class="surface-nav"></aside>
+          <div class="surface-stage">
+            <div class="surface-stage-top">
+              <div>
+                <p id="surface-kicker" class="surface-kicker"></p>
+                <h3 id="surface-title"></h3>
+              </div>
+              <div id="surface-status" class="surface-status"></div>
+            </div>
+            <p id="surface-description" class="surface-description"></p>
+            <div class="surface-summary">
+              <article>
+                <span class="summary-label">输入</span>
+                <ul id="surface-inputs" class="summary-list"></ul>
+              </article>
+              <article>
+                <span class="summary-label">系统动作</span>
+                <ul id="surface-system" class="summary-list"></ul>
+              </article>
+              <article>
+                <span class="summary-label">输出</span>
+                <ul id="surface-outputs" class="summary-list"></ul>
+              </article>
+            </div>
+            <div id="surface-experience" class="surface-experience"></div>
+          </div>
+        </div>
+      </section>
+
+      <section id="objects" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">对象模型 Data Objects</p>
+            <h2>平台内部真正处理的对象在这里展开，而不是先压给首页用户。</h2>
+          </div>
+          <p class="section-note">
+            对象模型决定了版本化、可追溯和 review-ready artifacts 是如何落地的。
+          </p>
+        </div>
+        <div id="object-grid" class="object-grid"></div>
+      </section>
+
+      <section id="capabilities" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">能力视图 Capability Explorer</p>
+            <h2>把技术能力放回可筛选、可比较的二级页面，而不是首页平铺。</h2>
+          </div>
+          <p class="section-note">
+            可以按 workflow 查看 P0 / P1 / P2 能力，理解哪些属于底座，哪些属于差异化增强。
+          </p>
+        </div>
+        <div id="filter-bar" class="filter-bar"></div>
+        <div id="capability-grid" class="capability-grid"></div>
+      </section>
+
+      <section id="architecture" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">平台分层 Architecture</p>
+            <h2>系统不是一堆页面，而是从体验层到建模引擎再到治理层的连续分层。</h2>
+          </div>
+          <p class="section-note">
+            这部分更适合合作方、技术团队和深度使用者，而不是第一次来平台的人。
+          </p>
+        </div>
+        <div id="architecture-stack" class="architecture-stack"></div>
+      </section>
+
+      <section id="roadmap" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">交付路线 Roadmap</p>
+            <h2>产品路线图也留在二级页，避免打断“先开始操作”的主路径。</h2>
+          </div>
+          <p class="section-note">
+            P0 先闭环底座，P1 放大差异化，P2 再补 patient-level 与协作能力。
+          </p>
+        </div>
+        <div id="roadmap-grid" class="roadmap-grid"></div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-links">
+        <a class="text-link" href="./index.html">Back to Home</a>
+        <a class="text-link" href="./example-run.html">Example Run</a>
+        <a class="text-link" href="./research.html">Research Watch</a>
+      </div>
+      <p>Platform details page for deeper product and system context.</p>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
