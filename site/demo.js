@@ -145,18 +145,18 @@ function bindApiControls() {
 }
 
 async function connectAndLoad() {
-  setConnectionStatus("warning", "平台正在尝试连接你的本地 FastAPI；如果不可达，会自动回退到离线样本模式。");
+  setConnectionStatus("warning", "平台正在尝试连接你的本地 FastAPI；如果今天只是演示，也会自动回退到离线样本模式。");
 
   try {
     const context = await request("/demo/context");
     state.live = true;
     state.context = context;
-    setConnectionStatus("live", "已连接到真实 API。你现在的上传、编译、校准和运行都会直接写入后端。");
+    setConnectionStatus("live", "已连接到真实 API。你刚才的上传、编译、校准和运行都会真实写入后端。");
   } catch (error) {
     console.warn("Falling back to offline mode", error);
     state.live = false;
     state.context = { ...OFFLINE_CONTEXT };
-    setConnectionStatus("offline", "当前未连接到后端，平台已切换到离线样本模式。你仍然可以完整体验整条任务流。");
+    setConnectionStatus("offline", "当前未连接到后端，平台已切换到离线样本模式。你仍然可以把整条任务流先走通。");
   }
 
   await refreshCollections();
@@ -260,7 +260,7 @@ function initEvidencePage() {
       await refreshCollections();
       renderSharedChrome();
       renderEvidenceRegistry();
-      renderSeriesOutput(series, "这份证据已经标准化完成。下一步可以把它编译成 ProbabilityFunction。");
+      renderSeriesOutput(series, "这份证据已经整理完成。下一步最自然的动作，是把它编译成可运行函数。");
     } catch (error) {
       renderSeriesOutput(null, extractMessage(error));
     }
@@ -306,16 +306,16 @@ function renderSeriesOutput(series, message) {
   const selected = series || state.series.find((item) => String(item.id) === String(state.selectedSeriesId));
   if (!selected) {
     container.innerHTML = `
-      <strong>还没有证据对象</strong>
-      <p class="helper">${message || "创建成功后，这里会显示对象 id、点数、来源和建议的下一步动作。"}</p>
+      <strong>还没有整理好的证据</strong>
+      <p class="helper">${message || "整理成功后，这里会显示来源、点数和你最合理的下一步。 "}</p>
     `;
     return;
   }
 
   container.innerHTML = `
-    <span class="panel-kicker">Latest ClinicalSeries</span>
+    <span class="panel-kicker">Latest Evidence Object</span>
     <strong>${selected.name}</strong>
-    <p class="helper">${message || "这份对象已经可以直接拿去构建 ProbabilityFunction。"} </p>
+    <p class="helper">${message || "这份证据已经可以直接拿去生成可运行函数。"} </p>
     <div class="pill-row">
       <span class="tone-pill evidence">${selected.series_kind}</span>
       <span class="hero-chip">${selected.points.length} points</span>
@@ -326,7 +326,7 @@ function renderSeriesOutput(series, message) {
         <strong>${selected.id}</strong>
       </li>
       <li>
-        <span>Value Unit</span>
+        <span>数据单位</span>
         <strong>${selected.value_unit}</strong>
       </li>
     </ul>
@@ -341,17 +341,17 @@ function renderSeriesStatus() {
   const selected = state.series.find((item) => String(item.id) === String(state.selectedSeriesId));
   if (!selected) {
     container.innerHTML = `
-      <strong>等待上传</strong>
-      <p class="helper">这里会先告诉你字段是否完整、时间是否对齐、对象是否可版本化。</p>
+      <strong>等待你导入一份证据</strong>
+      <p class="helper">这里会先告诉你字段是否完整、时间是否对齐，以及这份输入能不能进入下一步。</p>
     `;
     return;
   }
 
   container.innerHTML = `
     <strong>${selected.name}</strong>
-    <p class="helper">校验已通过。${selected.points.length} 个点已按 ${selected.time_unit} 粒度对齐，并准备进入下一步。</p>
+    <p class="helper">校验已通过。${selected.points.length} 个点已按 ${selected.time_unit} 粒度对齐，这份证据现在可以继续用于生成函数。</p>
     <div class="pill-row">
-      <span class="tone-pill evidence">Validated</span>
+      <span class="tone-pill evidence">Ready</span>
       <span class="hero-chip">${state.live ? "已写入 API" : "已保存到本地样本"}</span>
     </div>
   `;
@@ -364,7 +364,7 @@ function renderSeriesTable() {
   }
   if (!state.series.length) {
     container.className = "table-scroll empty-state";
-    container.textContent = "还没有对象。先在上方创建一份 ClinicalSeries。";
+    container.textContent = "还没有整理好的证据。先在上方导入一份表格。";
     return;
   }
 
@@ -403,7 +403,7 @@ function initRuntimePage() {
   document.getElementById("compile-function")?.addEventListener("click", async () => {
     const seriesId = document.getElementById("series-select")?.value;
     if (!seriesId) {
-      renderFunctionOutput(null, "先在 Evidence 页面创建一份 ClinicalSeries，再来编译函数。");
+      renderFunctionOutput(null, "先在证据页面整理出一份可用证据，再回来生成函数。");
       return;
     }
 
@@ -427,7 +427,7 @@ function initRuntimePage() {
       await refreshCollections();
       renderSharedChrome();
       renderRuntimePage();
-      renderFunctionOutput(probabilityFunction, "这层概率函数已经生成完成。你可以先验证一个区间，再进入 Calibration。");
+      renderFunctionOutput(probabilityFunction, "这条函数已经生成完成。建议先验证一个区间，再进入临床校准。");
     } catch (error) {
       renderFunctionOutput(null, extractMessage(error));
     }
@@ -438,7 +438,7 @@ function initRuntimePage() {
     const t0 = Number(document.getElementById("debug-t0")?.value || 0);
     const t1 = Number(document.getElementById("debug-t1")?.value || 1);
     if (!functionId) {
-      renderDebugResult(null, "先生成一个 ProbabilityFunction。");
+      renderDebugResult(null, "先生成一条可运行函数。");
       return;
     }
     try {
@@ -489,28 +489,28 @@ function renderFunctionOutput(functionRecord, message) {
   const selected = functionRecord || state.functions.find((item) => String(item.id) === String(state.selectedFunctionId));
   if (!selected) {
     container.innerHTML = `
-      <strong>还没有 ProbabilityFunction</strong>
-      <p class="helper">${message || "生成后，这里会显示 source ref、cycle length、compiled kind 和当前可用状态。"}</p>
+      <strong>还没有可运行函数</strong>
+      <p class="helper">${message || "生成后，这里会告诉你它来自哪份证据、现在是否可复用，以及接下来做什么最合适。 "}</p>
     `;
     return;
   }
 
   const compiled = selected.options_json?.compiled_source;
   container.innerHTML = `
-    <span class="panel-kicker">Latest ProbabilityFunction</span>
+    <span class="panel-kicker">Latest Runtime Function</span>
     <strong>${selected.name}</strong>
-    <p class="helper">${message || "你现在可以直接验证任意区间，或把它送去做 Calibration 和 Simulation。"} </p>
+    <p class="helper">${message || "你现在可以直接验证任意区间，或者把它送去做校准和模拟。"} </p>
     <div class="pill-row">
       <span class="tone-pill calibration">${compiled?.compiled_kind || "compiled"}</span>
       <span class="hero-chip">${selected.cycle_length} ${selected.time_unit}</span>
     </div>
     <ul class="context-list">
       <li>
-        <span>Source Ref</span>
+        <span>来自证据</span>
         <strong>${selected.source_ref_id}</strong>
       </li>
       <li>
-        <span>Function Kind</span>
+        <span>函数类型</span>
         <strong>${selected.function_kind}</strong>
       </li>
     </ul>
@@ -524,7 +524,7 @@ function renderFunctionRegistry() {
   }
   if (!state.functions.length) {
     container.className = "empty-state";
-    container.textContent = "还没有函数。先从一份 ClinicalSeries 开始编译。";
+    container.textContent = "还没有函数。先把一份证据编译成可运行函数。";
     return;
   }
 
@@ -551,24 +551,24 @@ function renderDebugResult(debug, message) {
 
   if (!debug) {
     result.innerHTML = `
-      <strong>等待验证</strong>
-      <p class="helper">${message || "这里会显示 interval probability 和本次求值的 trace 信息。"}</p>
+      <strong>等待你发起一次验证</strong>
+      <p class="helper">${message || "这里会显示区间概率，以及这次求值到底基于什么输入。 "}</p>
     `;
-    chart.innerHTML = makeEmptyChartSvg("先生成一个 ProbabilityFunction");
+    chart.innerHTML = makeEmptyChartSvg("先生成一条可运行函数");
     return;
   }
 
   const selected = state.functions.find((item) => String(item.id) === String(debug.function_id));
   result.innerHTML = `
-    <strong>Probability = ${(debug.probability * 100).toFixed(2)}%</strong>
-    <p class="helper">区间 [${debug.t0}, ${debug.t1}] 已完成求值。你可以拿这个结果去判断函数层是否足够稳定。</p>
+    <strong>区间概率 = ${(debug.probability * 100).toFixed(2)}%</strong>
+    <p class="helper">区间 [${debug.t0}, ${debug.t1}] 已完成求值。这个结果可以帮助你判断函数层是否已经足够稳定，适合继续往下跑。</p>
     <ul class="context-list">
       <li>
-        <span>Function ID</span>
+        <span>函数 ID</span>
         <strong>${debug.function_id}</strong>
       </li>
       <li>
-        <span>Trace</span>
+        <span>求值依据</span>
         <strong>${Object.entries(debug.trace)
           .slice(0, 3)
           .map(([key, value]) => `${key}: ${value}`)
@@ -666,11 +666,11 @@ function buildCalibrationConfigPayload() {
   const targetSeriesId = document.getElementById("calibration-target-series")?.value;
   const functionId = document.getElementById("calibration-function-select")?.value;
   if (!targetSeriesId) {
-    renderCalibrationStatus("先选择一条 target ClinicalSeries。");
+    renderCalibrationStatus("先选择一条目标证据，校准才知道要贴近哪条 observed 曲线。");
     return null;
   }
   if (!functionId) {
-    renderCalibrationStatus("先选择一条 ProbabilityFunction，校准才能开始。");
+    renderCalibrationStatus("先选择一条可运行函数，校准才能真正开始。");
     return null;
   }
 
@@ -722,14 +722,14 @@ function renderCalibrationStatus(message) {
   if (!bundle) {
     container.innerHTML = `
       <strong>${message || "准备好开始校准"}</strong>
-      <p class="helper">先设置 target series 和 parameter bounds。平台会用异步 job 方式跑完 observed vs predicted 校准。</p>
+      <p class="helper">先设置目标证据和参数边界。平台会用异步 job 跑完 observed vs predicted 校准，然后把最值得看的结果回到这里。</p>
     `;
     return;
   }
 
   container.innerHTML = `
     <strong>${message || "最近一次校准已经完成"}</strong>
-    <p class="helper">Run ${shortId(bundle.run.id)} · ${bundle.run.status} · ${bundle.result.convergence_status}</p>
+    <p class="helper">Run ${shortId(bundle.run.id)} · ${bundle.run.status} · ${bundle.result.convergence_status}。这次校准已经给出一组可继续使用的参数。</p>
     <div class="pill-row">
       <span class="tone-pill calibration">Best RMSE ${Number(bundle.result.best_objective_value).toFixed(4)}</span>
       <span class="hero-chip">${bundle.config.max_iterations} candidates</span>
@@ -746,7 +746,7 @@ function renderCalibrationBest() {
   const bundle = state.currentCalibration;
   if (!bundle) {
     container.className = "empty-state";
-    container.textContent = "还没有校准结果。先设置参数边界并启动 Calibration。";
+    container.textContent = "还没有校准结果。先设置参数边界并启动这次校准。";
     return;
   }
 
@@ -755,7 +755,7 @@ function renderCalibrationBest() {
   container.innerHTML = `
     <span class="panel-kicker">Latest Calibration Result</span>
     <strong>Best RMSE = ${Number(bundle.result.best_objective_value).toFixed(4)}</strong>
-    <p class="helper">这组参数已经让模型输出更接近 target series。你可以直接看 overlay，或继续去跑 Simulation。</p>
+    <p class="helper">这组参数已经让模型输出更接近目标证据。你可以直接看 overlay，或者继续去跑模拟。</p>
     <ul class="context-list">
       <li>
         <span>event_scale</span>
@@ -782,8 +782,8 @@ function renderCalibrationOverlay() {
 
   const bundle = state.currentCalibration;
   if (!bundle) {
-    chart.innerHTML = makeEmptyChartSvg("先启动一次 Calibration");
-    label.textContent = "等待 overlay";
+    chart.innerHTML = makeEmptyChartSvg("先启动一次校准");
+    label.textContent = "等待校准结果";
     return;
   }
 
@@ -806,7 +806,7 @@ function renderCalibrationConfigs() {
 
   if (!state.calibrationConfigs.length) {
     container.className = "empty-state";
-    container.textContent = "还没有 calibration config。先提交一组参数边界。";
+    container.textContent = "还没有校准配置。先提交一组参数边界。";
     return;
   }
 
@@ -833,7 +833,7 @@ function renderCalibrationDiagnostics() {
   const bundle = state.currentCalibration;
   if (!bundle) {
     container.className = "empty-state";
-    container.textContent = "运行结束后，这里会显示 optimizer、候选次数和 best-fit 参数。";
+    container.textContent = "运行结束后，这里会显示优化器、候选次数和 best-fit 参数，方便你解释为什么会得到这组结果。";
     return;
   }
 
@@ -857,7 +857,7 @@ function initSimulationPage() {
   document.getElementById("launch-run")?.addEventListener("click", async () => {
     const functionId = document.getElementById("run-function-select")?.value;
     if (!functionId) {
-      renderRunStatus("先在 Runtime 页面生成一条 ProbabilityFunction。");
+      renderRunStatus("先在上一页生成一条可运行函数，分析才能开始。");
       return;
     }
 
@@ -875,7 +875,7 @@ function initSimulationPage() {
     };
 
     startProgress("run");
-    renderRunStatus("任务已排队。平台正在准备 cohort、sample matrix 和 review artifacts。");
+    renderRunStatus("任务已排队。平台正在准备 cohort、sample matrix 和结果页需要的 artifacts。");
 
     try {
       const run = state.live ? await launchRunLive(payload) : await launchRunOffline(payload);
@@ -884,7 +884,7 @@ function initSimulationPage() {
       renderSharedChrome();
       await renderSimulationPage();
       stopProgress("run", 100);
-      renderRunStatus(`Run ${shortId(run.id)} 已完成。你现在可以先看动态 Markov 流，再进入 Review Surface。`);
+      renderRunStatus(`Run ${shortId(run.id)} 已完成。你现在可以先看动态 Markov 流，再去结果页讲清楚这次分析。`);
     } catch (error) {
       stopProgress("run", 0);
       renderRunStatus(extractMessage(error));
@@ -917,7 +917,7 @@ function renderRunStatus(message) {
   }
   container.innerHTML = `
     <strong>${message}</strong>
-    <p class="helper">真实后端会返回异步 job 状态、summary cards、cohort 数据和 artifact references，后续能直接被 Review Surface 消费。</p>
+    <p class="helper">真实后端会返回异步 job 状态、summary cards、cohort 数据和 artifact references，后面会直接进入结果页使用。</p>
   `;
 }
 
@@ -930,7 +930,7 @@ function renderRunSummary() {
   const run = getSelectedCohortRun();
   if (!run) {
     container.className = "empty-state";
-    container.textContent = "还没有 run 结果。先选择一个 ProbabilityFunction 并启动分析。";
+    container.textContent = "还没有分析结果。先选择一条函数并启动这次运行。";
     return;
   }
 
@@ -963,7 +963,7 @@ function renderRunRegistry() {
 
   if (!state.runs.length) {
     container.className = "empty-state";
-    container.textContent = "暂无 run。创建第一个模拟结果后，这里会出现 run 列表。";
+    container.textContent = "还没有历史分析。跑完第一条结果后，这里会出现最近运行记录。";
     return;
   }
 
@@ -989,14 +989,14 @@ async function renderArtifactPreview() {
   const run = getSelectedCohortRun();
   if (!run) {
     container.className = "empty-state";
-    container.textContent = "运行完成后，这里会预览 probability-trace、cohort-trace 和 run-config artifacts。";
+    container.textContent = "运行完成后，这里会预览 probability-trace、cohort-trace 和 run-config 等可审阅产物。";
     return;
   }
 
   const artifacts = state.live ? await request(`/runs/${run.id}/artifacts`).catch(() => []) : run._artifacts || [];
   if (!artifacts.length) {
     container.className = "empty-state";
-    container.textContent = "这条 run 还没有 artifacts。";
+    container.textContent = "这次运行还没有产物文件。";
     return;
   }
 
@@ -1024,8 +1024,8 @@ async function renderSimulationMotion() {
   const run = getSelectedCohortRun();
   if (!run || run.status !== "completed") {
     stopSimulationMotion();
-    container.innerHTML = makeEmptyChartSvg("先完成一条 cohort Markov run");
-    label.textContent = "等待运行结果";
+    container.innerHTML = makeEmptyChartSvg("先完成一条分析运行");
+    label.textContent = "等待分析结果";
     return;
   }
 
@@ -1172,16 +1172,16 @@ function renderReviewSurface() {
 
   if (!state.currentReview) {
     summary.className = "empty-state";
-    summary.textContent = "还没有加载 run。先从上方选择一条 cohort run。";
-    scatter.innerHTML = makeEmptyChartSvg("No scatterplot yet");
-    cohort.innerHTML = makeEmptyChartSvg("No cohort data yet");
-    motion.innerHTML = makeEmptyChartSvg("No Markov motion yet");
+    summary.textContent = "还没有加载结果。先从上方选择一条运行记录。";
+    scatter.innerHTML = makeEmptyChartSvg("先加载散点结果");
+    cohort.innerHTML = makeEmptyChartSvg("先加载 cohort 数据");
+    motion.innerHTML = makeEmptyChartSvg("先加载动态状态流");
     trace.className = "empty-state";
-    trace.textContent = "选择 run 后，这里会显示 patient event trace。";
+    trace.textContent = "选择结果后，这里会显示单个患者的事件轨迹。";
     artifacts.className = "empty-state";
-    artifacts.textContent = "选择 run 后，这里会显示 artifacts 和 metadata。";
-    cycleLabel.textContent = "Cycle focus pending";
-    motionLabel.textContent = "等待 run";
+    artifacts.textContent = "选择结果后，这里会显示产物文件和 metadata。";
+    cycleLabel.textContent = "等待你选择 cycle";
+    motionLabel.textContent = "等待分析结果";
     return;
   }
 
@@ -1199,7 +1199,7 @@ function renderReviewSurface() {
           `
         )
         .join("")
-    : "这条 run 还没有 summary cards。";
+    : "这次运行还没有 summary cards。";
 
   scatter.innerHTML = makeScatterSvg(
     state.currentReview.scatter?.points || [],
@@ -1220,7 +1220,7 @@ function renderReviewSurface() {
           </li>
         `
       )
-      .join("") || "<div class='empty-state'>该 patient index 没有事件。</div>";
+      .join("") || "<div class='empty-state'>这个患者索引下还没有事件记录。</div>";
 
   artifacts.className = "artifact-list";
   artifacts.innerHTML =
@@ -1234,12 +1234,12 @@ function renderReviewSurface() {
           </li>
         `
       )
-      .join("") || "<div class='empty-state'>该 run 暂无 artifacts。</div>";
+      .join("") || "<div class='empty-state'>这次运行暂时还没有 artifacts。</div>";
 
   const buckets = getUniqueBucketTimes(state.currentReview.cohort?.points || []);
   const focus = buckets[state.cycleFocusIndex] ?? buckets[0] ?? 0;
-  cycleLabel.textContent = `Cycle focus · ${focus}`;
-  motionLabel.textContent = `Cycle ${focus} · Dynamic Markov playback`;
+  cycleLabel.textContent = `当前查看 cycle · ${focus}`;
+  motionLabel.textContent = `Cycle ${focus} · 动态状态流回放`;
 }
 
 function toggleReviewAutoplay() {
@@ -1438,10 +1438,10 @@ function updateJobProgress(kind, job, attempt) {
   if (kind === "run") {
     renderRunStatus(
       job.status === "queued"
-        ? "任务已排队，正在等待执行器接管这次 cohort Markov run。"
+        ? "任务已排队，正在等待执行器接管这次分析。"
         : job.status === "running"
-          ? "Run 正在执行。平台正在计算 cohort trace、metrics catalog 和 review artifacts。"
-          : "Run 已完成。"
+          ? "分析正在执行。平台正在计算 cohort trace、核心指标和结果页所需 artifacts。"
+          : "分析已完成。"
     );
   }
 
@@ -1450,8 +1450,8 @@ function updateJobProgress(kind, job, attempt) {
       job.status === "queued"
         ? "校准任务已排队，正在等待 observed vs predicted 拟合开始。"
         : job.status === "running"
-          ? "Calibration 正在运行。平台正在比较 target curve 与 predicted curve。"
-          : "Calibration 已完成。"
+          ? "校准正在运行。平台正在比较 target curve 与 predicted curve。"
+          : "校准已完成。"
     );
   }
 }

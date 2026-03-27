@@ -31,10 +31,11 @@
         </span>
       </div>
       <nav class="nav">
-        <a href="#workflow">工作流 Workflow</a>
-        <a href="#workspace">产品界面 Surfaces</a>
-        <a href="#outputs">结果输出 Outputs</a>
-        <a href="#objects">对象模型 Objects</a>
+        <a href="#entry-points">从哪里开始</a>
+        <a href="#workflow">怎么完成一次分析</a>
+        <a href="#workspace">你会看到什么</a>
+        <a href="#outputs">做完会得到什么</a>
+        <a href="#objects">数据会变成什么</a>
         <a href="#lancet-watch">Lancet 2026</a>
         <a href="#architecture">平台分层</a>
       </nav>
@@ -44,32 +45,32 @@
       <section class="hero">
         <div class="hero-copy card">
           <p class="eyebrow">在线 HEOR / HTA 决策建模平台</p>
-          <h1>把证据处理、概率计算、Markov / PSA 运行和结果审阅，连接成一条可执行工作流。</h1>
+          <h1>从一份临床证据开始，在同一条在线流程里完成校准、模拟和结果审阅。</h1>
           <p class="hero-text">
-            它不再把建模拆散在 Excel、脚本和截图里，而是把证据标准化、概率函数、临床校准、
-            运行记录、动态 Markov 播放和审阅输出放进同一个连续界面，让模型更可复现、更可解释，也更适合团队协作。
+            你不需要再把建模拆散在 Excel、脚本和截图里。平台会带着你把证据标准化、构建概率函数、
+            用临床数据做校准、运行 Markov / PSA，并把动态结果和可下载产物放回同一张结果页里，让团队更容易复核、解释和分享。
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="./evidence.html">从证据开始</a>
-            <a class="button secondary" href="./calibration.html">打开 Calibration Studio</a>
-            <a class="button secondary" href="./review.html">体验动态 Markov 结果</a>
+            <a class="button primary" href="./evidence.html">上传一份证据开始</a>
+            <a class="button secondary" href="./calibration.html">直接体验临床校准</a>
+            <a class="button secondary" href="./review.html">直接查看结果页</a>
           </div>
           <div class="hero-proof">
             <div>
-              <strong>1</strong>
-              <span>Unified probability runtime</span>
+              <strong>一条流程</strong>
+              <span>证据、校准、模拟、审阅连续发生</span>
             </div>
             <div>
               <strong>5</strong>
-              <span>核心工作台 pages</span>
+              <span>个可点击工作台</span>
             </div>
             <div>
               <strong>6</strong>
-              <span>端到端任务步骤</span>
+              <span>步典型分析链路</span>
             </div>
             <div>
               <strong>Review-ready</strong>
-              <span>输出与审阅同层呈现</span>
+              <span>结果、轨迹和产物在一页内讲清楚</span>
             </div>
           </div>
         </div>
@@ -143,22 +144,66 @@
         </div>
       </section>
 
+      <section id="entry-points" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">从你的目标开始 Entry Points</p>
+            <h2>访问者通常不是来“看能力模块”的，而是想立刻完成一件具体工作。</h2>
+          </div>
+          <p class="section-note">
+            所以首页先告诉你从哪里进入最合适，而不是先让你消化平台内部术语。
+          </p>
+        </div>
+        <div class="entry-grid">
+          <article class="entry-card card">
+            <span class="mini-label tone-evidence">Start with Evidence</span>
+            <h3>我手里有一份 KM 或 survival 数据，想先把它整理干净。</h3>
+            <p>适合先验证字段、统一时间粒度，并把零散表格变成可复用对象。</p>
+            <div class="entry-meta">
+              <span>预计 2-3 分钟</span>
+              <span>输出：证据对象</span>
+            </div>
+            <a class="button secondary" href="./evidence.html">进入证据工作台</a>
+          </article>
+          <article class="entry-card card">
+            <span class="mini-label tone-calibration">Start with Calibration</span>
+            <h3>我想向团队演示 observed vs predicted 校准是怎么跑出来的。</h3>
+            <p>适合直接看参数边界、异步任务、overlay 和 best-fit 参数如何回流到模型。</p>
+            <div class="entry-meta">
+              <span>预计 3-4 分钟</span>
+              <span>输出：校准结果</span>
+            </div>
+            <a class="button secondary" href="./calibration.html">进入校准工作台</a>
+          </article>
+          <article class="entry-card card">
+            <span class="mini-label tone-review">Start with Review</span>
+            <h3>我需要一页能讲清楚结果的界面，用来审阅、汇报或演示。</h3>
+            <p>适合直接展示动态 Markov、scatterplot、cohort trace 和可下载产物。</p>
+            <div class="entry-meta">
+              <span>预计 2 分钟</span>
+              <span>输出：结果页</span>
+            </div>
+            <a class="button secondary" href="./review.html">进入结果审阅页</a>
+          </article>
+        </div>
+      </section>
+
       <section class="signal-strip">
         <div>
-          <strong>证据上传</strong>
-          <span>KM / survival / hazard / compound curves</span>
+          <strong>先整理证据</strong>
+          <span>把 KM、hazard、survival 数据变成可复用对象</span>
         </div>
         <div>
-          <strong>概率函数</strong>
-          <span>统一到 cycle-level event probabilities</span>
+          <strong>再生成可运行函数</strong>
+          <span>让每次 run 都调用同一层概率定义</span>
         </div>
         <div>
-          <strong>Markov / PSA</strong>
-          <span>异步运行、保留 sample matrix 与 run log</span>
+          <strong>然后跑模拟</strong>
+          <span>保留样本矩阵、版本信息和运行轨迹</span>
         </div>
         <div>
-          <strong>审阅输出</strong>
-          <span>overlay、scatterplot、cohort trace、artifacts</span>
+          <strong>最后解释结果</strong>
+          <span>用 overlay、scatterplot、cohort trace 和 artifacts 讲清楚</span>
         </div>
       </section>
 
@@ -166,10 +211,10 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">端到端工作流 Workflow</p>
-            <h2>首页先展示真实任务链，而不是只列模块名词。</h2>
+            <h2>一次典型分析，使用者通常会这样走完。</h2>
           </div>
           <p class="section-note">
-            每一步都清楚标出输入、系统动作和输出对象，让访问者先理解“怎么做分析”，再理解“平台内部怎么实现”。
+            每一步都清楚标出你要带来什么、平台会处理什么、做完后你会拿到什么。
           </p>
         </div>
         <div id="workflow-rail" class="workflow-rail"></div>
@@ -179,10 +224,10 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">产品界面 Product Surfaces</p>
-            <h2>四个工作台直接模拟真实操作，而不是停留在抽象说明。</h2>
+            <h2>你在每个工作台里真正会看到什么、点什么、得到什么。</h2>
           </div>
           <p class="section-note">
-            这里包含上传区、参数边界设置、运行状态条、overlay plot、scatterplot 轴选择器、cohort 时间滑块和 artifact 面板。
+            这里不是模块清单，而是使用中的界面片段：上传区、参数边界、运行状态、overlay、散点探索和结果面板。
           </p>
         </div>
 
@@ -220,10 +265,10 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">示例结果 Example Outputs</p>
-            <h2>平台不只处理输入，更直接生成 review-ready outputs。</h2>
+            <h2>做完一次分析后，你能直接拿去审阅和汇报的结果会长这样。</h2>
           </div>
           <p class="section-note">
-            展示一个完整 run 结束后会看到的 ICER / QALY summary、校准图、PSA 散点、cohort trace、run metadata 和下载产物。
+            不只给你数字，还把关键图、run 背景、假设和下载产物放在同一个阅读路径里。
           </p>
         </div>
 
@@ -308,10 +353,10 @@
         <div class="section-head">
           <div>
             <p class="eyebrow">对象模型 Data Objects</p>
-            <h2>平台处理的是可追溯对象，而不是散落的文件和截图。</h2>
+            <h2>你的数据在平台里会变成这些可追溯对象，而不是继续散落在文件夹里。</h2>
           </div>
           <p class="section-note">
-            每个对象都说明来源、输入字段、生成方式、被谁调用以及当前状态，强化“系统感”和“可复现感”。
+            这样你能知道每一步的来源、状态和被谁调用，也更容易跟团队解释模型到底用了什么输入。
           </p>
         </div>
         <div id="object-grid" class="object-grid"></div>

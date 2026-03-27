@@ -32,11 +32,11 @@
         </span>
       </div>
       <nav class="top-links">
-        <a href="./index.html">Overview</a>
-        <a href="./runtime.html">Probability Runtime</a>
-        <a href="./calibration.html">Calibration Studio</a>
-        <a href="./simulation.html">Simulation Lab</a>
-        <a href="./review.html">Review Surface</a>
+        <a href="./index.html">总览</a>
+        <a href="./runtime.html">概率函数</a>
+        <a href="./calibration.html">临床校准</a>
+        <a href="./simulation.html">运行模拟</a>
+        <a href="./review.html">结果审阅</a>
       </nav>
     </header>
 
@@ -100,15 +100,15 @@
           <h3>对象数量</h3>
           <ul class="count-list">
             <li>
-              <span>ClinicalSeries</span>
+              <span>已整理证据 ClinicalSeries</span>
               <strong id="sidebar-series-count">0</strong>
             </li>
             <li>
-              <span>ProbabilityFunctions</span>
+              <span>可运行函数 ProbabilityFunctions</span>
               <strong id="sidebar-function-count">0</strong>
             </li>
             <li>
-              <span>Runs</span>
+              <span>已完成分析 Runs</span>
               <strong id="sidebar-run-count">0</strong>
             </li>
           </ul>
@@ -118,11 +118,11 @@
       <section class="workspace-main">
         <section class="hero-panel">
           <div class="hero-copy">
-            <span class="kicker">Step 01 · Upload -> Validate -> Standardize</span>
+            <span class="kicker">Step 01 · 先把输入整理成可信证据</span>
             <h1>先把你手里的 KM / survival 数据整理成平台能直接复用的证据对象。</h1>
             <p>
               把样本表贴进来后，你会先看到字段校验、时间对齐和对象标准化结果。连上本地 API
-              时会真实写入 `ClinicalSeries`；没连上时也能继续走离线样本链路，方便你先感受完整流程。
+              时会真实写入证据对象；没连上时也能继续走离线样本链路，所以你今天只想演示流程也不会被卡住。
             </p>
             <div class="hero-meta">
               <article>
@@ -135,7 +135,7 @@
               </article>
               <article>
                 <strong>你得到什么</strong>
-                <span>ClinicalSeries object</span>
+                <span>一份可追溯的证据对象</span>
               </article>
             </div>
           </div>
@@ -143,13 +143,13 @@
           <div class="connection-panel">
             <div class="connection-top">
               <div>
-                <span class="kicker">API Bridge</span>
-                <h3 class="panel-title">连接你的 demo backend</h3>
+                <span class="kicker">Connection</span>
+                <h3 class="panel-title">连接你的分析环境</h3>
               </div>
               <span id="connection-badge" class="status-badge warning">Connecting</span>
             </div>
             <p id="connection-copy" class="status-copy">
-              平台会先尝试连接你的本地 FastAPI；如果没有连上，会自动切换到离线样本模式。
+              平台会先尝试连接你的本地 FastAPI；如果没有连上，会自动切换到离线样本模式，你仍然可以完整体验这一步。
             </p>
             <div class="connection-form">
               <label>
@@ -164,6 +164,27 @@
           </div>
         </section>
 
+        <section class="journey-panel">
+          <article class="journey-card">
+            <span class="journey-label">这一步你要做什么</span>
+            <strong>选一份代表性的 KM / survival 数据，先把输入整理干净。</strong>
+            <p>先从一个小样本开始最容易看清字段、时间粒度和标准化结果。</p>
+          </article>
+          <article class="journey-card">
+            <span class="journey-label">完成标志</span>
+            <ul>
+              <li>字段校验通过</li>
+              <li>时间粒度已对齐</li>
+              <li>页面出现一条新的证据对象记录</li>
+            </ul>
+          </article>
+          <article class="journey-card">
+            <span class="journey-label">然后你会去哪里</span>
+            <p>下一步通常是把这份证据编译成概率函数，让后面的校准和模拟都调用同一层定义。</p>
+            <a class="button button-secondary" href="./runtime.html">继续去构建概率函数</a>
+          </article>
+        </section>
+
         <section class="page-grid">
           <article class="panel span-8">
             <div class="panel-heading">
@@ -171,7 +192,7 @@
                 <span class="panel-kicker">Evidence Intake</span>
                 <h3>把一组生存数据贴进来</h3>
               </div>
-              <span class="panel-chip">ClinicalSeries</span>
+              <span class="panel-chip">证据对象</span>
             </div>
             <div class="dropzone">
               <strong>建议从一个小样本开始</strong>
@@ -200,11 +221,11 @@
             </label>
             <div class="action-row">
               <button id="load-sample-csv" class="button-secondary">加载示例 KM</button>
-              <button id="create-series" class="button-primary">创建证据对象</button>
+              <button id="create-series" class="button-primary">整理成证据对象</button>
             </div>
             <div id="series-output" class="result-card">
               <strong>还没有证据对象</strong>
-              <p class="helper">创建成功后，这里会告诉你对象 id、点数、来源和建议的下一步动作。</p>
+              <p class="helper">整理成功后，这里会告诉你对象 id、点数、来源，以及最合理的下一步。</p>
             </div>
           </article>
 
@@ -242,10 +263,10 @@
                 <span class="panel-kicker">Recent Objects</span>
                 <h3>你已经整理好的证据对象</h3>
               </div>
-              <a class="nav-chip" href="./runtime.html">继续去构建 ProbabilityFunction</a>
+              <a class="nav-chip" href="./runtime.html">继续去生成可运行函数</a>
             </div>
             <div id="series-list" class="table-scroll empty-state">
-              暂无对象。先在上方创建一个 `ClinicalSeries`。
+              暂无对象。先在上方整理出第一份证据。
             </div>
           </article>
         </section>

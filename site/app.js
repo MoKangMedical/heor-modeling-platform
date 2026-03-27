@@ -24,56 +24,56 @@ const workflowSteps = [
   {
     index: "01",
     tone: "evidence",
-    title: "上传证据 Evidence Workbench",
-    summary: "接收 KM table、hazard table、survival table 和 compound curve 定义。",
-    input: "KM / survival / hazard / curve fragments",
-    system: "Time alignment、字段校验、对象标准化、validation log",
-    output: "ClinicalSeries、CurveFit、CompoundCurve",
+    title: "先把临床证据带进来",
+    summary: "把 KM table、hazard table、survival table 和 compound curve 片段导入平台，不再散落在附件和截图里。",
+    input: "你手里的 KM / survival / hazard 数据",
+    system: "时间对齐、字段校验、来源记录、对象标准化",
+    output: "一组可追溯的证据对象",
   },
   {
     index: "02",
     tone: "evidence",
-    title: "标准化曲线 Curve Standardization",
-    summary: "把分散来源统一到同一时间粒度和引用格式，避免每次 run 都重复手工换算。",
-    input: "Raw timepoints + metadata",
-    system: "Unit conversion、windowing、traceable transforms",
-    output: "Versioned evidence objects",
+    title: "把不同来源整理成同一种语言",
+    summary: "平台把分散来源统一到同一时间粒度和引用格式，避免你每次 run 前都手工换算一次。",
+    input: "原始 timepoints、单位和 metadata",
+    system: "单位换算、windowing、transform trace",
+    output: "可版本化的证据层",
   },
   {
     index: "03",
     tone: "evidence",
-    title: "构建概率函数 Probability Runtime",
-    summary: "把 survival / hazard table 和复合曲线转换成 cycle-level event probabilities。",
-    input: "ClinicalSeries / CompoundCurve",
+    title: "把证据编译成模型能直接调用的函数",
+    summary: "把 survival / hazard table 和复合曲线转换成 cycle-level event probabilities，后续校准、求解和画图都复用这一层。",
+    input: "已整理的 ClinicalSeries / CompoundCurve",
     system: "ProbSurvTable、ProbHazardTable、ProbCompCurve",
-    output: "Reusable runtime functions",
+    output: "一条可复用的概率函数",
   },
   {
     index: "04",
     tone: "simulation",
-    title: "运行 Markov / PSA Simulation Lab",
-    summary: "运行 cohort Markov、PSA 和 sensitivity analysis，保留样本矩阵、seed 和 artifacts。",
-    input: "Runtime functions + model parameters",
+    title: "运行 Markov / PSA",
+    summary: "启动 cohort Markov、PSA 和 sensitivity analysis，并保留样本矩阵、seed、job 状态和 artifacts。",
+    input: "概率函数、模型参数、抽样设置",
     system: "Markov engine、LHS sampler、queued runs",
-    output: "Costs、QALYs、ICER、sample matrix",
+    output: "Costs、QALYs、ICER 和 sample matrix",
   },
   {
     index: "05",
     tone: "calibration",
-    title: "校准 Observed vs Predicted",
-    summary: "根据临床数据拟合参数边界，记录优化轨迹、goodness-of-fit 和 overlay plot。",
-    input: "Observed OS/PFS + calibration bounds",
+    title: "让模型先贴近 observed clinical data",
+    summary: "根据临床数据拟合参数边界，记录优化轨迹、goodness-of-fit 和 overlay，减少手工试错。",
+    input: "Observed OS/PFS 与 calibration bounds",
     system: "Optimizer、fit scoring、overlay generation",
-    output: "Best-fit parameter set + run log",
+    output: "best-fit 参数与校准记录",
   },
   {
     index: "06",
     tone: "review",
-    title: "进入审阅 Review Surface",
-    summary: "统一查看 cohort trace、scatterplots、patient event log 和 downloadable artifacts。",
-    input: "Run metrics + patient events + notes",
+    title: "把结果讲清楚并交给团队审阅",
+    summary: "统一查看 cohort trace、scatterplots、patient event log 和 downloadable artifacts，不再在图、表、注释之间来回跳转。",
+    input: "Run metrics、patient events 和 notes",
     system: "Trace view、artifact versioning、review comments",
-    output: "Review-ready outputs",
+    output: "一页可审阅、可分享的结果面",
   },
 ];
 
@@ -82,11 +82,11 @@ const surfaces = {
     key: "evidence",
     tone: "evidence",
     label: "证据工作台 Evidence Workbench",
-    kicker: "Upload -> Standardize -> Version",
-    title: "证据工作台 Evidence Workbench",
+    kicker: "先整理好输入，再继续后面的分析",
+    title: "把原始临床数据整理成下一步可以直接调用的证据层",
     description:
-      "负责接收 survival / hazard / KM 数据和 compound curve 定义，并在进入 solver 之前完成对象标准化、时间对齐和校验日志生成。",
-    status: "Validated object pipeline",
+      "你把 survival / hazard / KM 数据和 compound curve 定义带进来，平台先帮你做对象标准化、时间对齐和校验日志，然后再把这些结果交给运行时和求解层。",
+    status: "证据已标准化，可继续往下走",
     inputs: ["KM OS / PFS table", "Hazard table", "Compound curve fragments"],
     system: ["字段校验与 time alignment", "单位换算与 trace log", "对象标准化与版本标记"],
     outputs: ["ClinicalSeries", "CurveFit", "CompoundCurve", "ProbabilityFunction draft"],
@@ -95,11 +95,11 @@ const surfaces = {
     key: "calibration",
     tone: "calibration",
     label: "校准工作台 Calibration Studio",
-    kicker: "Observed -> Bounds -> Overlay",
-    title: "校准工作台 Calibration Studio",
+    kicker: "先把模型拉近 observed data，再去大规模跑分析",
+    title: "用 observed clinical data 调整模型，让结果更像真实疾病进程",
     description:
-      "围绕 observed clinical data 进行参数拟合，保留参数边界、目标函数、优化轨迹、版本标记和 observed vs predicted overlay。",
-    status: "Observed data fitting",
+      "你在这里设定目标曲线、参数边界和优化设置。平台负责异步拟合、记录优化轨迹，并把 observed vs predicted overlay 回到同一界面里。",
+    status: "校准完成后会返回 overlay 与 best-fit 参数",
     inputs: ["OS / PFS target series", "Bounds for p_progression / p_death", "Objective function"],
     system: ["Optimization loop", "Goodness-of-fit scoring", "Overlay plot rendering"],
     outputs: ["Best-fit parameter set", "Fit score", "Versioned overlay artifact"],
@@ -108,11 +108,11 @@ const surfaces = {
     key: "simulation",
     tone: "simulation",
     label: "模拟实验室 Simulation Lab",
-    kicker: "Run -> Sample -> Store",
-    title: "模拟实验室 Simulation Lab",
+    kicker: "把函数真正跑起来，再看患者队列如何流动",
+    title: "启动一次真实模拟，并把中间过程和结果一起保存下来",
     description:
-      "异步运行 cohort Markov、PSA、sensitivity analysis，并保留 sampling method、seed、matrix、run metadata 和 artifacts。",
-    status: "Queued and reproducible",
+      "你点击运行后，平台会异步执行 cohort Markov、PSA、sensitivity analysis，并保留 sampling method、seed、matrix、run metadata 和 artifacts。",
+    status: "运行会排队、留痕、可复现",
     inputs: ["Probability runtime", "Model parameters", "Sampling config"],
     system: ["Run queue orchestration", "LHS / random sampler", "Artifact persistence"],
     outputs: ["Run status", "Sample matrix", "Metrics catalog", "Downloadable outputs"],
@@ -121,11 +121,11 @@ const surfaces = {
     key: "review",
     tone: "review",
     label: "审阅界面 Review Surface",
-    kicker: "Inspect -> Explain -> Share",
-    title: "审阅界面 Review Surface",
+    kicker: "把结果讲清楚，而不是只把图导出来",
+    title: "把关键指标、动态状态流和 artifacts 放进同一张结果页里",
     description:
-      "把 scatterplots、cohort trace、run metadata、artifact versions 和 reviewer notes 放进同一个审阅面，降低解释成本。",
-    status: "Traceable and review-ready",
+      "你在这里直接解释结果。平台把 scatterplots、cohort trace、run metadata、artifact versions 和 reviewer notes 放在一个连续阅读路径里。",
+    status: "结果已可审阅、可汇报、可分享",
     inputs: ["Run metrics", "Patient / cohort events", "Artifacts and notes"],
     system: ["Axis selection", "Cohort time slicing", "Artifact versioning"],
     outputs: ["Scatterplot", "Cohort dashboard", "Run notes", "Share-ready evidence pack"],
@@ -136,46 +136,46 @@ const objectCards = [
   {
     tone: "evidence",
     name: "ClinicalSeries",
-    en: "Versioned clinical evidence",
+    en: "整理好的临床证据",
     status: "Validated",
     tags: ["KM points", "Time-aligned", "Versioned"],
     source: "Clinical trial KM table / survival table / hazard table",
     fields: "series_type, unit, source_id, points, trace_log",
-    generatedBy: "Evidence ingest + validation pipeline",
-    usedBy: "Curve fitting, calibration targets, review artifacts",
+    generatedBy: "证据导入与校验流程",
+    usedBy: "曲线拟合、校准目标、结果审阅",
   },
   {
     tone: "evidence",
     name: "CompoundCurve",
-    en: "Composite survival definition",
+    en: "复合生存曲线定义",
     status: "Traceable",
     tags: ["Blended segments", "Rule-based", "Reusable"],
     source: "Multiple fitted curves or table segments",
     fields: "curve_parts, switch_rules, time_windows, provenance",
-    generatedBy: "Curve composition workspace",
-    usedBy: "Probability runtime, plots, sensitivity overlays",
+    generatedBy: "曲线组合工作台",
+    usedBy: "概率函数、图形层、敏感性叠加",
   },
   {
     tone: "simulation",
     name: "ProbabilityFunction",
-    en: "Cycle-level event probabilities",
+    en: "每个 cycle 的事件概率",
     status: "Versioned",
     tags: ["ProbSurvTable", "ProbHazardTable", "Traceable"],
     source: "ClinicalSeries / Hazard table / CompoundCurve",
     fields: "function_type, cycle_window, inputs_ref, transform_notes",
-    generatedBy: "Runtime compiler",
-    usedBy: "Solver, plot, calibration, sensitivity analysis",
+    generatedBy: "运行时编译器",
+    usedBy: "Solver、绘图、校准、敏感性分析",
   },
   {
     tone: "review",
     name: "RunArtifact",
-    en: "Review-ready outputs",
+    en: "可交付的结果产物",
     status: "Shareable",
     tags: ["PNG", "CSV", "Run notes"],
     source: "Completed Markov / PSA / calibration run",
     fields: "artifact_type, file_key, run_id, version, reviewer_note",
-    generatedBy: "Run pipeline + export layer",
-    usedBy: "Review dashboard, downloads, audit trail",
+    generatedBy: "运行流程与导出层",
+    usedBy: "结果审阅页、下载、审计轨迹",
   },
 ];
 
@@ -541,12 +541,12 @@ function renderSurfaceNav() {
 
 function currentSurfaceStatus() {
   if (state.activeSurface === "evidence") {
-    return state.evidenceLoaded ? "3 files staged · 4 objects generated" : surfaces.evidence.status;
+    return state.evidenceLoaded ? "3 份证据已整理 · 4 个对象可继续使用" : surfaces.evidence.status;
   }
   if (state.activeSurface === "simulation") {
     if (state.runProgress === 0) return surfaces.simulation.status;
-    if (state.runProgress < 100) return `Run in progress · ${state.runProgress}%`;
-    return "Run completed · artifacts stored";
+    if (state.runProgress < 100) return `分析进行中 · ${state.runProgress}%`;
+    return "分析已完成 · 产物已保存";
   }
   return surfaces[state.activeSurface].status;
 }
@@ -573,15 +573,15 @@ function surfaceTemplate(key) {
           <div class="dropzone">
             <div>
               <strong>${state.evidenceLoaded ? "3 份证据文件已加入 staging" : "把 KM / hazard / survival 文件拖进这里"}</strong>
-              <p>${state.evidenceLoaded ? "Time alignment、字段校验和 provenance log 已生成。" : "支持 KM table、hazard table、compound curve 片段和 trial metadata。"}</p>
-              <button id="load-demo-evidence" class="fake-button">${state.evidenceLoaded ? "Reset demo evidence" : "Load demo evidence"}</button>
+              <p>${state.evidenceLoaded ? "时间对齐、字段校验和来源记录都已经生成。" : "支持 KM table、hazard table、compound curve 片段和 trial metadata。"}</p>
+              <button id="load-demo-evidence" class="fake-button">${state.evidenceLoaded ? "重新载入示例证据" : "加载一组示例证据"}</button>
             </div>
           </div>
-          <p id="evidence-stage-status">${state.evidenceLoaded ? "ClinicalSeries、CurveFit、CompoundCurve 和 ProbabilityFunction draft 已被标准化。" : "当前状态：等待示例证据导入。点击按钮可进入高保真假交互。 "}</p>
+          <p id="evidence-stage-status">${state.evidenceLoaded ? "证据对象、曲线对象和函数草稿都已准备好，可以继续往下走。" : "当前状态：等待一组示例证据。点击按钮就能体验这一步真正会发生什么。 "}</p>
         </section>
         <section class="control-card">
           <div class="mini-topline">
-            <span>Normalized objects</span>
+            <span>你已经得到的对象</span>
             <span>${state.evidenceLoaded ? "Validated" : "Draft"}</span>
           </div>
           <ul class="stack-list">
@@ -602,7 +602,7 @@ function surfaceTemplate(key) {
           <div class="panel-heading">
             <div>
               <span class="panel-kicker">Overlay Plot</span>
-              <h3>Observed vs predicted</h3>
+              <h3>你会先看到的校准图</h3>
             </div>
             <div id="surface-scenario-toggle" class="segmented"></div>
           </div>
@@ -649,9 +649,9 @@ function surfaceTemplate(key) {
             </table>
           </div>
           <ul class="stack-list">
-            <li><div><strong>Target series</strong><br /><small>OS observed from clinical data</small></div><span class="pill core">Linked</span></li>
-            <li><div><strong>Run metadata</strong><br /><small>24 iterations · optimizer = Nelder-Mead</small></div><span class="pill next">Tracked</span></li>
-            <li><div><strong>Goodness-of-fit</strong><br /><small>RMSE 0.018 · R² 0.91</small></div><span class="pill next">Visible</span></li>
+            <li><div><strong>目标证据</strong><br /><small>来自真实临床数据的 OS 曲线</small></div><span class="pill core">已链接</span></li>
+            <li><div><strong>运行记录</strong><br /><small>24 iterations · optimizer = Nelder-Mead</small></div><span class="pill next">已留痕</span></li>
+            <li><div><strong>拟合表现</strong><br /><small>RMSE 0.018 · R² 0.91</small></div><span class="pill next">可解释</span></li>
           </ul>
         </section>
       </div>
@@ -663,26 +663,26 @@ function surfaceTemplate(key) {
     return `
       <div class="experience-grid">
         <section class="input-card">
-          <span class="mini-label tone-simulation">Run orchestration</span>
-          <p>点击运行按钮后，状态条、样本数、queue 状态和 artifact 生成都会变化，让页面更像真的在执行模型，而不是只有静态文案。</p>
+          <span class="mini-label tone-simulation">分析执行中</span>
+          <p>点击运行按钮后，状态条、样本数、queue 状态和 artifact 生成都会变化，让你看到一次真实分析是怎样一步步完成的。</p>
           <button id="run-psa-button" class="run-button">${buttonLabel}</button>
           <div class="mini-topline">
-            <span id="run-status-text">${state.runProgress === 0 ? "Ready to start" : state.runProgress < 100 ? "Markov + PSA executing" : "Completed and stored"}</span>
+            <span id="run-status-text">${state.runProgress === 0 ? "准备开始" : state.runProgress < 100 ? "Markov + PSA 正在执行" : "已完成并保存"}</span>
             <span id="run-progress-label">${state.runProgress}%</span>
           </div>
           <div class="progress-bar"><span id="run-progress-bar" style="width:${state.runProgress}%"></span></div>
           <div class="run-meta">
             <div><span>Sampling</span><strong>${state.runProgress === 0 ? "LHS pending" : "Latin hypercube"}</strong></div>
-            <div><span>Samples</span><strong>${state.runProgress === 0 ? "0" : state.runProgress < 100 ? "8,000 staged" : "8,000 completed"}</strong></div>
+            <div><span>Samples</span><strong>${state.runProgress === 0 ? "0" : state.runProgress < 100 ? "8,000 已排队" : "8,000 已完成"}</strong></div>
             <div><span>Seed</span><strong>874211</strong></div>
           </div>
         </section>
         <section class="control-card">
-          <span class="mini-label tone-simulation">Queue and artifacts</span>
+          <span class="mini-label tone-simulation">运行记录与产物</span>
           <ul class="stack-list">
-            <li><div><strong>RUN-2026-0315-014</strong><br /><small>analysis: cohort Markov + PSA</small></div><span class="pill ${state.runProgress === 100 ? "core" : "next"}">${state.runProgress === 100 ? "Done" : "Queued"}</span></li>
-            <li><div><strong>Sample matrix</strong><br /><small>lhs_samples_v2.csv</small></div><span class="pill ${state.runProgress > 20 ? "core" : "neutral"}">${state.runProgress > 20 ? "Saved" : "Waiting"}</span></li>
-            <li><div><strong>Artifact bundle</strong><br /><small>icer_summary.json · ce_plane.png</small></div><span class="pill ${state.runProgress === 100 ? "core" : "neutral"}">${state.runProgress === 100 ? "Ready" : "Pending"}</span></li>
+            <li><div><strong>RUN-2026-0315-014</strong><br /><small>analysis: cohort Markov + PSA</small></div><span class="pill ${state.runProgress === 100 ? "core" : "next"}">${state.runProgress === 100 ? "完成" : "排队中"}</span></li>
+            <li><div><strong>Sample matrix</strong><br /><small>lhs_samples_v2.csv</small></div><span class="pill ${state.runProgress > 20 ? "core" : "neutral"}">${state.runProgress > 20 ? "已保存" : "等待中"}</span></li>
+            <li><div><strong>Artifact bundle</strong><br /><small>icer_summary.json · ce_plane.png</small></div><span class="pill ${state.runProgress === 100 ? "core" : "neutral"}">${state.runProgress === 100 ? "可查看" : "未生成"}</span></li>
           </ul>
         </section>
       </div>
@@ -692,7 +692,7 @@ function surfaceTemplate(key) {
   return `
     <div class="experience-grid">
       <section class="input-card">
-        <span class="mini-label tone-review">Interactive review</span>
+        <span class="mini-label tone-review">结果阅读器</span>
         <div class="review-controls">
           <label>
             X axis
@@ -711,14 +711,14 @@ function surfaceTemplate(key) {
       </section>
       <section class="control-card">
         <div class="mini-topline">
-          <span>Cohort trace</span>
+          <span>当前 cohort trace</span>
           <span id="surface-cohort-time" class="pill neutral"></span>
         </div>
         <div id="surface-cohort-board" class="cohort-board"></div>
         <ul class="stack-list">
-          <li><div><strong>Versioned notes</strong><br /><small>assumptions-and-notes.md</small></div><span class="pill core">v0.3</span></li>
-          <li><div><strong>Artifact export</strong><br /><small>overlay-fit-v3.png</small></div><span class="pill core">downloadable</span></li>
-          <li><div><strong>Reviewer comment</strong><br /><small>“Check p_death sensitivity above month 18”</small></div><span class="pill next">open</span></li>
+          <li><div><strong>版本化说明</strong><br /><small>assumptions-and-notes.md</small></div><span class="pill core">v0.3</span></li>
+          <li><div><strong>可下载产物</strong><br /><small>overlay-fit-v3.png</small></div><span class="pill core">可导出</span></li>
+          <li><div><strong>审阅意见</strong><br /><small>“Check p_death sensitivity above month 18”</small></div><span class="pill next">待处理</span></li>
         </ul>
       </section>
     </div>

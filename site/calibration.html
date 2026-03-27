@@ -32,11 +32,11 @@
         </span>
       </div>
       <nav class="top-links">
-        <a href="./index.html">Overview</a>
-        <a href="./evidence.html">Evidence</a>
-        <a href="./runtime.html">Probability Runtime</a>
-        <a href="./simulation.html">Simulation Lab</a>
-        <a href="./review.html">Review Surface</a>
+        <a href="./index.html">总览</a>
+        <a href="./evidence.html">证据</a>
+        <a href="./runtime.html">概率函数</a>
+        <a href="./simulation.html">运行模拟</a>
+        <a href="./review.html">结果审阅</a>
       </nav>
     </header>
 
@@ -100,15 +100,15 @@
           <h3>对象数量</h3>
           <ul class="count-list">
             <li>
-              <span>ClinicalSeries</span>
+              <span>已整理证据 ClinicalSeries</span>
               <strong id="sidebar-series-count">0</strong>
             </li>
             <li>
-              <span>ProbabilityFunctions</span>
+              <span>可运行函数 ProbabilityFunctions</span>
               <strong id="sidebar-function-count">0</strong>
             </li>
             <li>
-              <span>Runs</span>
+              <span>已完成分析 Runs</span>
               <strong id="sidebar-run-count">0</strong>
             </li>
           </ul>
@@ -118,11 +118,11 @@
       <section class="workspace-main">
         <section class="hero-panel">
           <div class="hero-copy">
-            <span class="kicker">Step 03 · Target -> Bounds -> Queue calibration</span>
+            <span class="kicker">Step 03 · 先把模型拉近真实临床数据</span>
             <h1>先把模型拉到和 observed clinical data 更接近的位置，再去大规模跑模拟。</h1>
             <p>
               你可以选择目标曲线、参数边界和迭代次数，平台会真实创建 calibration config、异步排队运行校准任务，
-              最后把 observed vs predicted overlay、best-fit 参数和优化记录一起返回给你。
+              最后把 observed vs predicted overlay、best-fit 参数和优化记录一起返回给你，这样后面的模拟更有说服力。
             </p>
             <div class="hero-meta">
               <article>
@@ -135,7 +135,7 @@
               </article>
               <article>
                 <strong>你得到什么</strong>
-                <span>Best-fit params + calibration artifact</span>
+                <span>更贴近 observed data 的参数集</span>
               </article>
             </div>
           </div>
@@ -143,13 +143,13 @@
           <div class="connection-panel">
             <div class="connection-top">
               <div>
-                <span class="kicker">API Bridge</span>
-                <h3 class="panel-title">连接你的 demo backend</h3>
+                <span class="kicker">Connection</span>
+                <h3 class="panel-title">连接你的分析环境</h3>
               </div>
               <span id="connection-badge" class="status-badge warning">Connecting</span>
             </div>
             <p id="connection-copy" class="status-copy">
-              平台会先尝试连接你的本地 FastAPI；如果没有连上，会自动切换到离线样本模式。
+              平台会先尝试连接你的本地 FastAPI；如果没有连上，会自动切换到离线样本模式，你仍然可以演示完整校准流程。
             </p>
             <div class="connection-form">
               <label>
@@ -164,57 +164,78 @@
           </div>
         </section>
 
+        <section class="journey-panel">
+          <article class="journey-card">
+            <span class="journey-label">这一步你要做什么</span>
+            <strong>指定目标曲线和参数边界，让模型先贴近 observed clinical data。</strong>
+            <p>这一步不是为了“求漂亮图”，而是为了让后面的模拟更可信。</p>
+          </article>
+          <article class="journey-card">
+            <span class="journey-label">完成标志</span>
+            <ul>
+              <li>校准任务成功排队并完成</li>
+              <li>overlay 出现 observed vs predicted</li>
+              <li>best-fit 参数可以直接用于下一步模拟</li>
+            </ul>
+          </article>
+          <article class="journey-card">
+            <span class="journey-label">然后你会去哪里</span>
+            <p>当 overlay 已经合理，下一步就是用这组函数和参数启动一条真实运行任务。</p>
+            <a class="button button-secondary" href="./simulation.html">继续去运行模拟</a>
+          </article>
+        </section>
+
         <section class="page-grid">
           <article class="panel span-7">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Calibration Setup</span>
-                <h3>设定目标数据和参数边界</h3>
-              </div>
-              <span class="panel-chip">Calibration API</span>
+              <span class="panel-kicker">Calibration Setup</span>
+              <h3>设定目标数据和参数边界</h3>
+            </div>
+            <span class="panel-chip">校准任务</span>
             </div>
             <div class="form-grid two">
               <label>
-                Calibration name
+                校准名称
                 <input id="calibration-name" type="text" value="Observed vs Predicted PFS Fit" />
               </label>
               <label>
-                Target ClinicalSeries
+                目标证据
                 <select id="calibration-target-series"></select>
               </label>
             </div>
             <div class="form-grid three">
               <label>
-                ProbabilityFunction
+                使用的概率函数
                 <select id="calibration-function-select"></select>
               </label>
               <label>
-                Max Iterations
+                最大迭代次数
                 <input id="calibration-max-iterations" type="number" min="3" step="1" value="12" />
               </label>
               <label>
-                Cycles
+                周期数
                 <input id="calibration-cycles" type="number" min="6" step="1" value="15" />
               </label>
             </div>
             <div class="form-grid three">
               <label>
-                Population
+                人群规模
                 <input id="calibration-population" type="number" min="100" step="100" value="1000" />
               </label>
               <label>
-                Objective
+                目标函数
                 <input type="text" value="rmse" disabled />
               </label>
               <label>
-                Optimizer
+                优化器
                 <input type="text" value="deterministic_grid" disabled />
               </label>
             </div>
 
             <div class="result-card">
               <strong>建议先校准 3 个参数</strong>
-              <p class="helper">这 3 个参数足够让你看到 observed vs predicted overlay 的变化趋势。</p>
+              <p class="helper">这 3 个参数足够让你看到 observed vs predicted overlay 的变化，也方便团队快速理解校准逻辑。</p>
               <div class="form-grid three">
                 <label>
                   event_scale lower
@@ -261,14 +282,14 @@
 
             <div class="action-row">
               <button id="load-calibration-template" class="button-secondary">载入推荐边界</button>
-              <button id="launch-calibration" class="button-primary">启动 Calibration</button>
+              <button id="launch-calibration" class="button-primary">开始这次校准</button>
             </div>
             <div class="progress-track">
               <div id="calibration-progress" class="progress-value"></div>
             </div>
             <div id="calibration-status" class="preview-card">
               <strong>准备好开始校准</strong>
-              <p class="helper">点击后会先创建 calibration config，再以异步 job 方式启动 observed vs predicted 校准。</p>
+              <p class="helper">点击后会先创建校准配置，再异步启动 observed vs predicted 拟合，并告诉你下一步什么时候可以去运行模拟。</p>
             </div>
           </article>
 
@@ -281,7 +302,7 @@
               <span class="tone-pill calibration">Overlay</span>
             </div>
             <div id="calibration-best" class="empty-state">
-              还没有校准结果。先设置参数边界并启动 Calibration。
+              还没有校准结果。先设置参数边界并启动这次校准。
             </div>
           </article>
 
@@ -291,7 +312,7 @@
                 <span class="panel-kicker">Observed vs Predicted</span>
                 <h3>一眼看拟合程度，而不是只看一个数值目标函数</h3>
               </div>
-              <span id="calibration-overlay-label" class="hero-chip">等待 overlay</span>
+              <span id="calibration-overlay-label" class="hero-chip">等待校准结果</span>
             </div>
             <div id="calibration-overlay-chart" class="chart-frame"></div>
           </article>
@@ -299,13 +320,13 @@
           <article class="panel span-6">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Config Registry</span>
-                <h3>你最近创建的 calibration configs</h3>
+                <span class="panel-kicker">Saved Setups</span>
+                <h3>你最近创建的校准配置</h3>
               </div>
-              <a class="nav-chip" href="./simulation.html">用校准后的设定去跑 Simulation</a>
+              <a class="nav-chip" href="./simulation.html">用校准后的设定去跑模拟</a>
             </div>
             <div id="calibration-config-list" class="empty-state">
-              暂无 calibration config。先提交一组参数边界。
+              暂无校准配置。先提交一组参数边界。
             </div>
           </article>
 

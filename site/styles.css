@@ -291,6 +291,51 @@ main {
   gap: 14px;
 }
 
+.entry-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.entry-card {
+  border-radius: 24px;
+  padding: 24px;
+  display: grid;
+  gap: 16px;
+}
+
+.entry-card h3 {
+  margin: 0;
+  font-family: "Newsreader", serif;
+  font-size: 1.7rem;
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+}
+
+.entry-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.72;
+}
+
+.entry-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.entry-meta span {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
 .hero-proof div,
 .signal-strip > div,
 .hero-mini-grid article,
@@ -1322,6 +1367,7 @@ select {
 @media (max-width: 1180px) {
   .hero,
   .section-head,
+  .entry-grid,
   .surface-shell,
   .surface-summary,
   .outputs-grid,
@@ -1341,6 +1387,7 @@ select {
   }
 
   .hero-proof,
+  .entry-grid,
   .hero-mini-grid,
   .run-meta,
   .review-controls,

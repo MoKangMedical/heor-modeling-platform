@@ -284,6 +284,67 @@ button:hover {
   gap: 24px;
 }
 
+.journey-panel {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.journey-card {
+  border-radius: 22px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.78);
+  box-shadow: var(--shadow-md);
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+}
+
+.journey-label {
+  color: var(--navy);
+  font-size: 0.72rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.journey-card strong {
+  display: block;
+  font-size: 1.04rem;
+}
+
+.journey-card p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.journey-card ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.journey-card li {
+  position: relative;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.journey-card li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.62em;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.8;
+}
+
 .kicker {
   color: var(--navy);
   font-size: 0.76rem;
@@ -725,6 +786,10 @@ input[type="range"] {
     grid-template-columns: 1fr;
   }
 
+  .journey-panel {
+    grid-template-columns: 1fr;
+  }
+
   .page-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -754,6 +819,7 @@ input[type="range"] {
   .hero-meta,
   .form-grid.two,
   .form-grid.three,
+  .journey-panel,
   .result-grid,
   .metric-grid,
   .preview-grid,
