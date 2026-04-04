@@ -120,7 +120,16 @@ const state = {
   reviewAutoplay: false,
 };
 
+const WORKFLOW_STAGE_MAP = [
+  { key: "evidence", label: "上传证据", href: "./evidence.html", cue: "字段校验与对象标准化" },
+  { key: "runtime", label: "概率函数", href: "./runtime.html", cue: "编译为可调用函数层" },
+  { key: "calibration", label: "临床校准", href: "./calibration.html", cue: "观察值对预测值拟合" },
+  { key: "simulation", label: "运行模拟", href: "./simulation.html", cue: "Markov 与 PSA 真正执行" },
+  { key: "review", label: "结果审阅", href: "./review.html", cue: "动态轨迹与产物交付" },
+];
+
 document.addEventListener("DOMContentLoaded", () => {
+  initWorkspaceEffects();
   bootstrap().catch((error) => {
     console.error(error);
     setConnectionStatus("offline", "页面加载失败，已自动切换到离线样本模式。");
@@ -253,6 +262,154 @@ function renderSharedChrome() {
   setText("sidebar-function-count", String(state.functions.length));
   setText("sidebar-run-count", String(state.runs.length));
   hydrateApiBaseInput();
+  updateMissionRail();
+  refreshMotionTargets();
+}
+
+function initWorkspaceEffects() {
+  bindPointerAura();
+  mountMissionRail();
+  refreshMotionTargets();
+}
+
+function bindPointerAura() {
+  const root = document.documentElement;
+  const setPointer = (x, y) => {
+    root.style.setProperty("--pointer-x", `${x}%`);
+    root.style.setProperty("--pointer-y", `${y}%`);
+  };
+
+  setPointer(72, 18);
+  window.addEventListener(
+    "pointermove",
+    (event) => {
+      setPointer((event.clientX / window.innerWidth) * 100, (event.clientY / window.innerHeight) * 100);
+    },
+    { passive: true }
+  );
+}
+
+function mountMissionRail() {
+  const workspaceMain = document.querySelector(".workspace-main");
+  const heroPanel = document.querySelector(".hero-panel");
+  if (!workspaceMain || !heroPanel || document.querySelector(".mission-rail")) {
+    return;
+  }
+
+  const currentIndex = Math.max(
+    WORKFLOW_STAGE_MAP.findIndex((stage) => stage.key === state.page),
+    0
+  );
+
+  const rail = document.createElement("section");
+  rail.className = "mission-rail";
+  rail.innerHTML = `
+    <div class="mission-head">
+      <div class="mission-copy">
+        <span>任务流</span>
+        <strong>从证据到结果的一条连续工作流</strong>
+        <small id="mission-status-copy">正在整理当前页面状态。</small>
+      </div>
+      <div class="mission-metrics">
+        <span class="mission-stat" id="mission-project-stat">项目 · -</span>
+        <span class="mission-stat" id="mission-mode-stat">模式 · -</span>
+        <span class="mission-stat" id="mission-object-stat">对象 · 0 / 0 / 0</span>
+      </div>
+    </div>
+    <div class="mission-track">
+      ${WORKFLOW_STAGE_MAP.map((stage, index) => {
+        const cls = index < currentIndex ? "complete" : index === currentIndex ? "active" : "pending";
+        return `
+          <a class="mission-node ${cls}" href="${stage.href}" data-step="${String(index + 1).padStart(2, "0")}">
+            <strong>${stage.label}</strong>
+            <span>${stage.cue}</span>
+          </a>
+        `;
+      }).join("")}
+    </div>
+  `;
+
+  workspaceMain.insertBefore(rail, heroPanel.nextElementSibling);
+}
+
+function updateMissionRail() {
+  setText(
+    "mission-status-copy",
+    state.live
+      ? "真实 API 已连接，当前页面的上传、校准、运行和结果操作都会真实写入后端。"
+      : "当前处于离线样本模式，但整条工作流仍然可完整体验。"
+  );
+  setText("mission-project-stat", `项目 · ${state.context.project_slug || state.context.project_id}`);
+  setText("mission-mode-stat", `模式 · ${state.live ? "真实 API" : "离线演示"}`);
+  setText("mission-object-stat", `对象 · ${state.series.length} / ${state.functions.length} / ${state.runs.length}`);
+}
+
+function refreshMotionTargets() {
+  applyRevealMotion();
+  applySurfaceTilt();
+}
+
+function applyRevealMotion() {
+  const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const targets = [...document.querySelectorAll(".hero-panel, .mission-rail, .sidebar-card, .panel, .preview-card, .artifact-card, .result-card")];
+  if (!targets.length) {
+    return;
+  }
+
+  if (prefersReducedMotion) {
+    targets.forEach((node) => node.classList.add("is-visible"));
+    return;
+  }
+
+  if (!applyRevealMotion.observer) {
+    applyRevealMotion.observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            applyRevealMotion.observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.14, rootMargin: "0px 0px -8% 0px" }
+    );
+  }
+
+  targets.forEach((node, index) => {
+    if (node.dataset.revealBound === "1") {
+      return;
+    }
+    node.dataset.revealBound = "1";
+    node.classList.add("reveal-surface");
+    node.style.setProperty("--reveal-delay", `${Math.min(index, 8) * 55}ms`);
+    applyRevealMotion.observer.observe(node);
+  });
+}
+
+function applySurfaceTilt() {
+  if (!window.matchMedia("(hover: hover)").matches) {
+    return;
+  }
+
+  const targets = document.querySelectorAll(".hero-panel, .mission-rail, .sidebar-card, .panel, .preview-card, .chart-frame, .cohort-frame");
+  targets.forEach((node) => {
+    if (node.dataset.tiltBound === "1") {
+      return;
+    }
+    node.dataset.tiltBound = "1";
+    node.classList.add("tilt-surface");
+    node.addEventListener("pointermove", (event) => {
+      const rect = node.getBoundingClientRect();
+      const rotateX = ((event.clientY - rect.top) / rect.height - 0.5) * -7;
+      const rotateY = ((event.clientX - rect.left) / rect.width - 0.5) * 8;
+      node.style.transform = `perspective(1200px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-4px)`;
+      node.classList.add("is-tilting");
+    });
+    node.addEventListener("pointerleave", () => {
+      node.style.transform = "";
+      node.classList.remove("is-tilting");
+    });
+  });
 }
 
 function setConnectionStatus(mode, message) {

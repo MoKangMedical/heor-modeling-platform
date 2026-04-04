@@ -443,6 +443,151 @@ const lancetGrid = document.getElementById("lancet-grid");
 const architectureStack = document.getElementById("architecture-stack");
 const roadmapGrid = document.getElementById("roadmap-grid");
 const heroChart = document.getElementById("hero-chart");
+const STATIC_MOTION_SELECTOR = [
+  ".hero-copy",
+  ".hero-stage",
+  ".entry-card",
+  ".result-hero",
+  ".promise-card",
+  ".metric-card",
+  ".workflow-step",
+  ".surface-shell",
+  ".object-card",
+  ".capability-card",
+  ".lancet-card",
+  ".architecture-layer",
+  ".roadmap-column",
+  ".dashboard-panel",
+  ".page-hero",
+].join(", ");
+
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+function setStaticPageAccent() {
+  const page = window.location.pathname.split("/").pop() || "index.html";
+  document.body.dataset.sitePage = page.replace(".html", "") || "index";
+}
+
+function bindStaticPointerAura() {
+  if (bindStaticPointerAura.initialized) {
+    return;
+  }
+
+  const setAura = (clientX, clientY) => {
+    const x = `${(clientX / window.innerWidth) * 100}%`;
+    const y = `${(clientY / window.innerHeight) * 100}%`;
+    document.body.style.setProperty("--pointer-x", x);
+    document.body.style.setProperty("--pointer-y", y);
+  };
+
+  document.addEventListener("pointermove", (event) => {
+    setAura(event.clientX, event.clientY);
+  });
+  document.addEventListener("pointerleave", () => {
+    document.body.style.setProperty("--pointer-x", "50%");
+    document.body.style.setProperty("--pointer-y", "26%");
+  });
+
+  bindStaticPointerAura.initialized = true;
+}
+
+function refreshStaticMotion() {
+  const targets = document.querySelectorAll(STATIC_MOTION_SELECTOR);
+  targets.forEach((node) => {
+    node.classList.add("reveal-surface", "tilt-surface");
+  });
+
+  applyStaticRevealMotion(targets);
+  applyStaticSurfaceTilt(targets);
+}
+
+function applyStaticRevealMotion(nodes) {
+  const elements = Array.from(nodes);
+  if (!elements.length) {
+    return;
+  }
+
+  if (!("IntersectionObserver" in window)) {
+    elements.forEach((node) => node.classList.add("is-visible"));
+    return;
+  }
+
+  if (!applyStaticRevealMotion.observer) {
+    applyStaticRevealMotion.observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-visible");
+            applyStaticRevealMotion.observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.16, rootMargin: "0px 0px -10% 0px" }
+    );
+  }
+
+  elements.forEach((node) => {
+    if (node.classList.contains("is-visible")) {
+      return;
+    }
+    applyStaticRevealMotion.observer.observe(node);
+  });
+}
+
+function applyStaticSurfaceTilt(nodes) {
+  if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) {
+    return;
+  }
+
+  nodes.forEach((node) => {
+    if (node.dataset.tiltBound === "true") {
+      return;
+    }
+
+    node.dataset.tiltBound = "true";
+    node.addEventListener("pointermove", (event) => {
+      const rect = node.getBoundingClientRect();
+      const px = clamp((event.clientX - rect.left) / rect.width, 0, 1);
+      const py = clamp((event.clientY - rect.top) / rect.height, 0, 1);
+      const rotateY = (px - 0.5) * 9;
+      const rotateX = (0.5 - py) * 8;
+
+      node.classList.add("is-tilting");
+      node.style.transform = `perspective(1400px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-4px)`;
+    });
+
+    node.addEventListener("pointerleave", () => {
+      node.classList.remove("is-tilting");
+      node.style.transform = "";
+    });
+  });
+}
+
+function initializeStaticSite() {
+  setStaticPageAccent();
+  bindStaticPointerAura();
+
+  renderWorkflow();
+  renderHeroChart();
+  renderSurfaceNav();
+  renderSurfaceView();
+  renderMetrics();
+  renderExampleControls();
+  renderCalibrationInto(exampleCalibration, state.exampleScenario, false);
+  renderScatterInto(exampleScatter, state.exampleX, state.exampleY);
+  renderCeacInto(exampleCeac);
+  renderCohortInto(exampleCohort, cohortTime, state.exampleCohortIndex);
+  renderArtifactList();
+  renderObjectCards();
+  renderFilterBar();
+  renderCapabilities();
+  renderLancetWatch();
+  renderArchitecture();
+  renderRoadmap();
+  refreshStaticMotion();
+}
 
 function listMarkup(items) {
   return items.map((item) => `<li>${item}</li>`).join("");
@@ -495,6 +640,8 @@ function renderWorkflow() {
       `
     )
     .join("");
+
+  refreshStaticMotion();
 }
 
 function renderHeroChart() {
@@ -556,6 +703,7 @@ function renderSurfaceView() {
   surfaceOutputs.innerHTML = listMarkup(surface.outputs);
   surfaceExperience.innerHTML = surfaceTemplate(surface.key);
   attachSurfaceInteractions(surface.key);
+  refreshStaticMotion();
 }
 
 function surfaceTemplate(key) {
@@ -824,6 +972,8 @@ function renderMetrics() {
       `
     )
     .join("");
+
+  refreshStaticMotion();
 }
 
 function renderExampleControls() {
@@ -906,6 +1056,8 @@ function renderObjectCards() {
       `
     )
     .join("");
+
+  refreshStaticMotion();
 }
 
 function renderFilterBar() {
@@ -976,6 +1128,8 @@ function renderCapabilities() {
       `
     )
     .join("");
+
+  refreshStaticMotion();
 }
 
 function renderLancetWatch() {
@@ -1005,6 +1159,8 @@ function renderLancetWatch() {
       `
     )
     .join("");
+
+  refreshStaticMotion();
 }
 
 function renderArchitecture() {
@@ -1028,6 +1184,8 @@ function renderArchitecture() {
       `
     )
     .join("");
+
+  refreshStaticMotion();
 }
 
 function renderRoadmap() {
@@ -1049,6 +1207,8 @@ function renderRoadmap() {
       `
     )
     .join("");
+
+  refreshStaticMotion();
 }
 
 function populateScatterSelect(select, value) {
@@ -1323,20 +1483,4 @@ function attachChartTooltip(container) {
   container.onpointerleave = hide;
 }
 
-renderWorkflow();
-renderHeroChart();
-renderSurfaceNav();
-renderSurfaceView();
-renderMetrics();
-renderExampleControls();
-renderCalibrationInto(exampleCalibration, state.exampleScenario, false);
-renderScatterInto(exampleScatter, state.exampleX, state.exampleY);
-renderCeacInto(exampleCeac);
-renderCohortInto(exampleCohort, cohortTime, state.exampleCohortIndex);
-renderArtifactList();
-renderObjectCards();
-renderFilterBar();
-renderCapabilities();
-renderLancetWatch();
-renderArchitecture();
-renderRoadmap();
+initializeStaticSite();
