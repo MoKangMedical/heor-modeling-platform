@@ -3,10 +3,10 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>构建概率函数 | Probability Runtime</title>
+    <title>构建概率函数 | 概率函数工作台</title>
     <meta
       name="description"
-      content="HEOR Modeling Platform 多页面产品 demo：把 ClinicalSeries 编译成可复用的 ProbabilityFunction。"
+      content="HEOR Modeling Platform 多页面产品 demo：把证据序列编译成可复用的概率函数。"
     />
     <link
       rel="icon"
@@ -28,7 +28,7 @@
         <span class="brand-mark">HM</span>
         <span class="brand-copy">
           <strong>HEOR Modeling Platform</strong>
-          <small>Step 02 · 把证据编译成函数</small>
+          <small>第 2 步 · 把证据编译成函数</small>
         </span>
       </div>
       <nav class="top-links">
@@ -46,32 +46,32 @@
           <div class="workspace-links">
             <a class="workspace-link" href="./evidence.html">
               <div>
-                <span>Step 01</span>
+                <span>第 1 步</span>
                 <strong>上传证据</strong>
               </div>
             </a>
             <a class="workspace-link is-active" href="./runtime.html">
               <div>
-                <span>Step 02</span>
+                <span>第 2 步</span>
                 <strong>构建概率函数</strong>
               </div>
-              <span class="tone-pill calibration">Compiler</span>
+              <span class="tone-pill calibration">已编译</span>
             </a>
             <a class="workspace-link" href="./calibration.html">
               <div>
-                <span>Step 03</span>
+                <span>第 3 步</span>
                 <strong>临床校准</strong>
               </div>
             </a>
             <a class="workspace-link" href="./simulation.html">
               <div>
-                <span>Step 04</span>
+                <span>第 4 步</span>
                 <strong>运行模拟</strong>
               </div>
             </a>
             <a class="workspace-link" href="./review.html">
               <div>
-                <span>Step 05</span>
+                <span>第 5 步</span>
                 <strong>审阅结果</strong>
               </div>
             </a>
@@ -83,15 +83,15 @@
           <ul class="context-list">
             <li>
               <span>项目</span>
-              <strong id="context-project">Connecting...</strong>
+              <strong id="context-project">正在连接...</strong>
             </li>
             <li>
               <span>模型</span>
-              <strong id="context-model">Waiting for demo context</strong>
+              <strong id="context-model">等待示例上下文</strong>
             </li>
             <li>
               <span>模式</span>
-              <strong id="context-mode">Live API pending</strong>
+              <strong id="context-mode">等待真实 API</strong>
             </li>
           </ul>
         </section>
@@ -100,15 +100,15 @@
           <h3>对象数量</h3>
           <ul class="count-list">
             <li>
-              <span>已整理证据 ClinicalSeries</span>
+              <span>已整理证据</span>
               <strong id="sidebar-series-count">0</strong>
             </li>
             <li>
-              <span>可运行函数 ProbabilityFunctions</span>
+              <span>可运行函数</span>
               <strong id="sidebar-function-count">0</strong>
             </li>
             <li>
-              <span>已完成分析 Runs</span>
+              <span>已完成分析</span>
               <strong id="sidebar-run-count">0</strong>
             </li>
           </ul>
@@ -118,7 +118,7 @@
       <section class="workspace-main">
         <section class="hero-panel">
           <div class="hero-copy">
-            <span class="kicker">Step 02 · 把证据变成模型能直接调用的函数</span>
+            <span class="kicker">第 2 步 · 把证据变成模型能直接调用的函数</span>
             <h1>把这组证据编译成一个可被 solver、校准和图形层重复调用的概率函数。</h1>
             <p>
               你只需要选择一份已整理好的证据，平台就会把它编译成 cycle-level event probability
@@ -127,11 +127,11 @@
             <div class="hero-meta">
               <article>
                 <strong>你提供什么</strong>
-                <span>已整理证据 / survival data</span>
+                <span>已整理证据 / 生存数据</span>
               </article>
               <article>
                 <strong>平台帮你做什么</strong>
-                <span>Compiler, interpolation, interval evaluation</span>
+                <span>编译、插值、区间求值</span>
               </article>
               <article>
                 <strong>你得到什么</strong>
@@ -143,10 +143,10 @@
           <div class="connection-panel">
             <div class="connection-top">
               <div>
-                <span class="kicker">Connection</span>
+                <span class="kicker">连接状态</span>
                 <h3 class="panel-title">连接你的分析环境</h3>
               </div>
-              <span id="connection-badge" class="status-badge warning">Connecting</span>
+              <span id="connection-badge" class="status-badge warning">正在连接</span>
             </div>
             <p id="connection-copy" class="status-copy">
               平台会先尝试连接你的本地 FastAPI；如果没有连上，会自动切换到离线样本模式，你仍然可以验证这一层怎么工作。
@@ -180,7 +180,7 @@
           </article>
           <article class="journey-card">
             <span class="journey-label">然后你会去哪里</span>
-            <p>下一步一般是先用 observed data 做一次校准，确认模型输出不会明显偏离临床现实。</p>
+            <p>下一步一般是先用真实观察数据做一次校准，确认模型输出不会明显偏离临床现实。</p>
             <a class="button button-secondary" href="./calibration.html">继续去临床校准</a>
           </article>
         </section>
@@ -189,7 +189,7 @@
           <article class="panel span-7">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Function Builder</span>
+                <span class="panel-kicker">函数构建器</span>
                 <h3>从证据对象生成可运行函数</h3>
               </div>
               <span class="panel-chip">函数编译</span>
@@ -210,10 +210,10 @@
             <div class="form-grid two">
               <label>
                 函数名称
-                <input id="function-name" type="text" value="PFS Event Probability" />
+                <input id="function-name" type="text" value="模拟晚期 NSCLC 月度进展概率函数" />
               </label>
               <label>
-                每个 Cycle 的长度
+                每个周期的长度
                 <input id="function-cycle-length" type="number" min="0.25" step="0.25" value="1" />
               </label>
             </div>
@@ -230,10 +230,10 @@
           <article class="panel span-5">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Registry</span>
+                <span class="panel-kicker">函数列表</span>
                 <h3>你已经准备好的函数层</h3>
               </div>
-              <span class="tone-pill calibration">Runtime</span>
+              <span class="tone-pill calibration">函数层</span>
             </div>
             <div id="function-list" class="empty-state">
               暂无函数。先从一份已整理好的证据开始编译。
@@ -243,10 +243,10 @@
           <article class="panel span-12">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Interval Debug</span>
+                <span class="panel-kicker">区间验证</span>
                 <h3>先验证一个时间区间的事件概率</h3>
               </div>
-              <a class="nav-chip" href="./calibration.html">拿去做 Calibration</a>
+              <a class="nav-chip" href="./calibration.html">带去做临床校准</a>
             </div>
             <div class="form-grid three">
               <label>

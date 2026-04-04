@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>上传证据 | Evidence Workbench</title>
+    <title>上传证据 | 证据工作台</title>
     <meta
       name="description"
       content="HEOR Modeling Platform 多页面产品 demo：先把 KM / survival / hazard 证据整理成可追溯对象。"
@@ -28,7 +28,7 @@
         <span class="brand-mark">HM</span>
         <span class="brand-copy">
           <strong>HEOR Modeling Platform</strong>
-          <small>Step 01 · 先把证据整理好</small>
+          <small>第 1 步 · 先把证据整理好</small>
         </span>
       </div>
       <nav class="top-links">
@@ -46,32 +46,32 @@
           <div class="workspace-links">
             <a class="workspace-link is-active" href="./evidence.html">
               <div>
-                <span>Step 01</span>
+                <span>第 1 步</span>
                 <strong>上传证据</strong>
               </div>
-              <span class="tone-pill evidence">Start here</span>
+              <span class="tone-pill evidence">从这里开始</span>
             </a>
             <a class="workspace-link" href="./runtime.html">
               <div>
-                <span>Step 02</span>
+                <span>第 2 步</span>
                 <strong>构建概率函数</strong>
               </div>
             </a>
             <a class="workspace-link" href="./calibration.html">
               <div>
-                <span>Step 03</span>
+                <span>第 3 步</span>
                 <strong>临床校准</strong>
               </div>
             </a>
             <a class="workspace-link" href="./simulation.html">
               <div>
-                <span>Step 04</span>
+                <span>第 4 步</span>
                 <strong>运行模拟</strong>
               </div>
             </a>
             <a class="workspace-link" href="./review.html">
               <div>
-                <span>Step 05</span>
+                <span>第 5 步</span>
                 <strong>审阅结果</strong>
               </div>
             </a>
@@ -83,15 +83,15 @@
           <ul class="context-list">
             <li>
               <span>项目</span>
-              <strong id="context-project">Connecting...</strong>
+              <strong id="context-project">正在连接...</strong>
             </li>
             <li>
               <span>模型</span>
-              <strong id="context-model">Waiting for demo context</strong>
+              <strong id="context-model">等待示例上下文</strong>
             </li>
             <li>
               <span>模式</span>
-              <strong id="context-mode">Live API pending</strong>
+              <strong id="context-mode">等待真实 API</strong>
             </li>
           </ul>
         </section>
@@ -100,15 +100,15 @@
           <h3>对象数量</h3>
           <ul class="count-list">
             <li>
-              <span>已整理证据 ClinicalSeries</span>
+              <span>已整理证据</span>
               <strong id="sidebar-series-count">0</strong>
             </li>
             <li>
-              <span>可运行函数 ProbabilityFunctions</span>
+              <span>可运行函数</span>
               <strong id="sidebar-function-count">0</strong>
             </li>
             <li>
-              <span>已完成分析 Runs</span>
+              <span>已完成分析</span>
               <strong id="sidebar-run-count">0</strong>
             </li>
           </ul>
@@ -118,7 +118,7 @@
       <section class="workspace-main">
         <section class="hero-panel">
           <div class="hero-copy">
-            <span class="kicker">Step 01 · 先把输入整理成可信证据</span>
+            <span class="kicker">第 1 步 · 先把输入整理成可信证据</span>
             <h1>先把你手里的 KM / survival 数据整理成平台能直接复用的证据对象。</h1>
             <p>
               把样本表贴进来后，你会先看到字段校验、时间对齐和对象标准化结果。连上本地 API
@@ -127,11 +127,11 @@
             <div class="hero-meta">
               <article>
                 <strong>你提供什么</strong>
-                <span>KM / survival / hazard table</span>
+                <span>KM 表、生存表、风险表</span>
               </article>
               <article>
                 <strong>平台帮你做什么</strong>
-                <span>Validation, normalization, versioning</span>
+                <span>字段校验、标准化、版本留痕</span>
               </article>
               <article>
                 <strong>你得到什么</strong>
@@ -143,10 +143,10 @@
           <div class="connection-panel">
             <div class="connection-top">
               <div>
-                <span class="kicker">Connection</span>
+                <span class="kicker">连接状态</span>
                 <h3 class="panel-title">连接你的分析环境</h3>
               </div>
-              <span id="connection-badge" class="status-badge warning">Connecting</span>
+              <span id="connection-badge" class="status-badge warning">正在连接</span>
             </div>
             <p id="connection-copy" class="status-copy">
               平台会先尝试连接你的本地 FastAPI；如果没有连上，会自动切换到离线样本模式，你仍然可以完整体验这一步。
@@ -189,7 +189,7 @@
           <article class="panel span-8">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Evidence Intake</span>
+                <span class="panel-kicker">证据导入</span>
                 <h3>把一组生存数据贴进来</h3>
               </div>
               <span class="panel-chip">证据对象</span>
@@ -204,7 +204,7 @@
             <div class="form-grid two">
               <label>
                 证据名称
-                <input id="series-name" type="text" value="Demo PFS KM" />
+                <input id="series-name" type="text" value="模拟晚期 NSCLC PFS" />
               </label>
               <label>
                 证据类型
@@ -216,11 +216,12 @@
               </label>
             </div>
             <label>
-              Points CSV
+              点位 CSV
               <textarea id="sample-csv"></textarea>
             </label>
             <div class="action-row">
               <button id="load-sample-csv" class="button-secondary">加载示例 KM</button>
+              <a class="button button-secondary" href="#accepted-formats">查看支持格式</a>
               <button id="create-series" class="button-primary">整理成证据对象</button>
             </div>
             <div id="series-output" class="result-card">
@@ -232,7 +233,7 @@
           <article class="panel span-4">
             <div class="panel-heading">
               <div>
-                <span class="panel-kicker">Validation Log</span>
+                <span class="panel-kicker">校验日志</span>
                 <h3>你刚刚提交的数据是否可用</h3>
               </div>
               <span class="tone-pill evidence">Evidence</span>
@@ -243,17 +244,26 @@
             </div>
             <div class="micro-grid">
               <article class="micro-card">
-                <strong>Units</strong>
-                <span>Month aligned</span>
+                <strong>时间单位</strong>
+                <span>已对齐到月</span>
               </article>
               <article class="micro-card">
-                <strong>Source</strong>
-                <span>KM curve points</span>
+                <strong>来源</strong>
+                <span>KM 曲线点</span>
               </article>
               <article class="micro-card">
-                <strong>Status</strong>
-                <span>Version-ready</span>
+                <strong>状态</strong>
+                <span>可进入版本管理</span>
               </article>
+            </div>
+            <div id="accepted-formats" class="preview-card">
+              <strong>支持的输入格式</strong>
+              <p class="helper">你可以从 KM table、hazard table 或 survival table 开始。建议第一条先用 6 到 12 个点的小样本，最容易看清整理结果。</p>
+              <div class="pill-row">
+                <span class="tone-pill evidence">KM table</span>
+                <span class="tone-pill evidence">hazard table</span>
+                <span class="tone-pill evidence">survival table</span>
+              </div>
             </div>
           </article>
 

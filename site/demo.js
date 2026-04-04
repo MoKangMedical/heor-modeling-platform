@@ -14,16 +14,45 @@ const OFFLINE_CONTEXT = {
   project_slug: "offline-heor",
   model_id: "offline-model",
   model_version_id: "offline-model-version",
-  model_name: "Offline Oncology Model",
+  model_name: "晚期 NSCLC 靶向治疗成本效果模型",
+  demo_case_name: "模拟晚期 NSCLC 靶向治疗经济学演示",
+  population_label: "EGFR+ 晚期非小细胞肺癌一线治疗人群",
+  intervention_label: "靶向治疗方案",
+  comparator_label: "标准化疗",
 };
 
 const SAMPLE_POINTS = [
   { seq_no: 1, time_value: 0, estimate_value: 1.0 },
-  { seq_no: 2, time_value: 3, estimate_value: 0.92 },
-  { seq_no: 3, time_value: 6, estimate_value: 0.84 },
-  { seq_no: 4, time_value: 9, estimate_value: 0.73 },
-  { seq_no: 5, time_value: 12, estimate_value: 0.61 },
-  { seq_no: 6, time_value: 15, estimate_value: 0.49 },
+  { seq_no: 2, time_value: 1, estimate_value: 0.968 },
+  { seq_no: 3, time_value: 2, estimate_value: 0.936 },
+  { seq_no: 4, time_value: 3, estimate_value: 0.902 },
+  { seq_no: 5, time_value: 4, estimate_value: 0.868 },
+  { seq_no: 6, time_value: 5, estimate_value: 0.835 },
+  { seq_no: 7, time_value: 6, estimate_value: 0.802 },
+  { seq_no: 8, time_value: 8, estimate_value: 0.732 },
+  { seq_no: 9, time_value: 10, estimate_value: 0.664 },
+  { seq_no: 10, time_value: 12, estimate_value: 0.598 },
+  { seq_no: 11, time_value: 15, estimate_value: 0.512 },
+  { seq_no: 12, time_value: 18, estimate_value: 0.438 },
+  { seq_no: 13, time_value: 21, estimate_value: 0.368 },
+  { seq_no: 14, time_value: 24, estimate_value: 0.304 },
+];
+
+const OBSERVED_SAMPLE_POINTS = [
+  { seq_no: 1, time_value: 0, estimate_value: 1.0 },
+  { seq_no: 2, time_value: 1, estimate_value: 0.955 },
+  { seq_no: 3, time_value: 2, estimate_value: 0.912 },
+  { seq_no: 4, time_value: 3, estimate_value: 0.87 },
+  { seq_no: 5, time_value: 4, estimate_value: 0.826 },
+  { seq_no: 6, time_value: 5, estimate_value: 0.785 },
+  { seq_no: 7, time_value: 6, estimate_value: 0.742 },
+  { seq_no: 8, time_value: 8, estimate_value: 0.658 },
+  { seq_no: 9, time_value: 10, estimate_value: 0.578 },
+  { seq_no: 10, time_value: 12, estimate_value: 0.502 },
+  { seq_no: 11, time_value: 15, estimate_value: 0.402 },
+  { seq_no: 12, time_value: 18, estimate_value: 0.316 },
+  { seq_no: 13, time_value: 21, estimate_value: 0.246 },
+  { seq_no: 14, time_value: 24, estimate_value: 0.188 },
 ];
 
 const SAMPLE_CSV = [
@@ -50,11 +79,11 @@ const PALETTE = {
 };
 
 const DEFAULT_METRIC_OPTIONS = [
-  { key: "total_cost", label: "Total Cost" },
-  { key: "total_qalys", label: "Total QALYs" },
-  { key: "life_years", label: "Life Years" },
-  { key: "deaths", label: "Deaths" },
-  { key: "mean_transition_probability", label: "Mean Transition Probability" },
+  { key: "total_cost", label: "总成本" },
+  { key: "total_qalys", label: "总 QALY" },
+  { key: "life_years", label: "总生存年" },
+  { key: "deaths", label: "死亡人数" },
+  { key: "mean_transition_probability", label: "平均事件概率" },
 ];
 
 const DEFAULT_CALIBRATION_TEMPLATE = {
@@ -230,7 +259,7 @@ function setConnectionStatus(mode, message) {
   const badge = document.getElementById("connection-badge");
   const copy = document.getElementById("connection-copy");
   if (badge) {
-    badge.textContent = mode === "live" ? "Live API" : mode === "offline" ? "Offline Sample" : "Connecting";
+    badge.textContent = mode === "live" ? "已连接真实接口" : mode === "offline" ? "离线演示模式" : "正在连接";
     badge.className = `status-badge ${mode}`;
   }
   if (copy) {
@@ -288,7 +317,7 @@ function buildSeriesPayload() {
   }
 
   return {
-    name: document.getElementById("series-name")?.value.trim() || "Demo PFS KM",
+    name: document.getElementById("series-name")?.value.trim() || "模拟晚期 NSCLC PFS - 网络荟萃估计",
     series_kind: document.getElementById("series-kind")?.value || "km_survival",
     time_unit: "month",
     value_unit: "survival_probability",
@@ -296,6 +325,8 @@ function buildSeriesPayload() {
     source_metadata_json: {
       source: state.live ? "live-demo-ui" : "offline-demo-ui",
       page: "evidence",
+      scenario: state.context.demo_case_name || OFFLINE_CONTEXT.demo_case_name,
+      population: state.context.population_label || OFFLINE_CONTEXT.population_label,
     },
     points,
   };
@@ -307,29 +338,67 @@ async function ensureDemoSeries() {
     csv.value = SAMPLE_CSV;
   }
 
-  const existing = state.series.find(
-    (item) => item.name === "Demo PFS KM" && item.series_kind === "km_survival"
+  const sourceName = "模拟晚期 NSCLC PFS - 网络荟萃估计";
+  const targetName = "模拟晚期 NSCLC PFS - 真实世界观察";
+  const existingSource = state.series.find(
+    (item) => item.name === sourceName && item.series_kind === "km_survival"
   );
-  if (existing) {
-    state.selectedSeriesId = existing.id;
+  const existingTarget = state.series.find(
+    (item) => item.name === targetName && item.series_kind === "km_survival"
+  );
+  if (existingSource && existingTarget) {
+    state.selectedSeriesId = existingSource.id;
     renderSharedChrome();
     renderEvidenceRegistry();
-    renderSeriesOutput(existing, "已为你加载 demo 证据。现在可以继续去生成可运行函数。");
-    return;
-  }
-
-  const payload = buildSeriesPayload();
-  if (!payload) {
+    renderSeriesOutput(
+      existingSource,
+      "示例场景已准备好：基础 PFS 曲线用于生成概率函数，真实世界曲线用于后续校准。"
+    );
     return;
   }
 
   try {
-    const series = state.live ? await createSeriesLive(payload) : createSeriesOffline(payload);
-    state.selectedSeriesId = series.id;
+    const sourcePayload = {
+      ...buildSeriesPayload(),
+      name: sourceName,
+      source_metadata_json: {
+        source: "simulated_nma_curve",
+        page: "evidence",
+        scenario: state.context.demo_case_name || OFFLINE_CONTEXT.demo_case_name,
+        population: state.context.population_label || OFFLINE_CONTEXT.population_label,
+        role: "base_survival_evidence",
+      },
+      points: SAMPLE_POINTS.map((point) => ({ ...point, metadata_json: { month: point.time_value } })),
+    };
+    const targetPayload = {
+      ...sourcePayload,
+      name: targetName,
+      source_metadata_json: {
+        source: "simulated_rwe_curve",
+        page: "evidence",
+        scenario: state.context.demo_case_name || OFFLINE_CONTEXT.demo_case_name,
+        population: state.context.population_label || OFFLINE_CONTEXT.population_label,
+        role: "observed_target_curve",
+      },
+      points: OBSERVED_SAMPLE_POINTS.map((point) => ({ ...point, metadata_json: { month: point.time_value } })),
+    };
+
+    const sourceSeries = existingSource || (state.live ? await createSeriesLive(sourcePayload) : createSeriesOffline(sourcePayload));
+    if (!existingTarget) {
+      if (state.live) {
+        await createSeriesLive(targetPayload);
+      } else {
+        createSeriesOffline(targetPayload);
+      }
+    }
+    state.selectedSeriesId = sourceSeries.id;
     await refreshCollections();
     renderSharedChrome();
     renderEvidenceRegistry();
-    renderSeriesOutput(series, "demo 证据已经直接准备好。你现在可以继续去生成函数，或停在这里先检查字段。");
+    renderSeriesOutput(
+      sourceSeries,
+      "示例证据已经准备好。你现在可以先生成概率函数，再用真实世界曲线做临床校准。"
+    );
   } catch (error) {
     renderSeriesOutput(null, extractMessage(error));
   }
@@ -351,12 +420,12 @@ function renderSeriesOutput(series, message) {
   }
 
   container.innerHTML = `
-    <span class="panel-kicker">Latest Evidence Object</span>
+    <span class="panel-kicker">当前最新证据对象</span>
     <strong>${selected.name}</strong>
     <p class="helper">${message || "这份证据已经可以直接拿去生成可运行函数。"} </p>
     <div class="pill-row">
       <span class="tone-pill evidence">${selected.series_kind}</span>
-      <span class="hero-chip">${selected.points.length} points</span>
+      <span class="hero-chip">${selected.points.length} 个数据点</span>
     </div>
     <ul class="context-list">
       <li>
@@ -389,7 +458,7 @@ function renderSeriesStatus() {
     <strong>${selected.name}</strong>
     <p class="helper">校验已通过。${selected.points.length} 个点已按 ${selected.time_unit} 粒度对齐，这份证据现在可以继续用于生成函数。</p>
     <div class="pill-row">
-      <span class="tone-pill evidence">Ready</span>
+      <span class="tone-pill evidence">可继续使用</span>
       <span class="hero-chip">${state.live ? "已写入 API" : "已保存到本地样本"}</span>
     </div>
   `;
@@ -411,10 +480,10 @@ function renderSeriesTable() {
     <table>
       <thead>
         <tr>
-          <th>Name</th>
-          <th>Kind</th>
-          <th>Points</th>
-          <th>Time Unit</th>
+          <th>名称</th>
+          <th>类型</th>
+          <th>点数</th>
+          <th>时间单位</th>
           <th>ID</th>
         </tr>
       </thead>
@@ -445,8 +514,8 @@ function initRuntimePage() {
       return;
     }
 
-    const payload = {
-      name: document.getElementById("function-name")?.value.trim() || "PFS Event Probability",
+      const payload = {
+      name: document.getElementById("function-name")?.value.trim() || "模拟晚期 NSCLC 月度进展概率函数",
       function_kind:
         document.getElementById("function-kind")?.value || "survival_interval_probability",
       source_type: "clinical_series",
@@ -535,7 +604,7 @@ function renderFunctionOutput(functionRecord, message) {
 
   const compiled = selected.options_json?.compiled_source;
   container.innerHTML = `
-    <span class="panel-kicker">Latest Runtime Function</span>
+    <span class="panel-kicker">当前最新概率函数</span>
     <strong>${selected.name}</strong>
     <p class="helper">${message || "你现在可以直接验证任意区间，或者把它送去做校准和模拟。"} </p>
     <div class="pill-row">
@@ -615,6 +684,7 @@ function renderDebugResult(debug, message) {
     </ul>
   `;
   chart.innerHTML = makeProbabilityChartSvg(selected, debug);
+  attachChartTooltip(chart);
 }
 
 function initCalibrationPage() {
@@ -639,7 +709,7 @@ function initCalibrationPage() {
     };
 
     startProgress("calibration");
-    renderCalibrationStatus("正在创建 calibration config，并准备把任务送进异步队列。");
+    renderCalibrationStatus("正在创建校准配置，并准备把任务送进异步队列。");
 
     try {
       const bundle = state.live
@@ -651,7 +721,7 @@ function initCalibrationPage() {
       renderSharedChrome();
       renderCalibrationPage();
       stopProgress("calibration", 100);
-      renderCalibrationStatus("校准已完成。现在可以先看 overlay，再进入 Simulation。");
+      renderCalibrationStatus("校准已完成。现在可以先看覆盖图，再进入运行模拟。");
     } catch (error) {
       stopProgress("calibration", 0);
       renderCalibrationStatus(extractMessage(error));
@@ -660,6 +730,49 @@ function initCalibrationPage() {
 
   hydrateCalibrationTemplate();
   renderCalibrationPage();
+}
+
+async function ensureLatestCalibrationBundle() {
+  const completedRuns = state.runs
+    .filter((run) => run.analysis_type === "calibration" && run.status === "completed")
+    .sort((left, right) => getRunTimestamp(right) - getRunTimestamp(left));
+  const latest = completedRuns[0];
+  if (!latest) {
+    state.currentCalibration = null;
+    return null;
+  }
+
+  if (state.currentCalibration && String(state.currentCalibration.run?.id) === String(latest.id)) {
+    return state.currentCalibration;
+  }
+
+  if (state.live) {
+    try {
+      const [result, artifacts] = await Promise.all([
+        request(`/runs/${latest.id}/calibration-result`),
+        request(`/runs/${latest.id}/artifacts`).catch(() => []),
+      ]);
+      state.currentCalibration = {
+        run: latest,
+        result,
+        artifacts,
+        overlayArtifact: artifacts.find((artifact) => artifact.artifact_type === "calibration-overlay") || null,
+      };
+      return state.currentCalibration;
+    } catch (error) {
+      console.warn("Failed to load latest calibration bundle", error);
+      state.currentCalibration = null;
+      return null;
+    }
+  }
+
+  state.currentCalibration = {
+    run: latest,
+    result: latest._calibrationResult || null,
+    artifacts: latest._artifacts || [],
+    overlayArtifact: (latest._artifacts || []).find((artifact) => artifact.artifact_type === "calibration-overlay") || null,
+  };
+  return state.currentCalibration;
 }
 
 function renderCalibrationPage() {
@@ -704,7 +817,7 @@ function buildCalibrationConfigPayload() {
   const targetSeriesId = document.getElementById("calibration-target-series")?.value;
   const functionId = document.getElementById("calibration-function-select")?.value;
   if (!targetSeriesId) {
-    renderCalibrationStatus("先选择一条目标证据，校准才知道要贴近哪条 observed 曲线。");
+    renderCalibrationStatus("先选择一条目标证据，校准才知道要贴近哪条观察曲线。");
     return null;
   }
   if (!functionId) {
@@ -713,7 +826,7 @@ function buildCalibrationConfigPayload() {
   }
 
   return {
-    name: document.getElementById("calibration-name")?.value.trim() || "Observed vs Predicted Fit",
+    name: document.getElementById("calibration-name")?.value.trim() || "观察值与预测值拟合",
     target_series_id: targetSeriesId,
     objective_type: "rmse",
     optimizer_type: "deterministic_grid",
@@ -760,17 +873,17 @@ function renderCalibrationStatus(message) {
   if (!bundle) {
     container.innerHTML = `
       <strong>${message || "准备好开始校准"}</strong>
-      <p class="helper">先设置目标证据和参数边界。平台会用异步 job 跑完 observed vs predicted 校准，然后把最值得看的结果回到这里。</p>
+      <p class="helper">先设置目标证据和参数边界。平台会用异步任务跑完观察值对预测值校准，然后把最值得看的结果带回这里。</p>
     `;
     return;
   }
 
   container.innerHTML = `
     <strong>${message || "最近一次校准已经完成"}</strong>
-    <p class="helper">Run ${shortId(bundle.run.id)} · ${bundle.run.status} · ${bundle.result.convergence_status}。这次校准已经给出一组可继续使用的参数。</p>
+    <p class="helper">运行 ${shortId(bundle.run.id)} · ${bundle.run.status} · ${bundle.result.convergence_status}。这次校准已经给出一组可继续使用的参数。</p>
     <div class="pill-row">
-      <span class="tone-pill calibration">Best RMSE ${Number(bundle.result.best_objective_value).toFixed(4)}</span>
-      <span class="hero-chip">${bundle.config.max_iterations} candidates</span>
+      <span class="tone-pill calibration">最佳 RMSE ${Number(bundle.result.best_objective_value).toFixed(4)}</span>
+      <span class="hero-chip">${bundle.config.max_iterations} 个候选值</span>
     </div>
   `;
 }
@@ -791,20 +904,20 @@ function renderCalibrationBest() {
   const bestParams = bundle.result.best_params_json || {};
   container.className = "result-card";
   container.innerHTML = `
-    <span class="panel-kicker">Latest Calibration Result</span>
-    <strong>Best RMSE = ${Number(bundle.result.best_objective_value).toFixed(4)}</strong>
-    <p class="helper">这组参数已经让模型输出更接近目标证据。你可以直接看 overlay，或者继续去跑模拟。</p>
+    <span class="panel-kicker">最近一次校准结果</span>
+    <strong>最佳 RMSE = ${Number(bundle.result.best_objective_value).toFixed(4)}</strong>
+    <p class="helper">这组参数已经让模型输出更接近目标证据。你可以直接看覆盖图，或者继续去跑模拟。</p>
     <ul class="context-list">
       <li>
-        <span>event_scale</span>
+        <span>事件比例</span>
         <strong>${formatShortNumber(bestParams.event_scale)}</strong>
       </li>
       <li>
-        <span>pf_death_probability</span>
+        <span>无进展死亡概率</span>
         <strong>${formatShortNumber(bestParams.pf_death_probability)}</strong>
       </li>
       <li>
-        <span>pd_death_probability</span>
+        <span>进展后死亡概率</span>
         <strong>${formatShortNumber(bestParams.pd_death_probability)}</strong>
       </li>
     </ul>
@@ -821,7 +934,7 @@ function renderCalibrationOverlay() {
   const bundle = state.currentCalibration;
   if (!bundle) {
     chart.innerHTML = makeEmptyChartSvg("先启动一次校准");
-    label.textContent = "等待校准结果";
+      label.textContent = "等待校准结果";
     return;
   }
 
@@ -833,7 +946,8 @@ function renderCalibrationOverlay() {
     fullPredictedCurve: metadata.full_predicted_curve || [],
     bestObjectiveValue: bundle.result.best_objective_value,
   });
-  label.textContent = `Observed vs predicted · RMSE ${Number(bundle.result.best_objective_value).toFixed(4)}`;
+  attachChartTooltip(chart);
+  label.textContent = `观察值对预测值 · RMSE ${Number(bundle.result.best_objective_value).toFixed(4)}`;
 }
 
 function renderCalibrationConfigs() {
@@ -855,7 +969,7 @@ function renderCalibrationConfigs() {
         <li>
           <strong>${config.name}</strong>
           <span class="list-meta">${config.objective_type} · ${config.optimizer_type}</span>
-          <span class="list-meta">${config.parameters?.length || 0} parameters · ${config.max_iterations} iterations</span>
+          <span class="list-meta">${config.parameters?.length || 0} 个参数 · ${config.max_iterations} 次迭代</span>
         </li>
       `
     )
@@ -879,12 +993,12 @@ function renderCalibrationDiagnostics() {
   container.className = "list-table";
   container.innerHTML = history
     .slice(0, 6)
-    .map(
-      (candidate) => `
+      .map(
+        (candidate) => `
         <li>
-          <strong>Iteration ${candidate.iteration} · RMSE ${Number(candidate.objective).toFixed(4)}</strong>
-          <span class="list-meta">event_scale ${formatShortNumber(candidate.parameter_values?.event_scale)}</span>
-          <span class="list-meta">pf_death ${formatShortNumber(candidate.parameter_values?.pf_death_probability)} · pd_death ${formatShortNumber(candidate.parameter_values?.pd_death_probability)}</span>
+          <strong>第 ${candidate.iteration} 次尝试 · RMSE ${Number(candidate.objective).toFixed(4)}</strong>
+          <span class="list-meta">事件比例 ${formatShortNumber(candidate.parameter_values?.event_scale)}</span>
+          <span class="list-meta">无进展死亡 ${formatShortNumber(candidate.parameter_values?.pf_death_probability)} · 进展后死亡 ${formatShortNumber(candidate.parameter_values?.pd_death_probability)}</span>
         </li>
       `
     )
@@ -892,6 +1006,30 @@ function renderCalibrationDiagnostics() {
 }
 
 function initSimulationPage() {
+  document.getElementById("preset-base-case")?.addEventListener("click", () => {
+    setInputValue("run-sampling-method", "random");
+    setInputValue("run-cycles", 12);
+    setInputValue("run-population", 1000);
+    setInputValue("run-sample-size", 1);
+    renderRunStatus("已切换到基线情景配置。现在可以直接运行单条队列结果。");
+  });
+
+  document.getElementById("preset-psa")?.addEventListener("click", () => {
+    setInputValue("run-sampling-method", "lhs");
+    setInputValue("run-cycles", 12);
+    setInputValue("run-population", 1000);
+    setInputValue("run-sample-size", 16);
+    renderRunStatus("已切换到 PSA 配置。平台将使用 LHS 抽样，并保存样本矩阵。");
+  });
+
+  document.getElementById("load-run-template")?.addEventListener("click", () => {
+    setInputValue("run-sampling-method", "lhs");
+    setInputValue("run-cycles", 24);
+    setInputValue("run-population", 1000);
+    setInputValue("run-sample-size", 24);
+    renderRunStatus("已载入模拟晚期 NSCLC 的示例配置。你可以直接运行，或微调样本数和周期数。");
+  });
+
   document.getElementById("launch-run")?.addEventListener("click", async () => {
     const functionId = document.getElementById("run-function-select")?.value;
     if (!functionId) {
@@ -899,21 +1037,43 @@ function initSimulationPage() {
       return;
     }
 
+    const calibrationBundle = await ensureLatestCalibrationBundle();
+    const calibratedParams = calibrationBundle?.result?.best_params_json || {};
+
     const payload = {
       project_id: state.context.project_id,
       analysis_type: "cohort_markov",
       sampling_method: document.getElementById("run-sampling-method")?.value || "lhs",
-      input_snapshot_json: {},
+      input_snapshot_json: {
+        scenario: state.context.demo_case_name || OFFLINE_CONTEXT.demo_case_name,
+        population: state.context.population_label || OFFLINE_CONTEXT.population_label,
+        intervention: state.context.intervention_label || OFFLINE_CONTEXT.intervention_label,
+        comparator: state.context.comparator_label || OFFLINE_CONTEXT.comparator_label,
+        calibration_run_id: calibrationBundle?.run?.id || null,
+      },
       config_json: {
         probability_function_id: functionId,
         cycles: Number(document.getElementById("run-cycles")?.value || 12),
         initial_population: Number(document.getElementById("run-population")?.value || 1000),
         sample_size: Number(document.getElementById("run-sample-size")?.value || 16),
+        patient_trace_count: 10,
+        event_scale: Number(calibratedParams.event_scale ?? 1.0),
+        pf_death_probability: Number(calibratedParams.pf_death_probability ?? 0.01),
+        pd_death_probability: Number(calibratedParams.pd_death_probability ?? 0.08),
+        pf_state_cost: 6800,
+        pd_state_cost: 12400,
+        transition_cost: 2400,
+        pf_state_utility: 0.83,
+        pd_state_utility: 0.56,
       },
     };
 
     startProgress("run");
-    renderRunStatus("任务已排队。平台正在准备 cohort、sample matrix 和结果页需要的 artifacts。");
+    renderRunStatus(
+      calibrationBundle
+        ? "任务已排队。平台会沿用最近一次校准参数，继续计算 cohort、样本矩阵和结果页需要的产物。"
+        : "任务已排队。平台正在准备队列结果、样本矩阵和结果页需要的产物。"
+    );
 
     try {
       const run = state.live ? await launchRunLive(payload) : await launchRunOffline(payload);
@@ -922,7 +1082,7 @@ function initSimulationPage() {
       renderSharedChrome();
       await renderSimulationPage();
       stopProgress("run", 100);
-      renderRunStatus(`Run ${shortId(run.id)} 已完成。你现在可以先看动态 Markov 流，再去结果页讲清楚这次分析。`);
+      renderRunStatus(`运行 ${shortId(run.id)} 已完成。你现在可以先看动态 Markov 流，再去结果页讲清楚这次分析。`);
     } catch (error) {
       stopProgress("run", 0);
       renderRunStatus(extractMessage(error));
@@ -933,6 +1093,7 @@ function initSimulationPage() {
 }
 
 async function renderSimulationPage() {
+  await ensureLatestCalibrationBundle();
   populateSelect(
     document.getElementById("run-function-select"),
     state.functions.map((fn) => ({
@@ -942,6 +1103,7 @@ async function renderSimulationPage() {
     state.selectedFunctionId
   );
 
+  renderCalibrationBridge();
   renderRunSummary();
   renderRunRegistry();
   await renderArtifactPreview();
@@ -955,12 +1117,42 @@ function renderRunStatus(message) {
   }
   container.innerHTML = `
     <strong>${message}</strong>
-    <p class="helper">真实后端会返回异步 job 状态、summary cards、cohort 数据和 artifact references，后面会直接进入结果页使用。</p>
+    <p class="helper">这一页会把运行状态、核心结果、动态状态流和可审阅产物串起来，让你不用在不同页面来回跳。</p>
+  `;
+}
+
+function renderCalibrationBridge() {
+  const container = document.getElementById("run-calibration-bridge");
+  if (!container) {
+    return;
+  }
+
+  const bundle = state.currentCalibration;
+  if (!bundle?.result) {
+    container.className = "preview-card";
+    container.innerHTML = `
+      <strong>当前还没有可沿用的校准结果</strong>
+      <p class="helper">你仍然可以直接跑 base case 或 PSA；如果先做一次临床校准，后面的模拟会自动带上最新参数。</p>
+    `;
+    return;
+  }
+
+  const bestParams = bundle.result.best_params_json || {};
+  container.className = "preview-card";
+  container.innerHTML = `
+    <strong>这次运行会自动沿用最近一次校准结果</strong>
+    <p class="helper">来自运行 ${shortId(bundle.run.id)}。这能让模拟更接近你刚刚确认过的观察值对预测值拟合。</p>
+    <div class="pill-row">
+      <span class="tone-pill calibration">事件比例 ${formatShortNumber(bestParams.event_scale)}</span>
+      <span class="hero-chip">PF 死亡 ${formatShortNumber(bestParams.pf_death_probability)}</span>
+      <span class="hero-chip">PD 死亡 ${formatShortNumber(bestParams.pd_death_probability)}</span>
+    </div>
   `;
 }
 
 function renderRunSummary() {
   const container = document.getElementById("run-summary");
+  const note = document.getElementById("run-summary-note");
   if (!container) {
     return;
   }
@@ -969,6 +1161,9 @@ function renderRunSummary() {
   if (!run) {
     container.className = "empty-state";
     container.textContent = "还没有分析结果。先选择一条函数并启动这次运行。";
+    if (note) {
+      note.textContent = "结果出现后，这里会先告诉你基线指标最该先看什么。";
+    }
     return;
   }
 
@@ -976,6 +1171,9 @@ function renderRunSummary() {
   if (!cards.length) {
     container.className = "empty-state";
     container.textContent = `${run.analysis_type} · ${run.status}。结果卡片会在运行完成后出现。`;
+    if (note) {
+      note.textContent = "当前 run 还没有 summary cards，先等计算完成。";
+    }
     return;
   }
 
@@ -991,6 +1189,14 @@ function renderRunSummary() {
       `
     )
     .join("");
+
+  if (note) {
+    const primaryLabels = cards.slice(0, 3).map((card) => card.label).join("、");
+    const eventScale = run.summary_json?.calibration_applied?.event_scale;
+    note.textContent = eventScale
+      ? `先看 ${primaryLabels}。这次运行已带入校准后的事件比例 ${formatShortNumber(eventScale)}，再决定是否进入完整结果页解释不确定性。`
+      : `先看 ${primaryLabels}，这会帮助你先判断基线结果，再决定是否要进入完整结果页解释不确定性。`;
+  }
 }
 
 function renderRunRegistry() {
@@ -1012,7 +1218,7 @@ function renderRunRegistry() {
         <li>
           <strong>${shortId(run.id)} · ${run.status}</strong>
           <span class="list-meta">${run.analysis_type} · ${run.sampling_method || "random"}</span>
-          <span class="list-meta">${run.summary_json?.sample_size || 0} samples</span>
+          <span class="list-meta">${run.summary_json?.sample_size || 0} 个样本</span>
         </li>
       `
     )
@@ -1027,7 +1233,7 @@ async function renderArtifactPreview() {
   const run = getSelectedCohortRun();
   if (!run) {
     container.className = "empty-state";
-    container.textContent = "运行完成后，这里会预览 probability-trace、cohort-trace 和 run-config 等可审阅产物。";
+    container.textContent = "运行完成后，这里会预览概率轨迹、队列轨迹和运行配置等可审阅产物。";
     return;
   }
 
@@ -1043,10 +1249,10 @@ async function renderArtifactPreview() {
     .map(
       (artifact) => `
         <li>
-          <strong>${artifact.artifact_type}</strong>
-          <span class="list-meta">${artifact.storage_uri}</span>
-          <span class="list-meta">${artifact.checksum || "no checksum"}</span>
-        </li>
+            <strong>${artifact.artifact_type}</strong>
+            <span class="list-meta">${artifact.storage_uri}</span>
+            <span class="list-meta">${artifact.checksum || "无校验值"}</span>
+          </li>
       `
     )
     .join("");
@@ -1055,6 +1261,7 @@ async function renderArtifactPreview() {
 async function renderSimulationMotion() {
   const container = document.getElementById("simulation-markov-motion");
   const label = document.getElementById("simulation-flow-label");
+  const note = document.getElementById("simulation-motion-note");
   if (!container || !label) {
     return;
   }
@@ -1064,6 +1271,9 @@ async function renderSimulationMotion() {
     stopSimulationMotion();
     container.innerHTML = makeEmptyChartSvg("先完成一条分析运行");
     label.textContent = "等待分析结果";
+    if (note) {
+      note.textContent = "状态流完成后，这里会用一句话解释当前 cycle 最值得注意的迁移变化。";
+    }
     return;
   }
 
@@ -1079,7 +1289,11 @@ async function renderSimulationMotion() {
   const buckets = getUniqueBucketTimes(state.currentSimulation.cohort || []);
   const focus = buckets[state.simulationCycleIndex] ?? buckets.at(-1) ?? 0;
   container.innerHTML = makeMarkovMotionSvg(state.currentSimulation.cohort || [], state.simulationCycleIndex);
-  label.textContent = `Cycle ${focus} · 动态状态流`;
+  attachChartTooltip(container);
+  label.textContent = `周期 ${focus} · 动态状态流`;
+  if (note) {
+    note.textContent = describeCohortFocus(state.currentSimulation.cohort || [], state.simulationCycleIndex);
+  }
 }
 
 function startSimulationMotion() {
@@ -1109,6 +1323,42 @@ function initReviewPage() {
     state.patientIndex = Number(document.getElementById("review-patient-index")?.value || 0);
     await loadReviewBundle();
     renderReviewSurface();
+  });
+
+  document.getElementById("review-open-latest")?.addEventListener("click", async () => {
+    const latest = getReviewableRuns()[0];
+    if (!latest) {
+      renderReviewCompareSummary("还没有可打开的运行结果。先去运行模拟页跑一条结果。");
+      return;
+    }
+    state.selectedRunId = latest.id;
+    const select = document.getElementById("review-run-select");
+    if (select) {
+      select.value = String(latest.id);
+    }
+    await loadReviewBundle();
+    renderReviewSurface();
+    renderReviewCompareSummary(`已切换到最新运行 ${shortId(latest.id)}。现在可以直接导出结果或继续比较。`);
+  });
+
+  document.getElementById("review-compare-latest")?.addEventListener("click", () => {
+    compareLatestRuns();
+  });
+
+  document.getElementById("review-export-summary")?.addEventListener("click", () => {
+    exportReviewSummary();
+  });
+
+  document.getElementById("review-export-calibration")?.addEventListener("click", () => {
+    exportCalibrationPack();
+  });
+
+  document.getElementById("review-export-bundle")?.addEventListener("click", () => {
+    exportReviewerBundle();
+  });
+
+  document.getElementById("review-copy-metadata")?.addEventListener("click", async () => {
+    await copyRunMetadata();
   });
 
   document.getElementById("review-cycle-slider")?.addEventListener("input", () => {
@@ -1150,6 +1400,8 @@ function renderReviewShell() {
   } else {
     renderReviewSurface();
   }
+
+  renderReviewCompareSummary();
 }
 
 async function loadReviewBundle() {
@@ -1202,6 +1454,9 @@ function renderReviewSurface() {
   const cycleLabel = document.getElementById("review-cycle-label");
   const motionLabel = document.getElementById("review-motion-label");
   const motion = document.getElementById("review-markov-motion");
+  const summaryNote = document.getElementById("review-summary-note");
+  const scatterNote = document.getElementById("review-scatter-note");
+  const cohortNote = document.getElementById("review-cohort-note");
   if (!summary || !scatter || !cohort || !trace || !artifacts || !cycleLabel || !motionLabel || !motion) {
     return;
   }
@@ -1215,11 +1470,20 @@ function renderReviewSurface() {
     cohort.innerHTML = makeEmptyChartSvg("先加载 cohort 数据");
     motion.innerHTML = makeEmptyChartSvg("先加载动态状态流");
     trace.className = "empty-state";
-    trace.textContent = "选择结果后，这里会显示单个患者的事件轨迹。";
+      trace.textContent = "选择结果后，这里会显示单个患者的事件轨迹。";
     artifacts.className = "empty-state";
-    artifacts.textContent = "选择结果后，这里会显示产物文件和 metadata。";
+    artifacts.textContent = "选择结果后，这里会显示产物文件和元数据。";
     cycleLabel.textContent = "等待你选择 cycle";
     motionLabel.textContent = "等待分析结果";
+    if (summaryNote) {
+      summaryNote.textContent = "加载结果后，这里会先用一句话提醒你最该先读哪张结论卡。";
+    }
+    if (scatterNote) {
+      scatterNote.textContent = "散点图加载后，这里会解释当前样本分布大致说明了什么。";
+    }
+    if (cohortNote) {
+      cohortNote.textContent = "队列轨迹加载后，这里会概括当前周期的状态变化重点。";
+    }
     return;
   }
 
@@ -1238,23 +1502,40 @@ function renderReviewSurface() {
         )
         .join("")
     : "这次运行还没有 summary cards。";
+  if (summaryNote) {
+    summaryNote.textContent = cards.length
+      ? `先看 ${cards.slice(0, 3).map((card) => card.label).join("、")}，再决定是否要继续看不确定性和 trace。`
+      : "这次运行还没有结论卡，可以先看下方的动态状态流和 trace。";
+  }
 
   scatter.innerHTML = makeScatterSvg(
     state.currentReview.scatter?.points || [],
     state.scatterX,
     state.scatterY
   );
+  attachChartTooltip(scatter);
+  if (scatterNote) {
+    const pointCount = state.currentReview.scatter?.points?.length || 0;
+    scatterNote.textContent = pointCount
+      ? `当前散点图用 ${state.scatterX} 对 ${state.scatterY} 展示 ${pointCount} 个样本。先看主带分布，再找是否有离群点需要解释。`
+      : "散点图会在结果准备好后出现。";
+  }
   cohort.innerHTML = makeCohortSvg(state.currentReview.cohort?.points || [], state.cycleFocusIndex);
+  attachChartTooltip(cohort);
   motion.innerHTML = makeMarkovMotionSvg(state.currentReview.cohort?.points || [], state.cycleFocusIndex);
+  attachChartTooltip(motion);
+  if (cohortNote) {
+    cohortNote.textContent = describeCohortFocus(state.currentReview.cohort?.points || [], state.cycleFocusIndex);
+  }
   trace.className = "trace-list";
   trace.innerHTML =
     (state.currentReview.trace?.events || [])
       .map(
         (event) => `
           <li>
-            <strong>${event.event_type} · cycle ${event.cycle_index ?? "-"}</strong>
-            <span class="trace-meta">${event.from_state_code || "start"} -> ${event.to_state_code || "-"}</span>
-            <span class="trace-meta">time ${event.event_time}</span>
+            <strong>${event.event_type} · 周期 ${event.cycle_index ?? "-"}</strong>
+            <span class="trace-meta">${event.from_state_code || "起始"} -> ${event.to_state_code || "-"}</span>
+            <span class="trace-meta">时间 ${event.event_time}</span>
           </li>
         `
       )
@@ -1268,16 +1549,16 @@ function renderReviewSurface() {
           <li>
             <strong>${artifact.artifact_type}</strong>
             <span class="list-meta">${artifact.storage_uri}</span>
-            <span class="list-meta">${artifact.checksum || "no checksum"}</span>
+            <span class="list-meta">${artifact.checksum || "无校验值"}</span>
           </li>
         `
       )
-      .join("") || "<div class='empty-state'>这次运行暂时还没有 artifacts。</div>";
+      .join("") || "<div class='empty-state'>这次运行暂时还没有产物。</div>";
 
   const buckets = getUniqueBucketTimes(state.currentReview.cohort?.points || []);
   const focus = buckets[state.cycleFocusIndex] ?? buckets[0] ?? 0;
-  cycleLabel.textContent = `当前查看 cycle · ${focus}`;
-  motionLabel.textContent = `Cycle ${focus} · 动态状态流回放`;
+  cycleLabel.textContent = `当前查看周期 · ${focus}`;
+  motionLabel.textContent = `周期 ${focus} · 动态状态流回放`;
 }
 
 function toggleReviewAutoplay() {
@@ -1319,6 +1600,141 @@ function syncReviewAutoplayButton() {
   }
 }
 
+function renderReviewCompareSummary(message) {
+  const container = document.getElementById("review-compare-summary");
+  if (!container) {
+    return;
+  }
+
+  if (!message) {
+    container.innerHTML = `
+      <strong>比较视图待命</strong>
+      <p class="helper">这里会告诉你最近两次 run 最明显的差异，避免你手工逐张图去比。</p>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <strong>最近对比结果</strong>
+    <p class="helper">${message}</p>
+  `;
+}
+
+function compareLatestRuns() {
+  const runs = getReviewableRuns();
+  if (runs.length < 2) {
+      renderReviewCompareSummary("至少需要两条已完成的运行结果，才值得打开比较视图。");
+    return;
+  }
+
+  const [latest, previous] = runs;
+  const previousCards = new Map((previous.summary_json?.cards || []).map((card) => [card.label, card]));
+  const snippets = (latest.summary_json?.cards || [])
+    .slice(0, 3)
+    .map((card) => {
+      const baseline = previousCards.get(card.label);
+      if (!baseline) {
+        return `${card.label} 新增为 ${formatMetricValue(card.value, card.unit)}`;
+      }
+      return `${card.label} 从 ${formatMetricValue(baseline.value, baseline.unit)} 变为 ${formatMetricValue(card.value, card.unit)}`;
+    });
+
+  renderReviewCompareSummary(
+    `最新 run ${shortId(latest.id)} 对比上一条 ${shortId(previous.id)}: ${snippets.join("；")}。`
+  );
+}
+
+function exportReviewSummary() {
+  if (!state.currentReview) {
+    renderReviewCompareSummary("先加载一条运行结果，再导出结果摘要。");
+    return;
+  }
+
+  const cards = state.currentReview.run.summary_json?.cards || [];
+  const lines = [
+    "label,value,unit",
+    ...cards.map((card) => `${escapeCsv(card.label)},${escapeCsv(card.value)},${escapeCsv(card.unit || "")}`),
+  ];
+  downloadBlob(`${state.currentReview.run.id}-summary.csv`, lines.join("\n"), "text/csv;charset=utf-8");
+  renderReviewCompareSummary("结果摘要已导出为 CSV，可直接在 Excel 中打开。");
+}
+
+function exportCalibrationPack() {
+  if (!state.currentReview) {
+    renderReviewCompareSummary("先加载一条运行结果，再下载校准包。");
+    return;
+  }
+
+  const pack = {
+    run_id: state.currentReview.run.id,
+    analysis_type: state.currentReview.run.analysis_type,
+    probability_function_id: state.currentReview.run.input_snapshot_json?.probability_function_id || null,
+    config_json: state.currentReview.run.config_json || {},
+    artifacts: state.currentReview.artifacts || [],
+    note: "校准包由结果审阅页导出。",
+  };
+  downloadBlob(
+    `${state.currentReview.run.id}-calibration-pack.json`,
+    JSON.stringify(pack, null, 2),
+    "application/json;charset=utf-8"
+  );
+  renderReviewCompareSummary("校准包已下载。你可以把这份配置和产物一起交给团队复核。");
+}
+
+function exportReviewerBundle() {
+  if (!state.currentReview) {
+    renderReviewCompareSummary("先加载一条运行结果，再下载审阅包。");
+    return;
+  }
+
+  const bundle = {
+    run: state.currentReview.run,
+    metric_catalog: state.currentReview.metricCatalog || [],
+    artifacts: state.currentReview.artifacts || [],
+    scatter_preview: state.currentReview.scatter || {},
+    cohort_preview: state.currentReview.cohort || {},
+    patient_trace: state.currentReview.trace || {},
+    exported_at: new Date().toISOString(),
+  };
+  downloadBlob(
+    `${state.currentReview.run.id}-reviewer-bundle.json`,
+    JSON.stringify(bundle, null, 2),
+    "application/json;charset=utf-8"
+  );
+  renderReviewCompareSummary("审阅包已下载。现在这条结果已经更接近可交付状态。");
+}
+
+async function copyRunMetadata() {
+  if (!state.currentReview) {
+    renderReviewCompareSummary("先加载一条运行结果，再复制元数据。");
+    return;
+  }
+
+  const metadata = {
+    run_id: state.currentReview.run.id,
+    status: state.currentReview.run.status,
+    analysis_type: state.currentReview.run.analysis_type,
+    sampling_method: state.currentReview.run.sampling_method,
+    engine_version: state.currentReview.run.engine_version,
+    submitted_at: state.currentReview.run.submitted_at,
+    finished_at: state.currentReview.run.finished_at,
+  };
+  const text = JSON.stringify(metadata, null, 2);
+
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      renderReviewCompareSummary("运行元数据已复制到剪贴板。");
+      return;
+    }
+  } catch (error) {
+    console.warn("Clipboard write failed", error);
+  }
+
+  downloadBlob(`${state.currentReview.run.id}-metadata.json`, text, "application/json;charset=utf-8");
+  renderReviewCompareSummary("当前环境无法直接写入剪贴板，已改为下载元数据文件。");
+}
+
 async function createSeriesLive(payload) {
   return request(`/projects/${state.context.project_id}/clinical-series`, {
     method: "POST",
@@ -1347,7 +1763,7 @@ async function createFunctionLive(payload) {
 function createFunctionOffline(payload) {
   const series = state.series.find((item) => String(item.id) === String(payload.source_ref_id));
   if (!series) {
-    throw new Error("ClinicalSeries not found.");
+    throw new Error("未找到对应的证据序列。");
   }
   const compiledSource = compileSeries(series);
   const probabilityFunction = {
@@ -1387,7 +1803,7 @@ function createRunOffline(payload) {
     (item) => String(item.id) === String(payload.config_json.probability_function_id)
   );
   if (!probabilityFunction) {
-    throw new Error("ProbabilityFunction not found.");
+    throw new Error("未找到对应的概率函数。");
   }
 
   const simulation = simulateOfflineRun(probabilityFunction, payload);
@@ -1478,7 +1894,7 @@ function updateJobProgress(kind, job, attempt) {
       job.status === "queued"
         ? "任务已排队，正在等待执行器接管这次分析。"
         : job.status === "running"
-          ? "分析正在执行。平台正在计算 cohort trace、核心指标和结果页所需 artifacts。"
+          ? "分析正在执行。平台正在计算队列轨迹、核心指标和结果页所需产物。"
           : "分析已完成。"
     );
   }
@@ -1486,7 +1902,7 @@ function updateJobProgress(kind, job, attempt) {
   if (kind === "calibration") {
     renderCalibrationStatus(
       job.status === "queued"
-        ? "校准任务已排队，正在等待 observed vs predicted 拟合开始。"
+        ? "校准任务已排队，正在等待观察值对预测值拟合开始。"
         : job.status === "running"
           ? "校准正在运行。平台正在比较 target curve 与 predicted curve。"
           : "校准已完成。"
@@ -1527,7 +1943,7 @@ function setProgress(kind, value) {
 function debugFunctionOffline(functionId, t0, t1) {
   const fn = state.functions.find((item) => String(item.id) === String(functionId));
   if (!fn) {
-    throw new Error("ProbabilityFunction not found.");
+    throw new Error("未找到对应的概率函数。");
   }
   return evaluateFunction(fn, t0, t1);
 }
@@ -1543,7 +1959,9 @@ function getSelectedCohortRun() {
 }
 
 function getReviewableRuns() {
-  return state.runs.filter((run) => run.analysis_type === "cohort_markov");
+  return state.runs
+    .filter((run) => run.analysis_type === "cohort_markov")
+    .sort((left, right) => getRunTimestamp(right) - getRunTimestamp(left));
 }
 
 function buildOfflineReviewBundle(runId, xMetric, yMetric, patientIndex) {
@@ -1569,7 +1987,7 @@ function buildOfflineCalibrationBundle(config, runPayload) {
     (item) => String(item.id) === String(runPayload.config_json.probability_function_id)
   );
   if (!targetSeries || !probabilityFunction) {
-    throw new Error("Calibration requires both a target series and a probability function.");
+    throw new Error("校准必须同时具备目标证据和概率函数。");
   }
 
   const targetPoints = targetSeries.points
@@ -1590,7 +2008,7 @@ function buildOfflineCalibrationBundle(config, runPayload) {
   });
 
   if (!best) {
-    throw new Error("Calibration did not evaluate any candidates.");
+    throw new Error("校准过程中没有成功评估任何候选参数。");
   }
 
   const runId = makeId("cal-run");
@@ -1627,13 +2045,13 @@ function buildOfflineCalibrationBundle(config, runPayload) {
       ...runPayload.config_json,
     },
     summary_json: {
-      message: "Calibration completed",
+      message: "校准已完成",
       calibration_config_id: config.id,
       cards: [
-        { label: "Best RMSE", value: best.objective, unit: "RMSE" },
-        { label: "Iterations", value: history.length, unit: "candidates" },
-        { label: "Target Series", value: targetSeries.name, unit: "series" },
-        { label: "Best Event Scale", value: best.parameterValues.event_scale || 1.0, unit: "scale" },
+        { label: "最佳 RMSE", value: best.objective, unit: "RMSE" },
+        { label: "候选次数", value: history.length, unit: "个候选值" },
+        { label: "目标证据", value: targetSeries.name, unit: "series" },
+        { label: "事件比例校准值", value: best.parameterValues.event_scale || 1.0, unit: "scale" },
       ],
       best_params: best.parameterValues,
     },
@@ -1644,6 +2062,7 @@ function buildOfflineCalibrationBundle(config, runPayload) {
     started_at: new Date().toISOString(),
     finished_at: new Date().toISOString(),
     _artifacts: [overlayArtifact],
+    _calibrationResult: null,
   };
   const result = {
     run_id: run.id,
@@ -1658,6 +2077,7 @@ function buildOfflineCalibrationBundle(config, runPayload) {
     overlay_artifact_id: overlayArtifact.id,
     created_at: new Date().toISOString(),
   };
+  run._calibrationResult = result;
   return {
     config,
     run,
@@ -1763,11 +2183,11 @@ function simulateOfflineRun(probabilityFunction, payload) {
   }
 
   const cards = [
-    { label: "Base Cost", value: base.metrics.total_cost, unit: "USD per patient" },
-    { label: "Base QALYs", value: base.metrics.total_qalys, unit: "QALYs" },
-    { label: "Base Life Years", value: base.metrics.life_years, unit: "LYs" },
+    { label: "基线成本", value: base.metrics.total_cost, unit: "USD/人" },
+    { label: "基线 QALY", value: base.metrics.total_qalys, unit: "QALY" },
+    { label: "基线生存年", value: base.metrics.life_years, unit: "LY" },
     {
-      label: "Mean Event Probability",
+      label: "平均事件概率",
       value: base.metrics.mean_transition_probability,
       unit: "probability",
     },
@@ -1799,6 +2219,11 @@ function simulateOfflineRun(probabilityFunction, payload) {
         life_years: round(sum(samples.map((sample) => sample.metrics.life_years)) / samples.length, 4),
       },
       config: payload.config_json,
+      calibration_applied: {
+        event_scale: payload.config_json.event_scale ?? 1,
+        pf_death_probability: payload.config_json.pf_death_probability ?? 0.01,
+        pd_death_probability: payload.config_json.pd_death_probability ?? 0.08,
+      },
     },
     status: "completed",
     engine_version: "offline-demo-0.2.0",
@@ -2091,7 +2516,7 @@ function populateSelect(element, options, selectedValue) {
     return;
   }
   if (!options.length) {
-    element.innerHTML = `<option value="">No data</option>`;
+    element.innerHTML = `<option value="">暂无可用数据</option>`;
     return;
   }
   element.innerHTML = options
@@ -2155,6 +2580,10 @@ function setInputValue(id, value) {
 
 function extractMessage(error) {
   return error instanceof Error ? error.message : String(error);
+}
+
+function getRunTimestamp(run) {
+  return new Date(run.finished_at || run.started_at || run.submitted_at || run.created_at || 0).getTime();
 }
 
 function shortId(value) {
@@ -2270,6 +2699,67 @@ function getUniqueBucketTimes(points) {
   return [...new Set(points.map((point) => Number(point.bucket_time)))].sort((left, right) => left - right);
 }
 
+function getCohortSnapshot(points, focusIndex) {
+  const buckets = getUniqueBucketTimes(points);
+  const focusBucket = buckets[focusIndex] ?? buckets[0] ?? 0;
+  const findState = (stateCode) =>
+    points.find((point) => Number(point.bucket_time) === focusBucket && point.state_code === stateCode) || {
+      occupancy_count: 0,
+      inflow_count: 0,
+      outflow_count: 0,
+    };
+  return {
+    focusBucket,
+    progressionFree: findState("progression_free"),
+    progressedDisease: findState("progressed_disease"),
+    dead: findState("dead"),
+  };
+}
+
+function describeCohortFocus(points, focusIndex) {
+  if (!points.length) {
+    return "结果准备好后，这里会用一句话提醒你当前 cycle 最关键的状态变化。";
+  }
+
+  const snapshot = getCohortSnapshot(points, focusIndex);
+  const total =
+    Number(snapshot.progressionFree.occupancy_count) +
+    Number(snapshot.progressedDisease.occupancy_count) +
+    Number(snapshot.dead.occupancy_count);
+  const safeTotal = Math.max(total, 1);
+  const pfShare = (Number(snapshot.progressionFree.occupancy_count) / safeTotal) * 100;
+  const pdShare = (Number(snapshot.progressedDisease.occupancy_count) / safeTotal) * 100;
+  const deadShare = (Number(snapshot.dead.occupancy_count) / safeTotal) * 100;
+
+  if (deadShare >= 45) {
+    return `周期 ${snapshot.focusBucket} 时死亡占比已到 ${deadShare.toFixed(0)}%，结果页应优先解释后期死亡累积是否符合预期。`;
+  }
+  if (pdShare >= pfShare) {
+    return `周期 ${snapshot.focusBucket} 时已进展状态已追上或超过无进展状态，这通常意味着中后期转移开始成为主要驱动。`;
+  }
+  return `周期 ${snapshot.focusBucket} 时无进展状态仍占 ${pfShare.toFixed(0)}%，这说明早期状态仍由无进展人群主导。`;
+}
+
+function escapeCsv(value) {
+  const text = String(value ?? "");
+  if (/[",\n]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+  return text;
+}
+
+function downloadBlob(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function makeEmptyChartSvg(label) {
   return `
     <svg viewBox="0 0 640 320" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${label}">
@@ -2281,7 +2771,7 @@ function makeEmptyChartSvg(label) {
 
 function makeProbabilityChartSvg(functionRecord, debug) {
   if (!functionRecord?.options_json?.compiled_source?.points?.length) {
-    return makeEmptyChartSvg("No compiled source");
+    return makeEmptyChartSvg("还没有可用的连续曲线");
   }
   const points = functionRecord.options_json.compiled_source.points;
   const width = 640;
@@ -2296,24 +2786,24 @@ function makeProbabilityChartSvg(functionRecord, debug) {
     <svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Probability debug chart">
       <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="${PALETTE.line}" />
       <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="${PALETTE.line}" />
-      <path d="${line}" fill="none" stroke="${PALETTE.evidence}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-      <rect x="${scaleX(debug.t0)}" y="${padding}" width="${Math.max(scaleX(debug.t1) - scaleX(debug.t0), 2)}" height="${height - padding * 2}" fill="rgba(124, 92, 224, 0.12)" />
+      <path d="${line}" fill="none" stroke="${PALETTE.evidence}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" data-tip="这条线表示当前证据对象编译后的连续估计值。" />
+      <rect x="${scaleX(debug.t0)}" y="${padding}" width="${Math.max(scaleX(debug.t1) - scaleX(debug.t0), 2)}" height="${height - padding * 2}" fill="rgba(124, 92, 224, 0.12)" data-tip="当前正在验证区间 [${debug.t0}, ${debug.t1}]，区间事件概率为 ${(debug.probability * 100).toFixed(2)}%。" />
       ${points
         .map(
           (point) => `
-            <circle cx="${scaleX(point.time)}" cy="${scaleY(point.value)}" r="4.5" fill="${PALETTE.evidence}" />
+            <circle cx="${scaleX(point.time)}" cy="${scaleY(point.value)}" r="4.5" fill="${PALETTE.evidence}" data-tip="Month ${point.time}: 估计值 ${Number(point.value).toFixed(3)}" />
           `
         )
         .join("")}
-      <text x="${padding}" y="${padding - 12}" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">Compiled source</text>
-      <text x="${width - padding}" y="${padding - 12}" fill="${PALETTE.calibration}" text-anchor="end" font-family="IBM Plex Mono" font-size="12">p = ${(debug.probability * 100).toFixed(2)}%</text>
+      <text x="${padding}" y="${padding - 12}" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">证据连续曲线</text>
+      <text x="${width - padding}" y="${padding - 12}" fill="${PALETTE.calibration}" text-anchor="end" font-family="IBM Plex Mono" font-size="12">区间概率 ${(debug.probability * 100).toFixed(2)}%</text>
     </svg>
   `;
 }
 
 function makeCalibrationOverlaySvg({ observedPoints, predictedPoints, fullPredictedCurve, bestObjectiveValue }) {
   if (!observedPoints.length || !predictedPoints.length) {
-    return makeEmptyChartSvg("No calibration overlay yet");
+    return makeEmptyChartSvg("还没有校准覆盖图");
   }
 
   const width = 880;
@@ -2350,35 +2840,35 @@ function makeCalibrationOverlaySvg({ observedPoints, predictedPoints, fullPredic
       <rect x="0" y="0" width="${width}" height="${height}" fill="transparent"></rect>
       <line x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" stroke="${PALETTE.line}" />
       <line x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" stroke="${PALETTE.line}" />
-      <polygon points="${upperBand} ${lowerBand}" fill="url(#overlay-glow)" />
-      <path d="${fullPath}" fill="none" stroke="rgba(124, 92, 224, 0.28)" stroke-width="2" stroke-dasharray="8 8" />
-      <path d="${predictionPath}" fill="none" stroke="${PALETTE.calibration}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="${upperBand} ${lowerBand}" fill="url(#overlay-glow)" data-tip="带状区域表示预测曲线周围的可接受不确定范围。" />
+      <path d="${fullPath}" fill="none" stroke="rgba(124, 92, 224, 0.28)" stroke-width="2" stroke-dasharray="8 8" data-tip="完整预测曲线，覆盖所有周期。" />
+      <path d="${predictionPath}" fill="none" stroke="${PALETTE.calibration}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" data-tip="校准后的预测曲线。RMSE ${Number(bestObjectiveValue).toFixed(4)}。">
         <animate attributeName="stroke-dasharray" values="0 420;420 0" dur="1.4s" begin="0s" fill="freeze" />
       </path>
       ${observedPoints
         .map(
           (point) => `
-            <circle cx="${scaleX(point.time)}" cy="${scaleY(point.estimate)}" r="5.5" fill="${PALETTE.review}" />
+            <circle cx="${scaleX(point.time)}" cy="${scaleY(point.estimate)}" r="5.5" fill="${PALETTE.review}" data-tip="真实观察 · Month ${point.time}: ${Number(point.estimate).toFixed(3)}" />
           `
         )
         .join("")}
       ${predictedPoints
         .map(
           (point) => `
-            <circle cx="${scaleX(point.time)}" cy="${scaleY(point.estimate)}" r="4.5" fill="${PALETTE.calibration}" />
+            <circle cx="${scaleX(point.time)}" cy="${scaleY(point.estimate)}" r="4.5" fill="${PALETTE.calibration}" data-tip="模型预测 · Month ${point.time}: ${Number(point.estimate).toFixed(3)}" />
           `
         )
         .join("")}
-      <text x="${padding}" y="${padding - 16}" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">Observed points</text>
-      <text x="${width - padding}" y="${padding - 16}" fill="${PALETTE.calibration}" text-anchor="end" font-family="IBM Plex Mono" font-size="12">Predicted curve · RMSE ${Number(bestObjectiveValue).toFixed(4)}</text>
-      <text x="${width - padding}" y="${height - 14}" fill="${PALETTE.muted}" text-anchor="end" font-family="IBM Plex Mono" font-size="12">Time</text>
+      <text x="${padding}" y="${padding - 16}" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">真实观察点</text>
+      <text x="${width - padding}" y="${padding - 16}" fill="${PALETTE.calibration}" text-anchor="end" font-family="IBM Plex Mono" font-size="12">校准预测曲线 · RMSE ${Number(bestObjectiveValue).toFixed(4)}</text>
+      <text x="${width - padding}" y="${height - 14}" fill="${PALETTE.muted}" text-anchor="end" font-family="IBM Plex Mono" font-size="12">时间</text>
     </svg>
   `;
 }
 
 function makeScatterSvg(points, xMetric, yMetric) {
   if (!points.length) {
-    return makeEmptyChartSvg("No scatter data");
+    return makeEmptyChartSvg("还没有散点结果");
   }
   const width = 640;
   const height = 320;
@@ -2398,21 +2888,21 @@ function makeScatterSvg(points, xMetric, yMetric) {
       ${points
         .map(
           (point) => `
-            <circle cx="${scaleX(point.x)}" cy="${scaleY(point.y)}" r="6" fill="${PALETTE.review}" fill-opacity="0.82">
+            <circle cx="${scaleX(point.x)}" cy="${scaleY(point.y)}" r="6" fill="${PALETTE.review}" fill-opacity="0.82" data-tip="样本 ${point.sample_index} · ${DEFAULT_METRIC_OPTIONS.find((item) => item.key === xMetric)?.label || xMetric}: ${formatShortNumber(point.x)} · ${DEFAULT_METRIC_OPTIONS.find((item) => item.key === yMetric)?.label || yMetric}: ${formatShortNumber(point.y)}">
               <animate attributeName="r" values="5.2;6.8;5.2" dur="2.6s" repeatCount="indefinite" />
             </circle>
           `
         )
         .join("")}
-      <text x="${padding}" y="${padding - 12}" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">${yMetric}</text>
-      <text x="${width - padding}" y="${height - 14}" text-anchor="end" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">${xMetric}</text>
+      <text x="${padding}" y="${padding - 12}" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">${DEFAULT_METRIC_OPTIONS.find((item) => item.key === yMetric)?.label || yMetric}</text>
+      <text x="${width - padding}" y="${height - 14}" text-anchor="end" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">${DEFAULT_METRIC_OPTIONS.find((item) => item.key === xMetric)?.label || xMetric}</text>
     </svg>
   `;
 }
 
 function makeCohortSvg(points, focusIndex) {
   if (!points.length) {
-    return makeEmptyChartSvg("No cohort data");
+    return makeEmptyChartSvg("还没有队列轨迹");
   }
 
   const width = 640;
@@ -2450,7 +2940,14 @@ function makeCohortSvg(points, focusIndex) {
           const path = entry.series
             .map((value, index) => `${index === 0 ? "M" : "L"} ${scaleX(buckets[index])} ${scaleY(value)}`)
             .join(" ");
-          return `<path d="${path}" fill="none" stroke="${colors[entry.stateCode]}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />`;
+          const dots = entry.series
+            .map(
+              (value, index) => `
+                <circle cx="${scaleX(buckets[index])}" cy="${scaleY(value)}" r="4.4" fill="${colors[entry.stateCode]}" data-tip="周期 ${buckets[index]} · ${entry.stateCode}: ${Math.round(value)} 人" />
+              `
+            )
+            .join("");
+          return `<g><path d="${path}" fill="none" stroke="${colors[entry.stateCode]}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" data-tip="${entry.stateCode} 的整体状态轨迹" />${dots}</g>`;
         })
         .join("")}
       ${grouped
@@ -2466,7 +2963,7 @@ function makeCohortSvg(points, focusIndex) {
 
 function makeMarkovMotionSvg(points, focusIndex) {
   if (!points.length) {
-    return makeEmptyChartSvg("No Markov motion yet");
+    return makeEmptyChartSvg("还没有动态状态流");
   }
 
   const buckets = getUniqueBucketTimes(points);
@@ -2518,9 +3015,9 @@ function makeMarkovMotionSvg(points, focusIndex) {
         <path id="${pdDeadPath}" d="M 612 186 C 684 202, 722 218, 770 228" />
       </defs>
       <rect x="0" y="0" width="920" height="360" rx="28" fill="rgba(255,255,255,0.02)" />
-      <rect x="46" y="54" width="${pfWidth}" height="122" rx="28" fill="${PALETTE.evidenceSoft}" stroke="rgba(47,111,237,0.22)" />
-      <rect x="362" y="72" width="${pdWidth}" height="110" rx="28" fill="${PALETTE.simulationSoft}" stroke="rgba(24,166,160,0.22)" />
-      <rect x="678" y="124" width="${deadWidth}" height="102" rx="28" fill="${PALETTE.reviewSoft}" stroke="rgba(217,133,44,0.24)" />
+      <rect x="46" y="54" width="${pfWidth}" height="122" rx="28" fill="${PALETTE.evidenceSoft}" stroke="rgba(47,111,237,0.22)" data-tip="无进展状态：当前 ${Math.round(Number(rows.progression_free.occupancy_count || 0))} 人；本周期流出 ${Math.round(Number(rows.progression_free.outflow_count || 0))} 人。" />
+      <rect x="362" y="72" width="${pdWidth}" height="110" rx="28" fill="${PALETTE.simulationSoft}" stroke="rgba(24,166,160,0.22)" data-tip="进展后状态：当前 ${Math.round(Number(rows.progressed_disease.occupancy_count || 0))} 人；本周期流入 ${Math.round(Number(rows.progressed_disease.inflow_count || 0))} 人。" />
+      <rect x="678" y="124" width="${deadWidth}" height="102" rx="28" fill="${PALETTE.reviewSoft}" stroke="rgba(217,133,44,0.24)" data-tip="死亡状态：当前 ${Math.round(Number(rows.dead.occupancy_count || 0))} 人；本周期新增死亡 ${Math.round(Number(rows.dead.inflow_count || 0))} 人。" />
 
       <circle cx="102" cy="114" r="12" fill="${PALETTE.evidence}" filter="url(#glow-${suffix})">
         <animate attributeName="r" values="11;15;11" dur="2.4s" repeatCount="indefinite" />
@@ -2532,9 +3029,9 @@ function makeMarkovMotionSvg(points, focusIndex) {
         <animate attributeName="r" values="9;12.5;9" dur="2.1s" repeatCount="indefinite" />
       </circle>
 
-      <path d="M 268 158 C 370 118, 462 118, 558 158" fill="none" stroke="rgba(124,92,224,0.18)" stroke-width="${Math.max(10, pfToPd / 20)}" stroke-linecap="round" />
-      <path d="M 256 186 C 392 258, 528 286, 742 258" fill="none" stroke="rgba(217,133,44,0.16)" stroke-width="${Math.max(8, pfToDead / 20)}" stroke-linecap="round" />
-      <path d="M 612 186 C 684 202, 722 218, 770 228" fill="none" stroke="rgba(217,133,44,0.22)" stroke-width="${Math.max(9, pdToDead / 18)}" stroke-linecap="round" />
+      <path d="M 268 158 C 370 118, 462 118, 558 158" fill="none" stroke="rgba(124,92,224,0.18)" stroke-width="${Math.max(10, pfToPd / 20)}" stroke-linecap="round" data-tip="本周期从无进展转入进展后：${Math.round(pfToPd)} 人" />
+      <path d="M 256 186 C 392 258, 528 286, 742 258" fill="none" stroke="rgba(217,133,44,0.16)" stroke-width="${Math.max(8, pfToDead / 20)}" stroke-linecap="round" data-tip="本周期从无进展直接死亡：${Math.round(pfToDead)} 人" />
+      <path d="M 612 186 C 684 202, 722 218, 770 228" fill="none" stroke="rgba(217,133,44,0.22)" stroke-width="${Math.max(9, pdToDead / 18)}" stroke-linecap="round" data-tip="本周期从进展后转入死亡：${Math.round(pdToDead)} 人" />
 
       <circle r="6.8" fill="${PALETTE.calibration}">
         <animateMotion dur="1.6s" repeatCount="indefinite">
@@ -2555,24 +3052,77 @@ function makeMarkovMotionSvg(points, focusIndex) {
         <animate attributeName="opacity" values="0;1;1;0" dur="1.8s" repeatCount="indefinite" />
       </circle>
 
-      <text x="78" y="102" fill="${PALETTE.evidence}" font-family="IBM Plex Mono" font-size="12">Progression-Free</text>
+      <text x="78" y="102" fill="${PALETTE.evidence}" font-family="IBM Plex Mono" font-size="12">无进展</text>
       <text x="78" y="142" fill="${PALETTE.ink}" font-family="Newsreader" font-size="34" font-weight="700">${Math.round(Number(rows.progression_free.occupancy_count || 0))}</text>
-      <text x="78" y="166" fill="${PALETTE.muted}" font-family="IBM Plex Sans" font-size="14">patients currently stable</text>
+      <text x="78" y="166" fill="${PALETTE.muted}" font-family="IBM Plex Sans" font-size="14">当前仍处于稳定状态</text>
 
-      <text x="394" y="120" fill="${PALETTE.simulation}" font-family="IBM Plex Mono" font-size="12">Progressed Disease</text>
+      <text x="394" y="120" fill="${PALETTE.simulation}" font-family="IBM Plex Mono" font-size="12">进展后</text>
       <text x="394" y="154" fill="${PALETTE.ink}" font-family="Newsreader" font-size="30" font-weight="700">${Math.round(Number(rows.progressed_disease.occupancy_count || 0))}</text>
-      <text x="394" y="176" fill="${PALETTE.muted}" font-family="IBM Plex Sans" font-size="14">active but progressed</text>
+      <text x="394" y="176" fill="${PALETTE.muted}" font-family="IBM Plex Sans" font-size="14">仍存活但已进展</text>
 
-      <text x="710" y="172" fill="${PALETTE.review}" font-family="IBM Plex Mono" font-size="12">Death</text>
+      <text x="710" y="172" fill="${PALETTE.review}" font-family="IBM Plex Mono" font-size="12">死亡</text>
       <text x="710" y="204" fill="${PALETTE.ink}" font-family="Newsreader" font-size="28" font-weight="700">${Math.round(Number(rows.dead.occupancy_count || 0))}</text>
-      <text x="710" y="224" fill="${PALETTE.muted}" font-family="IBM Plex Sans" font-size="14">absorbing state</text>
+      <text x="710" y="224" fill="${PALETTE.muted}" font-family="IBM Plex Sans" font-size="14">吸收状态</text>
 
-      <text x="300" y="116" fill="${PALETTE.calibration}" font-family="IBM Plex Mono" font-size="12">${Math.round(pfToPd)} move to PD</text>
-      <text x="502" y="286" fill="${PALETTE.review}" font-family="IBM Plex Mono" font-size="12">${Math.round(pfToDead)} direct deaths</text>
-      <text x="656" y="206" fill="${PALETTE.review}" font-family="IBM Plex Mono" font-size="12">${Math.round(pdToDead)} PD deaths</text>
+      <text x="300" y="116" fill="${PALETTE.calibration}" font-family="IBM Plex Mono" font-size="12">${Math.round(pfToPd)} 人转入进展后</text>
+      <text x="502" y="286" fill="${PALETTE.review}" font-family="IBM Plex Mono" font-size="12">${Math.round(pfToDead)} 人直接死亡</text>
+      <text x="656" y="206" fill="${PALETTE.review}" font-family="IBM Plex Mono" font-size="12">${Math.round(pdToDead)} 人在进展后死亡</text>
 
-      <text x="46" y="32" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">Cycle ${focusBucket} · dynamic Markov playback</text>
-      <text x="874" y="32" text-anchor="end" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">Total population ${Math.round(safeTotal)}</text>
+      <text x="46" y="32" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">周期 ${focusBucket} · 动态状态流回放</text>
+      <text x="874" y="32" text-anchor="end" fill="${PALETTE.muted}" font-family="IBM Plex Mono" font-size="12">总人数 ${Math.round(safeTotal)}</text>
     </svg>
   `;
+}
+
+function attachChartTooltip(container) {
+  if (!container) {
+    return;
+  }
+
+  const interactiveNodes = [...container.querySelectorAll("[data-tip]")];
+  const existing = container.querySelector(".chart-tooltip");
+  if (!interactiveNodes.length) {
+    existing?.remove();
+    return;
+  }
+
+  const tooltip = existing || document.createElement("div");
+  tooltip.className = "chart-tooltip";
+  tooltip.hidden = true;
+  if (!existing) {
+    container.appendChild(tooltip);
+  }
+
+  const position = (event) => {
+    const rect = container.getBoundingClientRect();
+    const x = clamp(event.clientX - rect.left, 28, rect.width - 28);
+    const y = clamp(event.clientY - rect.top, 18, rect.height - 18);
+    tooltip.style.left = `${x}px`;
+    tooltip.style.top = `${y}px`;
+  };
+
+  const show = (event) => {
+    const text = event.currentTarget?.getAttribute("data-tip");
+    if (!text) {
+      return;
+    }
+    tooltip.textContent = text;
+    tooltip.hidden = false;
+    tooltip.classList.add("is-visible");
+    position(event);
+  };
+
+  const hide = () => {
+    tooltip.hidden = true;
+    tooltip.classList.remove("is-visible");
+  };
+
+  interactiveNodes.forEach((node) => {
+    node.setAttribute("tabindex", "0");
+    node.addEventListener("pointerenter", show);
+    node.addEventListener("pointermove", position);
+    node.addEventListener("pointerleave", hide);
+    node.addEventListener("focus", show);
+    node.addEventListener("blur", hide);
+  });
 }

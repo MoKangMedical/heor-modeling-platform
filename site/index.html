@@ -31,117 +31,101 @@
         </span>
       </div>
       <nav class="nav">
-        <a href="./index.html">Home</a>
-        <a href="./evidence.html">Evidence</a>
-        <a href="./calibration.html">Calibration</a>
-        <a href="./simulation.html">Run</a>
-        <a href="./review.html">Results</a>
-        <a href="./example-run.html">Example Run</a>
+        <a href="./index.html">总览</a>
+        <a href="./evidence.html">上传证据</a>
+        <a href="./calibration.html">临床校准</a>
+        <a href="./simulation.html">运行模拟</a>
+        <a href="./review.html">结果审阅</a>
+        <a href="./example-run.html">示例结果</a>
       </nav>
     </header>
 
     <main class="landing-main">
-      <section class="hero">
+      <section class="hero hero-refined">
         <div class="hero-copy card">
-          <p class="eyebrow">从证据到结果的一体化 HEOR 工作流</p>
-          <h1>从生存曲线到 Markov / PSA 结果，一条流程完成证据处理、校准、模拟和审阅输出。</h1>
+          <h1>在线卫生经济学建模平台</h1>
           <p class="hero-text">
-            你不用先理解平台内部对象模型，也不用先读完一整页架构说明。首页先带你开始操作:
-            上传一份证据，或直接加载 demo 流程，然后在同一条链路里看到 calibration、simulation 和 review-ready outputs。
+            上传 KM 表、生存表或 hazard 数据后，平台会在同一条链路里完成证据标准化、概率函数生成、
+            临床校准、Markov / PSA 运行，以及可交付的结果审阅。
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="./evidence.html?demo=1">Load Demo Workflow</a>
-            <a class="button secondary" href="./evidence.html">Start with Evidence</a>
+            <a class="button primary" href="./evidence.html?demo=1">载入示例流程</a>
+            <a class="button secondary" href="./evidence.html">从上传证据开始</a>
           </div>
           <p class="hero-inline-link">
             已经有一条结果要展示？
             <a class="text-link inline" href="./review.html">直接打开结果页</a>
           </p>
-          <div class="hero-proof">
+          <div class="hero-steps">
+            <span>1 上传证据</span>
+            <span>2 构建概率函数</span>
+            <span>3 运行校准与模拟</span>
+            <span>4 进入结果审阅</span>
+          </div>
+          <div class="hero-proof hero-proof-compact">
             <div>
-              <strong>支持输入</strong>
-              <span>KM table、hazard table、survival table</span>
+              <strong>3 类常见输入</strong>
+              <span>KM 表、风险表、生存表都能进入同一条建模链路</span>
             </div>
             <div>
-              <strong>3 分钟</strong>
-              <span>看到一条可讲故事的 example run</span>
+              <strong>校准过程可追溯</strong>
+              <span>观察值、预测值、参数边界和拟合结果会一起保存</span>
             </div>
             <div>
-              <strong>每次运行都留痕</strong>
-              <span>参数、seed、sample matrix 和 artifacts 一起保存</span>
-            </div>
-            <div>
-              <strong>Review-ready</strong>
-              <span>ICER、overlay、scatterplot、cohort trace 和导出包</span>
+              <strong>结果可直接交付</strong>
+              <span>ICER、散点图、队列轨迹和导出包都按运行版本留痕</span>
             </div>
           </div>
         </div>
 
-        <div class="hero-product card">
-          <div class="app-shell">
-            <div class="app-chrome">
-              <span>Run R-2026-0315</span>
-              <span class="live-status"><i></i> Review-ready</span>
-              <span>Version v0.3 · Seed 874211</span>
+        <div class="hero-stage card">
+          <div class="hero-stage-head">
+            <div>
+              <span class="mini-label tone-calibration">当前示例运行</span>
+              <h2>先看懂一条真实运行，再进入工作台继续操作。</h2>
             </div>
-            <div class="hero-app-grid">
-              <aside class="hero-nav">
-                <button class="active">Evidence</button>
-                <button>Calibration</button>
-                <button>Simulation</button>
-                <button>Review</button>
-              </aside>
-              <div class="hero-main">
-                <div class="hero-main-card">
-                  <div class="mini-topline">
-                    <span>Calibration overlay</span>
-                    <span>RMSE 0.018</span>
-                  </div>
-                  <div id="hero-chart" class="chart-frame hero-chart"></div>
-                </div>
-                <div class="hero-mini-grid">
-                  <article>
-                    <span class="mini-label tone-evidence">Input</span>
-                    <strong>3 evidence objects</strong>
-                    <p>KM OS, hazard segment, compound curve</p>
-                  </article>
-                  <article>
-                    <span class="mini-label tone-calibration">Fit</span>
-                    <strong>Bounds saved</strong>
-                    <p>Observed vs predicted accepted for review</p>
-                  </article>
-                  <article>
-                    <span class="mini-label tone-simulation">Run</span>
-                    <strong>8,000 PSA samples</strong>
-                    <p>LHS matrix stored with run metadata</p>
-                  </article>
-                </div>
+            <a class="text-link" href="./example-run.html">查看示例运行</a>
+          </div>
+          <div class="hero-stage-body">
+            <section class="hero-stage-visual">
+              <div class="mini-topline">
+                <span>校准覆盖图</span>
+                <span>Run R-2026-0315 · RMSE 0.018</span>
               </div>
-              <aside class="hero-side">
-                <div class="side-card">
-                  <div class="mini-topline">
-                    <span>What you get first</span>
-                    <span>Base case</span>
-                  </div>
-                  <ul class="parameter-list">
-                    <li><span>ICER</span><strong>$29,742 / QALY</strong></li>
-                    <li><span>Incremental QALY</span><strong>0.62</strong></li>
-                    <li><span>Threshold</span><strong>Below $50k</strong></li>
-                  </ul>
-                </div>
-                <div class="side-card">
-                  <div class="mini-topline">
-                    <span>Export pack</span>
-                    <span>Ready</span>
-                  </div>
-                  <ul class="artifact-snippet">
-                    <li>overlay-fit-v3.png</li>
-                    <li>psa-sample-matrix.csv</li>
-                    <li>reviewer-bundle.zip</li>
-                  </ul>
-                </div>
-              </aside>
-            </div>
+              <div id="hero-chart" class="chart-frame hero-stage-chart"></div>
+              <p class="hero-stage-caption">
+                悬停图上的观察点和预测线，可以直接看到校准后的拟合关系。
+              </p>
+            </section>
+            <aside class="hero-stage-sidebar">
+              <article class="hero-stat-card">
+                <span>基线 ICER</span>
+                <strong>$29,742 / QALY</strong>
+                <small>低于 $50k 阈值</small>
+              </article>
+              <article class="hero-stat-card">
+                <span>PSA 抽样</span>
+                <strong>8,000 样本</strong>
+                <small>LHS 样本矩阵已留痕</small>
+              </article>
+              <article class="hero-stat-card">
+                <span>导出状态</span>
+                <strong>审阅包已就绪</strong>
+                <small>图、表、元数据可直接导出</small>
+              </article>
+              <div class="hero-status-list">
+                <div><span>证据对象</span><strong>3 个已校验</strong></div>
+                <div><span>概率函数</span><strong>按月周期可调用</strong></div>
+                <div><span>运行记录</span><strong>版本、随机种子已保存</strong></div>
+              </div>
+            </aside>
+          </div>
+          <div class="hero-stage-footer">
+            <span>KM / 生存表</span>
+            <span>概率函数</span>
+            <span>临床校准</span>
+            <span>Markov + PSA</span>
+            <span>结果审阅</span>
           </div>
         </div>
       </section>
@@ -149,28 +133,18 @@
       <section id="entry-points" class="section">
         <div class="section-head">
           <div>
-            <p class="eyebrow">从你的任务开始 Entry Points</p>
-            <h2>首页先给你入口，而不是先给你一整页能力名词。</h2>
+            <p class="eyebrow">开始方式</p>
+            <h2>先选一种最贴近你当前任务的进入方式。</h2>
           </div>
           <p class="section-note">
-            不同访问者进入平台时，想做的事情并不一样。这里先帮你选最短路径。
+            首页只保留三个入口，避免你第一次进入时在一堆模块名之间来回判断。
           </p>
         </div>
-        <div class="entry-grid">
+        <div class="entry-grid entry-grid-compact">
           <article class="entry-card card">
-            <span class="mini-label tone-evidence">Start with files</span>
-            <h3>我想上传 KM / hazard 数据开始建模</h3>
-            <p>适合先整理一份真实输入，确认字段、时间粒度和证据对象是否正确。</p>
-            <div class="entry-meta">
-              <span>步骤 1</span>
-              <span>输出: 证据对象</span>
-            </div>
-            <a class="button secondary" href="./evidence.html">进入 Evidence</a>
-          </article>
-          <article class="entry-card card">
-            <span class="mini-label tone-calibration">Start with demo</span>
-            <h3>我想用 demo 数据体验完整流程</h3>
-            <p>适合第一次使用。平台会带你直接走进一条示例链路，不必先准备文件。</p>
+            <span class="mini-label tone-calibration">首次体验</span>
+            <h3>先加载一条完整示例流程</h3>
+            <p>适合第一次进入平台。你会直接看到证据、校准、模拟和结果页是如何连起来工作的。</p>
             <div class="entry-meta">
               <span>推荐首次使用</span>
               <span>预计 3 分钟</span>
@@ -178,74 +152,24 @@
             <a class="button secondary" href="./evidence.html?demo=1">加载 Demo</a>
           </article>
           <article class="entry-card card">
-            <span class="mini-label tone-simulation">See full run</span>
-            <h3>我想查看一个完整 example run</h3>
-            <p>适合快速理解 base-case 结论、calibration fit、PSA 和导出包会长什么样。</p>
+            <span class="mini-label tone-evidence">开始建模</span>
+            <h3>上传真实 KM / hazard 数据开始建模</h3>
+            <p>适合已经有输入文件的项目。先校验字段和时间粒度，再进入概率函数和模拟。</p>
             <div class="entry-meta">
-              <span>直接看完成态</span>
-              <span>输出: Example run</span>
+              <span>从证据页开始</span>
+              <span>输出: 证据对象</span>
             </div>
-            <a class="button secondary" href="./example-run.html">打开 Example Run</a>
+            <a class="button secondary" href="./evidence.html">进入证据页</a>
           </article>
           <article class="entry-card card">
-            <span class="mini-label tone-review">See outputs</span>
-            <h3>我想直接看输出结果长什么样</h3>
-            <p>适合演示结果页。直接查看 summary、动态 Markov、scatterplot 和 artifacts。</p>
+            <span class="mini-label tone-review">结果导向</span>
+            <h3>直接查看完成态结果与审阅页</h3>
+            <p>适合演示给团队或客户。直接展示 ICER、校准拟合、PSA、队列轨迹和导出包。</p>
             <div class="entry-meta">
-              <span>最短路径</span>
-              <span>输出: 结果页</span>
+              <span>最快路径</span>
+              <span>输出: 示例结果</span>
             </div>
-            <a class="button secondary" href="./review.html">打开 Results</a>
-          </article>
-        </div>
-      </section>
-
-      <section id="first-use" class="section">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">第一次使用 First Use</p>
-            <h2>新用户第一次来，只需要知道支持什么、怎么开始、多久能看到结果。</h2>
-          </div>
-          <p class="section-note">
-            这部分替代原来过长的说明页，让用户先敢点第一步，再在工作台里逐步理解对象和机制。
-          </p>
-        </div>
-        <div class="onboarding-layout">
-          <article class="onboarding-card card">
-            <span class="mini-label tone-evidence">Onboarding</span>
-            <h3>推荐先加载 demo，然后再换成你自己的数据。</h3>
-            <ul class="onboarding-list">
-              <li>支持上传 KM table、hazard table、survival table</li>
-              <li>系统会自动生成字段校验、time alignment 和 trace log</li>
-              <li>整理完成后可继续生成 probability function</li>
-              <li>通常 3 分钟内能看到一条完整 example output</li>
-            </ul>
-            <div class="hero-actions compact">
-              <a class="button primary" href="./evidence.html?demo=1">先加载 Demo</a>
-              <a class="button secondary" href="./evidence.html">直接上传证据</a>
-            </div>
-          </article>
-          <article class="onboarding-card card">
-            <span class="mini-label tone-review">Progress rail</span>
-            <h3>当前的产品路径只有四步，而且你现在就在第 1 步。</h3>
-            <div class="progress-rail">
-              <div class="progress-step active">
-                <strong>1 Upload evidence</strong>
-                <span>Start here</span>
-              </div>
-              <div class="progress-step ready">
-                <strong>2 Build probabilities</strong>
-                <span>Ready next</span>
-              </div>
-              <div class="progress-step locked">
-                <strong>3 Run calibration / simulation</strong>
-                <span>Not started</span>
-              </div>
-              <div class="progress-step locked">
-                <strong>4 Review outputs</strong>
-                <span>Locked until a run exists</span>
-              </div>
-            </div>
+            <a class="button secondary" href="./review.html">打开结果页</a>
           </article>
         </div>
       </section>
@@ -253,11 +177,11 @@
       <section id="workflow" class="section">
         <div class="section-head">
           <div>
-            <p class="eyebrow">四步流程 Workflow</p>
-            <h2>首页只保留主线: Upload evidence → Build probabilities → Run simulation → Review outputs。</h2>
+            <p class="eyebrow">四步流程</p>
+            <h2>每一步都告诉你“输入是什么、系统做什么、最后得到什么”。</h2>
           </div>
           <p class="section-note">
-            更详细的对象模型、平台分层和路线图已经移到二级页面，避免打断用户开始操作。
+            这部分是首页的主线，不再堆叠底层对象名词和架构说明。
           </p>
         </div>
         <div id="workflow-rail" class="workflow-rail"></div>
@@ -266,48 +190,43 @@
       <section id="outputs" class="section">
         <div class="section-head">
           <div>
-            <p class="eyebrow">结果承诺 Result Promise</p>
-            <h2>用户先看到结论，再看到图，再决定要不要导出产物给团队。</h2>
+            <p class="eyebrow">结果承诺</p>
+            <h2>一条运行结束后，你先看结论，再看图，再决定要不要导出给团队。</h2>
           </div>
           <p class="section-note">
-            这就是结果页的默认阅读顺序: base-case result、cost-effectiveness 判断、uncertainty、calibration fit，以及可交付产物。
+            这也是结果页的默认阅读顺序: 先回答“值不值得”，再回答“稳不稳”，最后回答“能不能交付”。
           </p>
         </div>
         <div class="result-hero card">
           <div>
-            <span class="mini-label tone-review">Default readout</span>
-            <h3>一次 run 结束后，先回答“值不值得”“拟合得够不够好”“能不能直接交付”。</h3>
+            <span class="mini-label tone-review">默认阅读顺序</span>
+            <h3>一次 run 结束后，先回答“值不值得”“拟合够不够好”“能不能直接用于汇报”。</h3>
             <p>
-              结果页不会只给你一堆图。它会先把 ICER、QALY、threshold judgment 和 calibration status 放在最前面，
-              然后再进入 PSA scatter、CEAC、cohort trace 和 artifacts。
+              结果页不会只给你一堆图。它会先把 ICER、QALY、阈值判断和校准状态放在最前面，然后再进入
+              PSA 散点图、CEAC、队列轨迹和产物列表。
             </p>
           </div>
           <div class="result-actions">
-            <a class="button primary" href="./example-run.html">查看完整 Example Run</a>
-            <a class="button secondary" href="./review.html">打开 Results 页面</a>
+            <a class="button primary" href="./example-run.html">查看完整示例运行</a>
+            <a class="button secondary" href="./review.html">打开结果页</a>
           </div>
         </div>
         <div id="metric-cards" class="metric-cards"></div>
-        <div class="promise-grid">
+        <div class="promise-grid promise-grid-clean">
           <article class="promise-card card">
-            <span class="mini-label tone-calibration">Calibration overlay</span>
-            <h3>先确认模型是否贴近 observed data</h3>
-            <p>默认展示 observed vs predicted overlay，并给出 RMSE 或 goodness-of-fit，帮助你判断校准是否可接受。</p>
+            <span class="mini-label tone-calibration">校准覆盖图</span>
+            <h3>先确认模型是否贴近真实观察数据</h3>
+            <p>默认展示观察值对预测值覆盖图，并给出 RMSE 或拟合优度，帮助你判断校准是否可接受。</p>
           </article>
           <article class="promise-card card">
-            <span class="mini-label tone-simulation">Uncertainty</span>
+            <span class="mini-label tone-simulation">不确定性</span>
             <h3>用 PSA scatter 和 CEAC 解释不确定性</h3>
-            <p>不是只给一个 ICER，而是直接告诉你样本分布和在阈值下的 cost-effective 概率。</p>
+            <p>不是只给一个 ICER，而是直接告诉你样本分布和在阈值下的成本效果可接受概率。</p>
           </article>
           <article class="promise-card card">
-            <span class="mini-label tone-review">Cohort trace</span>
+            <span class="mini-label tone-review">队列轨迹</span>
             <h3>看患者队列什么时候开始明显转移</h3>
-            <p>动态 Markov 与 cohort trace 会一起出现，帮助你判断状态流动是否符合临床逻辑。</p>
-          </article>
-          <article class="promise-card card">
-            <span class="mini-label tone-evidence">Export pack</span>
-            <h3>把结果变成可以交付的 review bundle</h3>
-            <p>支持导出 Excel summary、calibration pack、review bundle 和 run metadata，方便团队复核与汇报。</p>
+            <p>动态 Markov 与 cohort trace 会一起出现，帮助你判断状态流动是否符合临床逻辑，并直接导出审阅包。</p>
           </article>
         </div>
       </section>
@@ -315,11 +234,11 @@
 
     <footer class="footer">
       <div class="footer-links">
-        <a class="text-link" href="./platform.html">Platform Details</a>
-        <a class="text-link" href="./research.html">Research Watch</a>
-        <a class="text-link" href="./openapi.yaml">OpenAPI Draft</a>
+        <a class="text-link" href="./platform.html">平台细节</a>
+        <a class="text-link" href="./research.html">研究追踪</a>
+        <a class="text-link" href="./openapi.yaml">OpenAPI 草案</a>
       </div>
-      <p>Every run is versioned, traceable, and exportable for review.</p>
+      <p>每一次运行都会保留版本、留痕来源，并可直接导出用于审阅。</p>
     </footer>
 
     <script src="./app.js"></script>
