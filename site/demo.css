@@ -121,7 +121,6 @@ body {
   gap: 12px;
 }
 
-.top-links a,
 .workspace-link,
 .nav-chip {
   text-decoration: none;
@@ -135,9 +134,30 @@ body {
   align-items: center;
   gap: 8px;
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+.top-links a {
+  position: relative;
+  text-decoration: none;
+  color: var(--ink);
+  padding: 0 0 4px;
 }
 
-.top-links a:hover,
+.top-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--evidence), var(--calibration));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 180ms ease;
+}
+
+.top-links a:hover::after {
+  transform: scaleX(1);
+}
+
 .workspace-link:hover,
 .nav-chip:hover,
 .button:hover,
@@ -150,8 +170,8 @@ button:hover {
   margin: 0 auto;
   padding: 22px 24px 96px;
   display: grid;
-  grid-template-columns: 286px minmax(0, 1fr);
-  gap: 24px;
+  grid-template-columns: 254px minmax(0, 1fr);
+  gap: 20px;
 }
 
 .workspace-sidebar {
@@ -174,7 +194,7 @@ button:hover {
 
 .sidebar-card {
   border-radius: var(--radius-lg);
-  padding: 18px;
+  padding: 16px;
 }
 
 .sidebar-card h3,
@@ -194,8 +214,8 @@ button:hover {
 .workspace-link {
   justify-content: space-between;
   border-radius: 18px;
-  padding: 14px 16px;
-  min-height: 58px;
+  padding: 12px 14px;
+  min-height: 54px;
 }
 
 .workspace-link span {
@@ -284,71 +304,14 @@ button:hover {
 
 .hero-panel {
   border-radius: var(--radius-xl);
-  padding: 26px 28px;
+  padding: 24px;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(300px, 0.95fr);
-  gap: 24px;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.86fr);
+  gap: 20px;
 }
 
 .journey-panel {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.journey-card {
-  border-radius: 22px;
-  border: 1px solid var(--line);
-  background: rgba(255, 255, 255, 0.78);
-  box-shadow: var(--shadow-md);
-  padding: 18px;
-  display: grid;
-  gap: 12px;
-}
-
-.journey-label {
-  color: var(--navy);
-  font-size: 0.72rem;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-
-.journey-card strong {
-  display: block;
-  font-size: 1.04rem;
-}
-
-.journey-card p {
-  margin: 0;
-  color: var(--muted);
-  line-height: 1.7;
-}
-
-.journey-card ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-}
-
-.journey-card li {
-  position: relative;
-  padding-left: 18px;
-  color: var(--muted);
-  line-height: 1.6;
-}
-
-.journey-card li::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0.62em;
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: currentColor;
-  opacity: 0.8;
+  display: none;
 }
 
 .kicker {
@@ -361,12 +324,14 @@ button:hover {
 .hero-copy {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
+  justify-content: center;
 }
 
 .hero-copy h1 {
-  font-size: clamp(2.3rem, 4vw, 4rem);
-  line-height: 0.96;
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  line-height: 1.02;
+  max-width: 14ch;
 }
 
 .hero-copy p,
@@ -379,12 +344,7 @@ button:hover {
   line-height: 1.74;
 }
 
-.hero-meta {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
-}
-
+.hero-meta,
 .hero-meta article,
 .metric-card,
 .micro-card {
@@ -392,6 +352,10 @@ button:hover {
   border: 1px solid var(--line);
   background: rgba(255, 255, 255, 0.72);
   padding: 14px 16px;
+}
+
+.hero-meta {
+  display: none;
 }
 
 .hero-meta strong,
@@ -411,10 +375,10 @@ button:hover {
   border-radius: 24px;
   border: 1px solid var(--line);
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), rgba(248, 251, 255, 0.84));
-  padding: 18px;
+  padding: 16px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .connection-top {
@@ -563,12 +527,12 @@ button:disabled {
 .page-grid {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
-  gap: 18px;
+  gap: 16px;
 }
 
 .panel {
   border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 18px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -606,7 +570,7 @@ button:disabled {
 }
 
 .panel-title {
-  font-size: 1.55rem;
+  font-size: 1.36rem;
 }
 
 .panel-kicker,
@@ -857,10 +821,8 @@ input[type="range"] {
     align-items: flex-start;
   }
 
-  .hero-meta,
   .form-grid.two,
   .form-grid.three,
-  .journey-panel,
   .result-grid,
   .metric-grid,
   .preview-grid,
