@@ -403,15 +403,24 @@ const state = {
   capabilityFilter: "all",
   evidenceLoaded: false,
   surfaceScenario: "base",
+  surfaceCalibrationCompareMode: "single",
   exampleScenario: "base",
+  heroCompareMode: "compare",
+  exampleCalibrationCompareMode: "compare",
   runProgress: 0,
   runTimer: null,
   reviewX: "incrementalCost",
   reviewY: "incrementalQaly",
+  reviewScatterCompareMode: "compare",
   exampleX: "incrementalCost",
   exampleY: "incrementalQaly",
+  exampleScatterCompareMode: "compare",
+  exampleCeacCompareMode: "compare",
   reviewCohortIndex: 3,
   exampleCohortIndex: 2,
+  brushWindows: {},
+  pageKey: "index",
+  arrivalTransition: null,
 };
 
 const workflowRail = document.getElementById("workflow-rail");
@@ -443,6 +452,71 @@ const lancetGrid = document.getElementById("lancet-grid");
 const architectureStack = document.getElementById("architecture-stack");
 const roadmapGrid = document.getElementById("roadmap-grid");
 const heroChart = document.getElementById("hero-chart");
+const PAGE_TRANSITION_KEY = "heor-demo.page-transition";
+const STATIC_STORY_TRACK = [
+  { key: "index", title: "理解任务" },
+  { key: "evidence", title: "整理证据" },
+  { key: "runtime", title: "生成函数" },
+  { key: "calibration", title: "贴近临床" },
+  { key: "simulation", title: "执行分析" },
+  { key: "review", title: "交付结果" },
+];
+const STATIC_PAGE_STORIES = {
+  index: {
+    title: "平台总览",
+    arrival: "你现在看到的是从临床证据到结果交付的完整任务路径。",
+    next: "继续进入证据页，就能看到平台如何把一份原始生存数据整理成可运行对象。",
+    stage: "index",
+  },
+  evidence: {
+    title: "证据工作台",
+    arrival: "这一步会先把原始 KM / survival / hazard 数据整理成可追溯的证据对象。",
+    next: "完成字段校验和时间对齐后，下一步就是把它们编译成概率函数。",
+    stage: "evidence",
+  },
+  runtime: {
+    title: "概率函数工作台",
+    arrival: "这里把临床曲线和风险表转成每个周期都能直接调用的事件概率。",
+    next: "函数层准备好以后，就可以进入校准或模拟，真正让模型跑起来。",
+    stage: "runtime",
+  },
+  calibration: {
+    title: "临床校准",
+    arrival: "这一步会把模型预测和真实临床观察数据放在一起，自动寻找更贴近现实的参数。",
+    next: "校准完成后，你可以直接进入运行模拟，观察结果如何随参数变化。",
+    stage: "calibration",
+  },
+  simulation: {
+    title: "运行模拟",
+    arrival: "平台会在这里异步执行 Markov / PSA，并把样本、随机种子和产物一起保存下来。",
+    next: "运行完成后，下一步就是进入结果审阅，解释它是否值得、是否稳定、是否能交付。",
+    stage: "simulation",
+  },
+  review: {
+    title: "结果审阅",
+    arrival: "这里会把结论、拟合、不确定性和队列轨迹串成一条可直接给客户演示的阅读路径。",
+    next: "如果你要回头解释平台结构，可以再打开平台细节页或示例运行页。",
+    stage: "review",
+  },
+  "example-run": {
+    title: "示例运行",
+    arrival: "这页把一条完整 run 的关键图、关键值和导出产物直接摆在客户面前。",
+    next: "继续进入结果审阅页，可以进一步切换图表维度、查看状态变化和导出包。",
+    stage: "review",
+  },
+  platform: {
+    title: "平台细节",
+    arrival: "这里会展开对象模型、能力层和系统分层，帮助客户理解平台为什么可追溯、可复现。",
+    next: "如果你要从业务视角继续讲解，建议回到首页或示例运行页。",
+    stage: "index",
+  },
+  research: {
+    title: "研究追踪",
+    arrival: "这里展示外部研究与平台能力的对应关系，用来说明平台为什么值得建、怎么对标行业前沿。",
+    next: "回到首页或示例运行页，可以把研究能力和可操作界面连起来讲。",
+    stage: "index",
+  },
+};
 const STATIC_MOTION_SELECTOR = [
   ".hero-copy",
   ".hero-stage",
@@ -467,7 +541,8 @@ function clamp(value, min, max) {
 
 function setStaticPageAccent() {
   const page = window.location.pathname.split("/").pop() || "index.html";
-  document.body.dataset.sitePage = page.replace(".html", "") || "index";
+  state.pageKey = page.replace(".html", "") || "index";
+  document.body.dataset.sitePage = state.pageKey;
 }
 
 function bindStaticPointerAura() {
@@ -565,9 +640,284 @@ function applyStaticSurfaceTilt(nodes) {
   });
 }
 
+function normalizeBrushWindow(start, end, length) {
+  const safeLength = Math.max(length - 1, 0);
+  const nextStart = clamp(Number(start) || 0, 0, safeLength);
+  const nextEnd = clamp(Number(end) || safeLength, nextStart + 1, safeLength);
+  return [nextStart, nextEnd];
+}
+
+function getStaticBrushWindow(key, length, suggested = [0, Math.max(length - 1, 1)]) {
+  const current = state.brushWindows[key];
+  if (!current) {
+    return normalizeBrushWindow(suggested[0], suggested[1], length);
+  }
+  return normalizeBrushWindow(current.start, current.end, length);
+}
+
+function setStaticBrushWindow(key, start, end, length) {
+  const [nextStart, nextEnd] = normalizeBrushWindow(start, end, length);
+  state.brushWindows[key] = { start: nextStart, end: nextEnd };
+  return state.brushWindows[key];
+}
+
+function createStaticChartFrame({ legendEyebrow, legendTitle, legendBody, svg, brush, controls }) {
+  return `
+    <div class="site-chart-shell">
+      <div class="site-chart-shell-head">
+        <div class="site-chart-legend-live">
+          <span class="site-chart-eyebrow">${legendEyebrow || "图表解释"}</span>
+          <strong data-chart-legend="title">${legendTitle || ""}</strong>
+          <small data-chart-legend="body">${legendBody || ""}</small>
+        </div>
+        ${controls ? `<div class="site-chart-inline-controls">${controls}</div>` : ""}
+      </div>
+      <div class="site-chart-stage">${svg}</div>
+      ${brush || ""}
+    </div>
+  `;
+}
+
+function createStaticBrushMarkup({ key, start, end, length, startLabel, endLabel, caption }) {
+  return `
+    <div class="site-chart-brush" data-brush-key="${key}" data-brush-length="${length}">
+      <div class="site-chart-brush-head">
+        <strong>${caption || "查看时间窗"}</strong>
+        <span>${startLabel} - ${endLabel}</span>
+      </div>
+      <div class="site-chart-brush-track">
+        <div
+          class="site-chart-brush-window"
+          style="--brush-start:${(start / Math.max(length - 1, 1)) * 100}%; --brush-end:${(end / Math.max(length - 1, 1)) * 100}%"
+        ></div>
+        <input class="site-brush-range" data-range-role="start" type="range" min="0" max="${Math.max(length - 1, 1)}" value="${start}" />
+        <input class="site-brush-range" data-range-role="end" type="range" min="1" max="${Math.max(length - 1, 1)}" value="${end}" />
+      </div>
+    </div>
+  `;
+}
+
+function bindStaticBrushControls(container, { key, length, labelForIndex, onChange }) {
+  const brush = container.querySelector(`[data-brush-key="${key}"]`);
+  if (!brush) {
+    return;
+  }
+
+  const startInput = brush.querySelector('[data-range-role="start"]');
+  const endInput = brush.querySelector('[data-range-role="end"]');
+  const caption = brush.querySelector(".site-chart-brush-head span");
+  const windowNode = brush.querySelector(".site-chart-brush-window");
+
+  const sync = (trigger) => {
+    const current = setStaticBrushWindow(key, startInput.value, endInput.value, length);
+    startInput.value = current.start;
+    endInput.value = current.end;
+    windowNode.style.setProperty("--brush-start", `${(current.start / Math.max(length - 1, 1)) * 100}%`);
+    windowNode.style.setProperty("--brush-end", `${(current.end / Math.max(length - 1, 1)) * 100}%`);
+    if (caption) {
+      caption.textContent = `${labelForIndex(current.start)} - ${labelForIndex(current.end)}`;
+    }
+    if (typeof onChange === "function") {
+      onChange(current, trigger);
+    }
+  };
+
+  startInput.addEventListener("input", () => sync("start"));
+  endInput.addEventListener("input", () => sync("end"));
+}
+
+function createStaticToggleMarkup({ group, options, active }) {
+  return `
+    <div class="site-chart-toggle-group" data-toggle-group="${group}">
+      ${options
+        .map(
+          (option) => `
+            <button
+              type="button"
+              class="site-chart-toggle ${option.value === active ? "is-active" : ""}"
+              data-toggle-option="${option.value}"
+            >
+              ${option.label}
+            </button>
+          `
+        )
+        .join("")}
+    </div>
+  `;
+}
+
+function bindStaticToggleGroup(container, group, onChange) {
+  const toggleGroup = container.querySelector(`[data-toggle-group="${group}"]`);
+  if (!toggleGroup) {
+    return;
+  }
+
+  toggleGroup.querySelectorAll("[data-toggle-option]").forEach((button) => {
+    button.addEventListener("click", () => {
+      onChange(button.dataset.toggleOption);
+    });
+  });
+}
+
+function storyForPage(key) {
+  return STATIC_PAGE_STORIES[key] || STATIC_PAGE_STORIES.index;
+}
+
+function getStageIndexForPage(key) {
+  const stageKey = storyForPage(key).stage || key;
+  return Math.max(
+    STATIC_STORY_TRACK.findIndex((item) => item.key === stageKey),
+    0
+  );
+}
+
+function mountStaticTransitionLayer() {
+  if (document.getElementById("site-page-transition")) {
+    return;
+  }
+
+  const layer = document.createElement("div");
+  layer.id = "site-page-transition";
+  layer.className = "site-page-transition-layer";
+  layer.innerHTML = `
+    <div class="site-page-transition-panel">
+      <span id="site-page-transition-kicker">正在进入下一步</span>
+      <strong id="site-page-transition-title">把当前结果带进下一页</strong>
+      <p id="site-page-transition-copy">平台会带着上下文继续进入下一步。</p>
+      <div class="site-page-transition-track" id="site-page-transition-track"></div>
+    </div>
+  `;
+  document.body.appendChild(layer);
+}
+
+function extractPageKeyFromHref(href) {
+  try {
+    const url = new URL(href, window.location.href);
+    const file = url.pathname.split("/").pop() || "index.html";
+    return file.replace(".html", "") || "index";
+  } catch (error) {
+    return "index";
+  }
+}
+
+function bindStaticNarrativeLinks() {
+  document.querySelectorAll('a[href*=".html"]').forEach((anchor) => {
+    if (anchor.dataset.transitionBound === "true") {
+      return;
+    }
+    anchor.dataset.transitionBound = "true";
+    anchor.addEventListener("click", (event) => {
+      if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) {
+        return;
+      }
+      const href = anchor.getAttribute("href");
+      if (!href || href.startsWith("http")) {
+        return;
+      }
+      const destination = extractPageKeyFromHref(href);
+      if (!destination || destination === state.pageKey) {
+        return;
+      }
+      event.preventDefault();
+      playStaticPageTransition(destination, href);
+    });
+  });
+}
+
+function playStaticPageTransition(to, href) {
+  const layer = document.getElementById("site-page-transition");
+  if (!layer) {
+    window.location.href = href;
+    return;
+  }
+
+  const title = document.getElementById("site-page-transition-title");
+  const kicker = document.getElementById("site-page-transition-kicker");
+  const copy = document.getElementById("site-page-transition-copy");
+  const track = document.getElementById("site-page-transition-track");
+  const nextStory = storyForPage(to);
+  const activeStage = getStageIndexForPage(to);
+
+  if (kicker) {
+    kicker.textContent = `第 ${activeStage + 1} 步 · ${nextStory.title}`;
+  }
+  if (title) {
+    title.textContent = `从 ${storyForPage(state.pageKey).title} 进入 ${nextStory.title}`;
+  }
+  if (copy) {
+    copy.textContent = nextStory.arrival;
+  }
+  if (track) {
+    track.innerHTML = STATIC_STORY_TRACK.map((item, index) => {
+      const className = index < activeStage ? "site-page-transition-node is-complete" : index === activeStage ? "site-page-transition-node is-active" : "site-page-transition-node";
+      return `
+        <div class="${className}">
+          <i>${String(index + 1).padStart(2, "0")}</i>
+          <b>${item.title}</b>
+        </div>
+      `;
+    }).join("");
+  }
+
+  sessionStorage.setItem(
+    PAGE_TRANSITION_KEY,
+    JSON.stringify({
+      from: state.pageKey,
+      to,
+      timestamp: Date.now(),
+    })
+  );
+
+  document.body.classList.add("is-site-page-transitioning");
+  layer.classList.add("is-active");
+
+  window.setTimeout(() => {
+    window.location.href = href;
+  }, 520);
+}
+
+function mountStaticArrivalBanner(payload) {
+  const main = document.querySelector("main");
+  const hero = document.querySelector(".hero, .page-hero");
+  if (!main || !hero || document.querySelector(".site-arrival-banner")) {
+    return;
+  }
+
+  const banner = document.createElement("div");
+  banner.className = "site-arrival-banner";
+  banner.innerHTML = `
+    <span>刚完成 ${storyForPage(payload.from).title}</span>
+    <strong>${storyForPage(state.pageKey).arrival}</strong>
+    <small>${storyForPage(state.pageKey).next}</small>
+  `;
+  main.insertBefore(banner, hero);
+}
+
+function hydrateStaticArrivalNarrative() {
+  const raw = sessionStorage.getItem(PAGE_TRANSITION_KEY);
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const payload = JSON.parse(raw);
+    sessionStorage.removeItem(PAGE_TRANSITION_KEY);
+    if (payload?.to !== state.pageKey) {
+      return;
+    }
+    state.arrivalTransition = payload;
+    mountStaticArrivalBanner(payload);
+  } catch (error) {
+    sessionStorage.removeItem(PAGE_TRANSITION_KEY);
+  }
+}
+
 function initializeStaticSite() {
   setStaticPageAccent();
   bindStaticPointerAura();
+  mountStaticTransitionLayer();
+  bindStaticNarrativeLinks();
+  hydrateStaticArrivalNarrative();
 
   renderWorkflow();
   renderHeroChart();
@@ -648,8 +998,60 @@ function renderHeroChart() {
   if (!heroChart) {
     return;
   }
-  heroChart.innerHTML = makeCalibrationSvg("base", { compact: true, note: "观察值与预测值" });
-  attachChartTooltip(heroChart);
+  const pointLabels = ["0", "3", "6", "9", "12", "15", "18", "21"];
+  const [start, end] = getStaticBrushWindow("heroCalibration", calibrationObserved.length, [0, calibrationObserved.length - 1]);
+  heroChart.innerHTML = createStaticChartFrame({
+    legendEyebrow: "首页示例运行",
+    legendTitle:
+      state.heroCompareMode === "compare"
+        ? "三条预测曲线与真实观察值正在同屏比较"
+        : "先看基线预测如何贴近真实观察值",
+    legendBody:
+      state.heroCompareMode === "compare"
+        ? "这张首页图先告诉客户，平台不只会出一条线，而是能把低位、基线和高位预测一起放进同一张校准图里。"
+        : "这张首页图先回答一个最基础的问题: 当前基线曲线是否已经贴近真实观察点。",
+    controls: createStaticToggleMarkup({
+      group: "hero-calibration-mode",
+      active: state.heroCompareMode,
+      options: [
+        { value: "single", label: "只看基线" },
+        { value: "compare", label: "三情景对比" },
+      ],
+    }),
+    svg: makeCalibrationSvg("base", {
+      compact: true,
+      note: `时间窗 ${pointLabels[start]}-${pointLabels[end]} 月`,
+      startIndex: start,
+      endIndex: end,
+      compareMode: state.heroCompareMode,
+    }),
+    brush: createStaticBrushMarkup({
+      key: "heroCalibration",
+      start,
+      end,
+      length: calibrationObserved.length,
+      startLabel: `${pointLabels[start]} 月`,
+      endLabel: `${pointLabels[end]} 月`,
+      caption: "刷选时间窗",
+    }),
+  });
+  attachChartTooltip(heroChart, {
+    title:
+      state.heroCompareMode === "compare"
+        ? "三条预测曲线和观察值一起解释模型稳定性"
+        : "基线预测曲线与观察值一起解释拟合效果",
+    body: "把鼠标放在线、点或不确定性带上，右侧说明会同步切换成当前对象的解释。",
+  });
+  bindStaticToggleGroup(heroChart, "hero-calibration-mode", (value) => {
+    state.heroCompareMode = value;
+    renderHeroChart();
+  });
+  bindStaticBrushControls(heroChart, {
+    key: "heroCalibration",
+    length: calibrationObserved.length,
+    labelForIndex: (index) => `${pointLabels[index]} 月`,
+    onChange: () => renderHeroChart(),
+  });
 }
 
 function renderSurfaceNav() {
@@ -1221,17 +1623,73 @@ function populateScatterSelect(select, value) {
     .join("");
 }
 
-function renderCalibrationInto(target, mode, compact) {
+function renderCalibrationInto(target, mode, compact, options = {}) {
   if (!target) {
     return;
   }
 
   const modeLabel = mode === "low" ? "低情景" : mode === "high" ? "高情景" : "基线";
-  target.innerHTML = makeCalibrationSvg(mode, { compact, note: compact ? "预览运行" : `当前情景: ${modeLabel}` });
-  attachChartTooltip(target);
+  const pointLabels = ["0", "3", "6", "9", "12", "15", "18", "21"];
+  const viewKey = options.viewKey || (target.id === "example-calibration" ? "exampleCalibration" : "surfaceCalibration");
+  const compareStateKey = viewKey === "exampleCalibration" ? "exampleCalibrationCompareMode" : "surfaceCalibrationCompareMode";
+  const compareMode = state[compareStateKey];
+  const [start, end] = getStaticBrushWindow(viewKey, calibrationObserved.length, [0, calibrationObserved.length - 1]);
+
+  target.innerHTML = createStaticChartFrame({
+    legendEyebrow: viewKey === "exampleCalibration" ? "校准图阅读器" : "工作台预览",
+    legendTitle:
+      compareMode === "compare"
+        ? `${modeLabel} 会与另外两条情景曲线一起对比`
+        : `${modeLabel} 预测曲线正在和真实观察值逐点比对`,
+    legendBody:
+      compareMode === "compare"
+        ? "客户可以直接看到情景切换之后，曲线是如何分开、又如何围绕观察值聚拢的。"
+        : "这一视图适合逐点讲解哪几个时间窗拟合更紧，哪几个时间窗还需要继续调整。",
+    controls: createStaticToggleMarkup({
+      group: `${viewKey}-compare`,
+      active: compareMode,
+      options: [
+        { value: "single", label: "只看当前情景" },
+        { value: "compare", label: "三情景对比" },
+      ],
+    }),
+    svg: makeCalibrationSvg(mode, {
+      compact,
+      note: `当前情景: ${modeLabel}`,
+      startIndex: start,
+      endIndex: end,
+      compareMode,
+    }),
+    brush: createStaticBrushMarkup({
+      key: viewKey,
+      start,
+      end,
+      length: calibrationObserved.length,
+      startLabel: `${pointLabels[start]} 月`,
+      endLabel: `${pointLabels[end]} 月`,
+      caption: "刷选校准时间窗",
+    }),
+  });
+  attachChartTooltip(target, {
+    title:
+      compareMode === "compare"
+        ? "同一组观察值下对比低位、基线和高位预测"
+        : `${modeLabel} 预测曲线正在和观察值对照`,
+    body: "这张图会把当前悬停对象的意义直接写出来，适合在演示时边指边讲。",
+  });
+  bindStaticToggleGroup(target, `${viewKey}-compare`, (value) => {
+    state[compareStateKey] = value;
+    renderCalibrationInto(target, mode, compact, options);
+  });
+  bindStaticBrushControls(target, {
+    key: viewKey,
+    length: calibrationObserved.length,
+    labelForIndex: (index) => `${pointLabels[index]} 月`,
+    onChange: () => renderCalibrationInto(target, mode, compact, options),
+  });
 }
 
-function makeCalibrationSvg(mode, { compact = false, note = "" } = {}) {
+function makeCalibrationSvg(mode, { compact = false, note = "", startIndex = 0, endIndex = calibrationObserved.length - 1, compareMode = "single" } = {}) {
   const width = compact ? 560 : 720;
   const height = compact ? 260 : 360;
   const padding = compact ? 34 : 44;
@@ -1239,9 +1697,16 @@ function makeCalibrationSvg(mode, { compact = false, note = "" } = {}) {
   const scenarioColor = mode === "low" ? palette.simulation : mode === "base" ? palette.calibration : palette.review;
   const gridYs = [0, 0.25, 0.5, 0.75, 1];
   const xLabels = ["0", "3", "6", "9", "12", "15", "18", "21"];
+  const [safeStart, safeEnd] = normalizeBrushWindow(startIndex, endIndex, calibrationObserved.length);
+  const visibleIndices = calibrationObserved.map((_, index) => index).slice(safeStart, safeEnd + 1);
+  const visibleObserved = calibrationObserved.slice(safeStart, safeEnd + 1);
+  const visiblePredicted = predicted.slice(safeStart, safeEnd + 1);
+  const visibleUpper = calibrationBand.upper.slice(safeStart, safeEnd + 1);
+  const visibleLower = calibrationBand.lower.slice(safeStart, safeEnd + 1);
 
-  const toPoint = (value, index) => {
-    const x = padding + (index / (calibrationObserved.length - 1)) * (width - padding * 2);
+  const toPoint = (value, index, total = visibleIndices.length) => {
+    const ratio = total <= 1 ? 0 : index / (total - 1);
+    const x = padding + ratio * (width - padding * 2);
     const y = height - padding - value * (height - padding * 2);
     return [x, y];
   };
@@ -1249,32 +1714,44 @@ function makeCalibrationSvg(mode, { compact = false, note = "" } = {}) {
   const linePath = (values) =>
     values
       .map((value, index) => {
-        const [x, y] = toPoint(value, index);
+        const [x, y] = toPoint(value, index, values.length);
         return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
       })
       .join(" ");
 
   const bandPath = () => {
-    const upper = calibrationBand.upper.map((value, index) => toPoint(value, index));
-    const lower = calibrationBand.lower.map((value, index) => toPoint(value, index)).reverse();
+    const upper = visibleUpper.map((value, index) => toPoint(value, index, visibleUpper.length));
+    const lower = visibleLower.map((value, index) => toPoint(value, index, visibleLower.length)).reverse();
     const points = [...upper, ...lower];
     return points.map(([x, y], index) => `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`).join(" ") + " Z";
   };
 
   const scenarioLabel = mode === "low" ? "低情景" : mode === "high" ? "高情景" : "基线";
 
-  const observedDots = calibrationObserved
+  const observedDots = visibleObserved
     .map((value, index) => {
-      const [x, y] = toPoint(value, index);
-      return `<circle cx="${x}" cy="${y}" r="${compact ? 3.6 : 4.5}" fill="${palette.navy}" data-tip="观察点 ${index + 1}: 生存率 ${(value * 100).toFixed(1)}%" />`;
+      const [x, y] = toPoint(value, index, visibleObserved.length);
+      const sourceIndex = visibleIndices[index];
+      return `
+        <circle
+          class="site-chart-dot site-chart-dot--observed"
+          cx="${x}"
+          cy="${y}"
+          r="${compact ? 3.8 : 4.6}"
+          fill="${palette.navy}"
+          data-tip="观察点 ${sourceIndex + 1}: 生存率 ${(value * 100).toFixed(1)}%"
+          data-legend-title="观察点 ${sourceIndex + 1}"
+          data-legend-body="这个点来自真实临床数据，表示 ${xLabels[sourceIndex]} 月时的观察生存率 ${(value * 100).toFixed(1)}%。"
+        />
+      `;
     })
     .join("");
 
-  const xTicks = xLabels
-    .map((label, index) => {
-      const [x] = toPoint(0, index);
+  const xTicks = visibleIndices
+    .map((sourceIndex, index) => {
+      const [x] = toPoint(0, index, visibleIndices.length);
       return `
-        <text class="axis-label" x="${x}" y="${height - 12}" text-anchor="middle">${label}</text>
+        <text class="axis-label" x="${x}" y="${height - 12}" text-anchor="middle">${xLabels[sourceIndex]}</text>
       `;
     })
     .join("");
@@ -1289,39 +1766,133 @@ function makeCalibrationSvg(mode, { compact = false, note = "" } = {}) {
     })
     .join("");
 
+  const scenarioSeries =
+    compareMode === "compare"
+      ? [
+          { key: "low", label: "低情景", color: palette.simulation, values: calibrationPredicted.low.slice(safeStart, safeEnd + 1) },
+          { key: "base", label: "基线", color: palette.calibration, values: calibrationPredicted.base.slice(safeStart, safeEnd + 1) },
+          { key: "high", label: "高情景", color: palette.review, values: calibrationPredicted.high.slice(safeStart, safeEnd + 1) },
+        ]
+      : [{ key: mode, label: scenarioLabel, color: scenarioColor, values: visiblePredicted }];
+
+  const predictedLines = scenarioSeries
+    .map((series, seriesIndex) => {
+      const emphasized = series.key === mode || compareMode === "single";
+      return `
+        <path
+          class="site-chart-line ${emphasized ? "is-primary" : "is-secondary"}"
+          d="${linePath(series.values)}"
+          fill="none"
+          stroke="${series.color}"
+          stroke-width="${emphasized ? (compact ? 3 : 4) : compact ? 2.2 : 2.8}"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          style="animation-delay:${seriesIndex * 80}ms"
+          data-tip="${series.label}预测曲线"
+          data-legend-title="${series.label}预测曲线"
+          data-legend-body="${series.label}曲线表示在当前参数假设下，模型在所选时间窗中的预测生存走势。"
+        />
+      `;
+    })
+    .join("");
+
   return `
     <svg class="svg-root" viewBox="0 0 ${width} ${height}" role="img" aria-label="校准覆盖图">
       ${yTicks}
       <line class="axis-line" x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" />
       <line class="axis-line" x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" />
-      <path d="${bandPath()}" fill="rgba(47, 111, 237, 0.12)" data-tip="不确定性带: 展示校准后的可接受波动范围" />
-      <path d="${linePath(predicted)}" fill="none" stroke="${scenarioColor}" stroke-width="${compact ? 3 : 4}" stroke-linecap="round" stroke-linejoin="round" data-tip="${scenarioLabel}预测曲线" />
-      <path d="${linePath(calibrationObserved)}" fill="none" stroke="${palette.navy}" stroke-width="${compact ? 1.8 : 2.2}" stroke-dasharray="5 6" opacity="0.7" data-tip="观察值曲线" />
+      <path
+        class="site-chart-band"
+        d="${bandPath()}"
+        fill="rgba(47, 111, 237, 0.12)"
+        data-tip="不确定性带: 展示校准后的可接受波动范围"
+        data-legend-title="不确定性带"
+        data-legend-body="这层带状区域告诉客户，即使考虑参数波动，模型仍会在这一区间内活动。"
+      />
+      ${predictedLines}
+      <path
+        class="site-chart-line is-observed"
+        d="${linePath(visibleObserved)}"
+        fill="none"
+        stroke="${palette.navy}"
+        stroke-width="${compact ? 1.8 : 2.2}"
+        stroke-dasharray="5 6"
+        opacity="0.7"
+        data-tip="观察值曲线"
+        data-legend-title="观察值曲线"
+        data-legend-body="这条虚线连接真实观察点，用来帮助客户快速判断模型预测与真实数据的偏离程度。"
+      />
       ${observedDots}
       ${xTicks}
       <text class="chart-label" x="${padding}" y="${compact ? 20 : 22}">观察点</text>
-      <text class="chart-label" x="${width - padding}" y="${compact ? 20 : 22}" text-anchor="end">${scenarioLabel}预测曲线</text>
+      <text class="chart-label" x="${width - padding}" y="${compact ? 20 : 22}" text-anchor="end">${compareMode === "compare" ? "低 / 基线 / 高 三情景" : `${scenarioLabel}预测曲线`}</text>
       <text class="chart-note" x="${padding}" y="${height - 24}">时间（月）</text>
       <text class="chart-note" x="${width - padding}" y="${height - 24}" text-anchor="end">${note}</text>
     </svg>
   `;
 }
 
-function renderScatterInto(target, xKey, yKey) {
+function buildComparisonScatterPoints() {
+  return scatterPoints.map((point, index) => ({
+    incrementalCost: Math.round(point.incrementalCost * 1.09 + (index % 4) * 420),
+    incrementalQaly: Number((point.incrementalQaly * 0.91).toFixed(3)),
+    nmb: Math.round(point.nmb * 0.82),
+    osGain: Number((point.osGain * 0.92).toFixed(2)),
+    pfsGain: Number((point.pfsGain * 0.9).toFixed(2)),
+  }));
+}
+
+function renderScatterInto(target, xKey, yKey, options = {}) {
   if (!target) {
     return;
   }
 
-  target.innerHTML = makeScatterSvg(xKey, yKey);
-  attachChartTooltip(target);
+  const viewKey = options.viewKey || (target.id === "example-scatter" ? "exampleScatter" : "surfaceReviewScatter");
+  const compareStateKey = viewKey === "exampleScatter" ? "exampleScatterCompareMode" : "reviewScatterCompareMode";
+  const compareMode = state[compareStateKey];
+
+  target.innerHTML = createStaticChartFrame({
+    legendEyebrow: viewKey === "exampleScatter" ? "PSA 样本云团" : "审阅页预览",
+    legendTitle:
+      compareMode === "compare"
+        ? "当前运行与保守情景正在同屏对比"
+        : "当前运行的样本分布正在解释不确定性",
+    legendBody:
+      compareMode === "compare"
+        ? "客户可以直接看到，当参数转向更保守的情景时，样本云团会往哪个方向移动。"
+        : "散点云越集中，客户越容易理解这条结果在当前假设下的稳定程度。",
+    controls: createStaticToggleMarkup({
+      group: `${viewKey}-compare`,
+      active: compareMode,
+      options: [
+        { value: "single", label: "只看当前运行" },
+        { value: "compare", label: "叠加保守情景" },
+      ],
+    }),
+    svg: makeScatterSvg(xKey, yKey, { compareMode }),
+  });
+
+  attachChartTooltip(target, {
+    title:
+      compareMode === "compare"
+        ? "两组样本云正在解释方案稳不稳"
+        : "当前样本云正在解释方案稳不稳",
+    body: "把鼠标放在任意样本点上，图例会同步切换到该点对应的业务解释。",
+  });
+  bindStaticToggleGroup(target, `${viewKey}-compare`, (value) => {
+    state[compareStateKey] = value;
+    renderScatterInto(target, xKey, yKey, options);
+  });
 }
 
-function makeScatterSvg(xKey, yKey) {
+function makeScatterSvg(xKey, yKey, { compareMode = "single" } = {}) {
   const width = 420;
   const height = 280;
   const padding = 38;
-  const xValues = scatterPoints.map((point) => point[xKey]);
-  const yValues = scatterPoints.map((point) => point[yKey]);
+  const comparisonPoints = buildComparisonScatterPoints();
+  const visiblePoints = compareMode === "compare" ? [...scatterPoints, ...comparisonPoints] : scatterPoints;
+  const xValues = visiblePoints.map((point) => point[xKey]);
+  const yValues = visiblePoints.map((point) => point[yKey]);
   const xMin = Math.min(...xValues) * 0.92;
   const xMax = Math.max(...xValues) * 1.06;
   const yMin = Math.min(...yValues) * 0.9;
@@ -1330,14 +1901,52 @@ function makeScatterSvg(xKey, yKey) {
   const normalizeX = (value) => padding + ((value - xMin) / (xMax - xMin)) * (width - padding * 2);
   const normalizeY = (value) => height - padding - ((value - yMin) / (yMax - yMin)) * (height - padding * 2);
 
-  const points = scatterPoints
+  const currentPoints = scatterPoints
     .map((point, index) => {
       const x = normalizeX(point[xKey]);
       const y = normalizeY(point[yKey]);
       const fill = index % 3 === 0 ? palette.evidence : index % 3 === 1 ? palette.calibration : palette.simulation;
-      return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5.2" fill="${fill}" fill-opacity="0.82" data-tip="样本 ${index + 1}: ${scatterOptions[xKey]} ${point[xKey]}，${scatterOptions[yKey]} ${point[yKey]}" />`;
+      return `
+        <circle
+          class="site-chart-sample is-primary"
+          cx="${x.toFixed(1)}"
+          cy="${y.toFixed(1)}"
+          r="5.2"
+          fill="${fill}"
+          fill-opacity="0.82"
+          style="animation-delay:${index * 36}ms"
+          data-tip="当前运行样本 ${index + 1}: ${scatterOptions[xKey]} ${point[xKey]}，${scatterOptions[yKey]} ${point[yKey]}"
+          data-legend-title="当前运行样本 ${index + 1}"
+          data-legend-body="这个点代表当前运行下的一次 PSA 抽样结果，帮助客户理解结果在不确定性下的离散程度。"
+        />
+      `;
     })
     .join("");
+
+  const comparePoints =
+    compareMode === "compare"
+      ? comparisonPoints
+          .map((point, index) => {
+            const x = normalizeX(point[xKey]);
+            const y = normalizeY(point[yKey]);
+            return `
+              <circle
+                class="site-chart-sample is-compare"
+                cx="${x.toFixed(1)}"
+                cy="${y.toFixed(1)}"
+                r="4.8"
+                fill="rgba(255,255,255,0.08)"
+                stroke="${palette.navy}"
+                stroke-width="1.8"
+                style="animation-delay:${index * 42}ms"
+                data-tip="保守情景样本 ${index + 1}: ${scatterOptions[xKey]} ${point[xKey]}，${scatterOptions[yKey]} ${point[yKey]}"
+                data-legend-title="保守情景样本 ${index + 1}"
+                data-legend-body="这组描边点用于告诉客户，如果切到更保守的参数组合，样本云会向哪里偏移。"
+              />
+            `;
+          })
+          .join("")
+      : "";
 
   return `
     <svg class="svg-root" viewBox="0 0 ${width} ${height}" role="img" aria-label="模拟散点图">
@@ -1345,9 +1954,10 @@ function makeScatterSvg(xKey, yKey) {
       <line class="gridline" x1="${width / 2}" y1="${padding}" x2="${width / 2}" y2="${height - padding}" />
       <line class="axis-line" x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" />
       <line class="axis-line" x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" />
-      ${points}
+      ${comparePoints}
+      ${currentPoints}
       <text class="chart-label" x="${padding}" y="22">${scatterOptions[xKey]} vs ${scatterOptions[yKey]}</text>
-      <text class="chart-note" x="${width - padding}" y="22" text-anchor="end">展示 12 个样本</text>
+      <text class="chart-note" x="${width - padding}" y="22" text-anchor="end">${compareMode === "compare" ? "当前运行 + 保守情景" : "展示 12 个当前样本"}</text>
       <text class="axis-label" x="${width / 2}" y="${height - 12}" text-anchor="middle">${scatterOptions[xKey]}</text>
       <text class="axis-label" x="18" y="${height / 2}" transform="rotate(-90 18 ${height / 2})" text-anchor="middle">${scatterOptions[yKey]}</text>
     </svg>
@@ -1359,6 +1969,9 @@ function renderCeacInto(target) {
     return;
   }
 
+  const conservativeProbabilities = ceacProbabilities.map((value, index) =>
+    Number(Math.max(0.32, value - 0.08 - index * 0.004).toFixed(3))
+  );
   const width = 420;
   const height = 280;
   const padding = 38;
@@ -1368,27 +1981,104 @@ function renderCeacInto(target) {
   const yMax = 0.95;
   const normalizeX = (value) => padding + ((value - xMin) / (xMax - xMin)) * (width - padding * 2);
   const normalizeY = (value) => height - padding - ((value - yMin) / (yMax - yMin)) * (height - padding * 2);
-  const path = ceacThresholds
-    .map((threshold, index) => `${index === 0 ? "M" : "L"} ${normalizeX(threshold).toFixed(1)} ${normalizeY(ceacProbabilities[index]).toFixed(1)}`)
-    .join(" ");
-  const points = ceacThresholds
-    .map((threshold, index) => `<circle cx="${normalizeX(threshold)}" cy="${normalizeY(ceacProbabilities[index])}" r="4.5" fill="${palette.review}" />`)
-    .join("");
+  const pathFor = (series) =>
+    ceacThresholds
+      .map((threshold, index) => `${index === 0 ? "M" : "L"} ${normalizeX(threshold).toFixed(1)} ${normalizeY(series[index]).toFixed(1)}`)
+      .join(" ");
+  const pointsFor = (series, type) =>
+    ceacThresholds
+      .map(
+        (threshold, index) => `
+          <circle
+            class="site-chart-sample ${type === "compare" ? "is-compare" : "is-primary"}"
+            cx="${normalizeX(threshold)}"
+            cy="${normalizeY(series[index])}"
+            r="${type === "compare" ? 4.2 : 4.5}"
+            fill="${type === "compare" ? "rgba(255,255,255,0.06)" : palette.review}"
+            stroke="${type === "compare" ? palette.navy : "none"}"
+            stroke-width="${type === "compare" ? 1.6 : 0}"
+            data-tip="${type === "compare" ? "保守情景" : "当前运行"}: 阈值 ${threshold.toLocaleString()} 下可接受概率 ${(series[index] * 100).toFixed(1)}%"
+            data-legend-title="${type === "compare" ? "保守情景" : "当前运行"} · 阈值 ${threshold.toLocaleString()}"
+            data-legend-body="这一个点代表当支付意愿阈值来到 ${threshold.toLocaleString()} 时，方案被判为成本效果可接受的概率。"
+          />
+        `
+      )
+      .join("");
 
-  target.innerHTML = `
-    <svg class="svg-root" viewBox="0 0 ${width} ${height}" role="img" aria-label="成本效果可接受性曲线">
-      <line class="gridline" x1="${padding}" y1="${normalizeY(0.5)}" x2="${width - padding}" y2="${normalizeY(0.5)}" />
-      <line class="axis-line" x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" />
-      <line class="axis-line" x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" />
-      <path d="${path}" fill="none" stroke="${palette.review}" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" data-tip="不同支付意愿阈值下的成本效果可接受概率" />
-      ${points.replaceAll('fill="' + palette.review + '"', 'fill="' + palette.review + '" data-tip="对应阈值下的可接受概率"')}
-      <text class="chart-label" x="${padding}" y="22">成本效果可接受概率</text>
-      <text class="chart-note" x="${width - padding}" y="22" text-anchor="end">支付意愿阈值</text>
-      <text class="axis-label" x="${width / 2}" y="${height - 12}" text-anchor="middle">阈值（USD / QALY）</text>
-      <text class="axis-label" x="18" y="${height / 2}" transform="rotate(-90 18 ${height / 2})" text-anchor="middle">概率</text>
-    </svg>
-  `;
-  attachChartTooltip(target);
+  target.innerHTML = createStaticChartFrame({
+    legendEyebrow: "成本效果可接受概率",
+    legendTitle:
+      state.exampleCeacCompareMode === "compare"
+        ? "当前运行与保守情景的 CEAC 正在同屏比较"
+        : "当前运行的 CEAC 正在解释阈值变化如何影响接受概率",
+    legendBody:
+      state.exampleCeacCompareMode === "compare"
+        ? "客户可以直接看到，更保守的假设会把整条接受概率曲线整体下压多少。"
+        : "这条曲线适合解释在不同支付意愿阈值下，方案被接受的概率如何变化。",
+    controls: createStaticToggleMarkup({
+      group: "example-ceac-compare",
+      active: state.exampleCeacCompareMode,
+      options: [
+        { value: "single", label: "只看当前运行" },
+        { value: "compare", label: "加入保守情景" },
+      ],
+    }),
+    svg: `
+      <svg class="svg-root" viewBox="0 0 ${width} ${height}" role="img" aria-label="成本效果可接受性曲线">
+        <line class="gridline" x1="${padding}" y1="${normalizeY(0.5)}" x2="${width - padding}" y2="${normalizeY(0.5)}" />
+        <line class="axis-line" x1="${padding}" y1="${height - padding}" x2="${width - padding}" y2="${height - padding}" />
+        <line class="axis-line" x1="${padding}" y1="${padding}" x2="${padding}" y2="${height - padding}" />
+        ${
+          state.exampleCeacCompareMode === "compare"
+            ? `
+              <path
+                class="site-chart-line is-secondary"
+                d="${pathFor(conservativeProbabilities)}"
+                fill="none"
+                stroke="${palette.navy}"
+                stroke-width="2.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                data-tip="保守情景下的成本效果可接受概率"
+                data-legend-title="保守情景 CEAC"
+                data-legend-body="保守情景曲线用来告诉客户，在更谨慎的参数假设下，结果会不会明显失去吸引力。"
+              />
+              ${pointsFor(conservativeProbabilities, "compare")}
+            `
+            : ""
+        }
+        <path
+          class="site-chart-line is-primary"
+          d="${pathFor(ceacProbabilities)}"
+          fill="none"
+          stroke="${palette.review}"
+          stroke-width="4"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          data-tip="当前运行下的成本效果可接受概率"
+          data-legend-title="当前运行 CEAC"
+          data-legend-body="这条线表示在不同支付意愿阈值下，当前方案被接受的概率如何变化。"
+        />
+        ${pointsFor(ceacProbabilities, "primary")}
+        <text class="chart-label" x="${padding}" y="22">成本效果可接受概率</text>
+        <text class="chart-note" x="${width - padding}" y="22" text-anchor="end">${state.exampleCeacCompareMode === "compare" ? "当前运行 + 保守情景" : "支付意愿阈值"}</text>
+        <text class="axis-label" x="${width / 2}" y="${height - 12}" text-anchor="middle">阈值（USD / QALY）</text>
+        <text class="axis-label" x="18" y="${height / 2}" transform="rotate(-90 18 ${height / 2})" text-anchor="middle">概率</text>
+      </svg>
+    `,
+  });
+
+  attachChartTooltip(target, {
+    title:
+      state.exampleCeacCompareMode === "compare"
+        ? "两条 CEAC 正在一起解释阈值敏感性"
+        : "当前 CEAC 正在解释阈值敏感性",
+    body: "把鼠标放在曲线或节点上，可以直接读到该阈值点的业务含义。",
+  });
+  bindStaticToggleGroup(target, "example-ceac-compare", (value) => {
+    state.exampleCeacCompareMode = value;
+    renderCeacInto(target);
+  });
 }
 
 function renderCohortInto(target, labelNode, index) {
@@ -1448,7 +2138,7 @@ function startRunAnimation() {
   }, 380);
 }
 
-function attachChartTooltip(container) {
+function attachChartTooltip(container, fallbackLegend = null) {
   if (!container) {
     return;
   }
@@ -1460,16 +2150,44 @@ function attachChartTooltip(container) {
     container.appendChild(tooltip);
   }
 
+  const legendTitle = container.querySelector('[data-chart-legend="title"]');
+  const legendBody = container.querySelector('[data-chart-legend="body"]');
+
+  const resetLegend = () => {
+    if (!fallbackLegend) {
+      return;
+    }
+    if (legendTitle && fallbackLegend.title) {
+      legendTitle.textContent = fallbackLegend.title;
+    }
+    if (legendBody && fallbackLegend.body) {
+      legendBody.textContent = fallbackLegend.body;
+    }
+  };
+
   const show = (event) => {
     const target = event.target.closest("[data-tip]");
     if (!target || !container.contains(target)) {
       tooltip.classList.remove("is-visible");
+      resetLegend();
       return;
     }
+
+    const legendTitleText = target.getAttribute("data-legend-title");
+    const legendBodyText = target.getAttribute("data-legend-body");
+    if (legendTitle && legendTitleText) {
+      legendTitle.textContent = legendTitleText;
+    }
+    if (legendBody && legendBodyText) {
+      legendBody.textContent = legendBodyText;
+    }
+
     tooltip.textContent = target.getAttribute("data-tip") || "";
     const rect = container.getBoundingClientRect();
-    const x = event.clientX - rect.left + 14;
-    const y = event.clientY - rect.top - 10;
+    const clientX = typeof event.clientX === "number" ? event.clientX : rect.left + rect.width * 0.5;
+    const clientY = typeof event.clientY === "number" ? event.clientY : rect.top + rect.height * 0.5;
+    const x = clientX - rect.left + 14;
+    const y = clientY - rect.top - 10;
     tooltip.style.left = `${x}px`;
     tooltip.style.top = `${y}px`;
     tooltip.classList.add("is-visible");
@@ -1477,10 +2195,14 @@ function attachChartTooltip(container) {
 
   const hide = () => {
     tooltip.classList.remove("is-visible");
+    resetLegend();
   };
 
   container.onpointermove = show;
   container.onpointerleave = hide;
+  container.onfocusin = show;
+  container.onfocusout = hide;
+  resetLegend();
 }
 
 initializeStaticSite();
