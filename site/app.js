@@ -419,6 +419,7 @@ const state = {
   reviewCohortIndex: 3,
   exampleCohortIndex: 2,
   brushWindows: {},
+  rangeComparisons: {},
   pageKey: "index",
   arrivalTransition: null,
 };
@@ -453,6 +454,7 @@ const architectureStack = document.getElementById("architecture-stack");
 const roadmapGrid = document.getElementById("roadmap-grid");
 const heroChart = document.getElementById("hero-chart");
 const PAGE_TRANSITION_KEY = "heor-demo.page-transition";
+const GUIDED_TOUR_KEY = "heor-demo.guided-tour";
 const STATIC_STORY_TRACK = [
   { key: "index", title: "理解任务" },
   { key: "evidence", title: "整理证据" },
@@ -517,6 +519,56 @@ const STATIC_PAGE_STORIES = {
     stage: "index",
   },
 };
+const GUIDED_TOUR_STEPS = [
+  {
+    page: "index",
+    selector: ".hero-stage",
+    title: "先用一条真实 run 建立信任",
+    body: "首页先把一条完整示例运行放到客户眼前，再带他逐页看每一步是如何实现的。",
+    cta: "进入证据工作台",
+    href: "./evidence.html?demo=1&tour=1",
+  },
+  {
+    page: "evidence",
+    selector: ".panel.span-8",
+    title: "第 1 步先整理原始证据",
+    body: "这里把原始 KM / survival / hazard 数据整理成可追溯对象，是整条业务链的起点。",
+    cta: "继续到概率函数",
+    href: "./runtime.html?tour=1",
+  },
+  {
+    page: "runtime",
+    selector: ".panel.span-7",
+    title: "第 2 步生成可运行函数层",
+    body: "平台把临床证据编译成周期级概率函数，后面的校准、模拟和图形解释都复用这层定义。",
+    cta: "继续到临床校准",
+    href: "./calibration.html?tour=1",
+  },
+  {
+    page: "calibration",
+    selector: "#calibration-overlay-chart",
+    title: "第 3 步先贴近真实临床数据",
+    body: "这一页直接展示观察值对预测值覆盖图，帮助客户理解模型为什么可信，或者为什么还要继续调参。",
+    cta: "继续到运行模拟",
+    href: "./simulation.html?tour=1",
+  },
+  {
+    page: "simulation",
+    selector: "#simulation-markov-motion",
+    title: "第 4 步真正跑一次分析",
+    body: "这里不仅显示结果卡片，也会让客户看到异步 job、动态 Markov 状态流和可复现产物。",
+    cta: "继续到结果审阅",
+    href: "./review.html?tour=1",
+  },
+  {
+    page: "review",
+    selector: "#review-scatter",
+    title: "第 5 步把结果讲清楚并交付",
+    body: "最后一页把结果卡、散点图、队列轨迹和产物包组合成一条完整的交付路径。",
+    cta: "完成导览",
+    href: "./review.html",
+  },
+];
 const STATIC_MOTION_SELECTOR = [
   ".hero-copy",
   ".hero-stage",
@@ -661,6 +713,96 @@ function setStaticBrushWindow(key, start, end, length) {
   return state.brushWindows[key];
 }
 
+function getStaticRangeCompareState(key) {
+  if (!state.rangeComparisons[key]) {
+    state.rangeComparisons[key] = { A: null, B: null };
+  }
+  return state.rangeComparisons[key];
+}
+
+function setStaticRangeCompareWindow(key, slot, start, end, length) {
+  const [nextStart, nextEnd] = normalizeBrushWindow(start, end, length);
+  const compare = getStaticRangeCompareState(key);
+  compare[slot] = [nextStart, nextEnd];
+  return compare;
+}
+
+function joinStaticControls(...controls) {
+  return controls.filter(Boolean).join("");
+}
+
+function createStaticExportMarkup(key) {
+  return `
+    <div class="site-export-group" data-export-group="${key}">
+      <button class="site-export-button" type="button" data-export-kind="png">导出 PNG</button>
+      <button class="site-export-button" type="button" data-export-kind="svg">导出 SVG</button>
+    </div>
+  `;
+}
+
+function downloadStaticBlob(filename, blob) {
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  window.setTimeout(() => URL.revokeObjectURL(url), 300);
+}
+
+function exportStaticSvgNode(container, filenameBase, format) {
+  const svg = container.querySelector("svg");
+  if (!svg) {
+    return;
+  }
+  const serializer = new XMLSerializer();
+  const markup = serializer.serializeToString(svg);
+  const source = markup.startsWith("<?xml") ? markup : `<?xml version="1.0" encoding="UTF-8"?>\n${markup}`;
+  if (format === "svg") {
+    downloadStaticBlob(`${filenameBase}.svg`, new Blob([source], { type: "image/svg+xml;charset=utf-8" }));
+    return;
+  }
+  const viewBox = svg.viewBox?.baseVal;
+  const width = Math.round(viewBox?.width || svg.clientWidth || 1200);
+  const height = Math.round(viewBox?.height || svg.clientHeight || 720);
+  const image = new Image();
+  image.onload = () => {
+    const canvas = document.createElement("canvas");
+    canvas.width = width * 2;
+    canvas.height = height * 2;
+    const context = canvas.getContext("2d");
+    if (!context) {
+      return;
+    }
+    context.fillStyle = "#ffffff";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+    canvas.toBlob((blob) => {
+      if (blob) {
+        downloadStaticBlob(`${filenameBase}.png`, blob);
+      }
+    }, "image/png");
+    URL.revokeObjectURL(image.src);
+  };
+  image.src = URL.createObjectURL(new Blob([source], { type: "image/svg+xml;charset=utf-8" }));
+}
+
+function bindStaticChartExports(container, key, filenameBase) {
+  container.querySelectorAll(`[data-export-group="${key}"] [data-export-kind]`).forEach((button) => {
+    button.addEventListener("click", () => {
+      exportStaticSvgNode(container, filenameBase, button.getAttribute("data-export-kind"));
+    });
+  });
+}
+
+function mean(values) {
+  if (!values.length) {
+    return 0;
+  }
+  return values.reduce((sum, value) => sum + Number(value || 0), 0) / values.length;
+}
+
 function createStaticChartFrame({ legendEyebrow, legendTitle, legendBody, svg, brush, controls }) {
   return `
     <div class="site-chart-shell">
@@ -678,7 +820,8 @@ function createStaticChartFrame({ legendEyebrow, legendTitle, legendBody, svg, b
   `;
 }
 
-function createStaticBrushMarkup({ key, start, end, length, startLabel, endLabel, caption }) {
+function createStaticBrushMarkup({ key, start, end, length, startLabel, endLabel, caption, compareSummary = "先把当前窗口分别存成 A / B，平台会直接告诉客户两段区间差了多少。" }) {
+  const compare = getStaticRangeCompareState(key);
   return `
     <div class="site-chart-brush" data-brush-key="${key}" data-brush-length="${length}">
       <div class="site-chart-brush-head">
@@ -693,11 +836,18 @@ function createStaticBrushMarkup({ key, start, end, length, startLabel, endLabel
         <input class="site-brush-range" data-range-role="start" type="range" min="0" max="${Math.max(length - 1, 1)}" value="${start}" />
         <input class="site-brush-range" data-range-role="end" type="range" min="1" max="${Math.max(length - 1, 1)}" value="${end}" />
       </div>
+      <div class="site-chart-range-compare" data-range-compare="${key}">
+        <div class="site-chart-range-actions">
+          <button class="site-range-button ${compare.A ? "is-filled" : ""}" type="button" data-range-slot="A">设为 A</button>
+          <button class="site-range-button ${compare.B ? "is-filled" : ""}" type="button" data-range-slot="B">设为 B</button>
+        </div>
+        <small class="site-chart-range-summary">${compareSummary}</small>
+      </div>
     </div>
   `;
 }
 
-function bindStaticBrushControls(container, { key, length, labelForIndex, onChange }) {
+function bindStaticBrushControls(container, { key, length, labelForIndex, onChange, onCompareChange }) {
   const brush = container.querySelector(`[data-brush-key="${key}"]`);
   if (!brush) {
     return;
@@ -724,6 +874,20 @@ function bindStaticBrushControls(container, { key, length, labelForIndex, onChan
 
   startInput.addEventListener("input", () => sync("start"));
   endInput.addEventListener("input", () => sync("end"));
+
+  brush.querySelectorAll("[data-range-slot]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const slot = button.getAttribute("data-range-slot");
+      if (!slot) {
+        return;
+      }
+      const current = getStaticBrushWindow(key, length);
+      setStaticRangeCompareWindow(key, slot, current[0], current[1], length);
+      if (typeof onCompareChange === "function") {
+        onCompareChange(slot, current);
+      }
+    });
+  });
 }
 
 function createStaticToggleMarkup({ group, options, active }) {
@@ -912,12 +1076,161 @@ function hydrateStaticArrivalNarrative() {
   }
 }
 
+function getStaticGuidedTourState() {
+  const raw = sessionStorage.getItem(GUIDED_TOUR_KEY);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw);
+    return typeof parsed?.step === "number" ? parsed : null;
+  } catch (error) {
+    sessionStorage.removeItem(GUIDED_TOUR_KEY);
+    return null;
+  }
+}
+
+function setStaticGuidedTourState(step) {
+  sessionStorage.setItem(GUIDED_TOUR_KEY, JSON.stringify({ active: true, step }));
+}
+
+function clearStaticGuidedTour() {
+  sessionStorage.removeItem(GUIDED_TOUR_KEY);
+  document.querySelector(".site-guided-tour-card")?.remove();
+  document.querySelector(".site-guided-tour-focus")?.classList.remove("site-guided-tour-focus");
+}
+
+function scrollStaticTourTargetIntoView(target) {
+  if (!target) {
+    return;
+  }
+
+  const rect = target.getBoundingClientRect();
+  const topThreshold = 124;
+  const bottomThreshold = Math.max(window.innerHeight - 180, topThreshold + 120);
+  const fullyFramed = rect.top >= topThreshold && rect.bottom <= bottomThreshold;
+  if (fullyFramed) {
+    return;
+  }
+
+  target.scrollIntoView({ block: "start", behavior: "auto" });
+}
+
+function mountStaticTourEntry() {
+  const heroActions = document.querySelector(".hero-actions");
+  if (heroActions && !heroActions.querySelector(".tour-launch-button")) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "button secondary tour-launch-button";
+    button.textContent = "开始引导演示";
+    button.addEventListener("click", () => {
+      setStaticGuidedTourState(0);
+      syncStaticGuidedTour();
+    });
+    heroActions.appendChild(button);
+  }
+
+  const nav = document.querySelector(".nav");
+  if (nav && !nav.querySelector(".tour-nav-button")) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "tour-nav-button";
+    button.textContent = "演示导览";
+    button.addEventListener("click", () => {
+      setStaticGuidedTourState(state.pageKey === "index" ? 0 : 0);
+      if (state.pageKey === "index") {
+        syncStaticGuidedTour();
+      } else {
+        playStaticPageTransition("index", "./index.html?tour=1");
+      }
+    });
+    nav.appendChild(button);
+  }
+}
+
+function syncStaticGuidedTour() {
+  document.querySelector(".site-guided-tour-focus")?.classList.remove("site-guided-tour-focus");
+  document.querySelector(".site-guided-tour-card")?.remove();
+
+  let tour = getStaticGuidedTourState();
+  if (!tour && new URLSearchParams(window.location.search).get("tour") === "1") {
+    const stepIndex = GUIDED_TOUR_STEPS.findIndex((step) => step.page === state.pageKey);
+    if (stepIndex >= 0) {
+      setStaticGuidedTourState(stepIndex);
+      tour = getStaticGuidedTourState();
+    }
+  }
+  if (!tour?.active) {
+    return;
+  }
+
+  const step = GUIDED_TOUR_STEPS[tour.step];
+  if (!step || step.page !== state.pageKey) {
+    return;
+  }
+
+  const target = document.querySelector(step.selector);
+  if (!target) {
+    return;
+  }
+  target.classList.add("site-guided-tour-focus");
+  scrollStaticTourTargetIntoView(target);
+
+  const card = document.createElement("aside");
+  card.className = "site-guided-tour-card";
+  card.innerHTML = `
+    <span>引导演示 ${tour.step + 1} / ${GUIDED_TOUR_STEPS.length}</span>
+    <strong>${step.title}</strong>
+    <p>${step.body}</p>
+    <div class="site-guided-tour-actions">
+      <button type="button" class="site-guided-tour-button is-secondary" data-tour-action="back" ${tour.step === 0 ? "disabled" : ""}>上一步</button>
+      <button type="button" class="site-guided-tour-button is-secondary" data-tour-action="close">结束导览</button>
+      <button type="button" class="site-guided-tour-button is-primary" data-tour-action="next">${step.cta}</button>
+    </div>
+  `;
+  document.body.appendChild(card);
+
+  card.querySelector('[data-tour-action="close"]')?.addEventListener("click", clearStaticGuidedTour);
+  card.querySelector('[data-tour-action="back"]')?.addEventListener("click", () => moveStaticGuidedTour(-1));
+  card.querySelector('[data-tour-action="next"]')?.addEventListener("click", () => moveStaticGuidedTour(1));
+}
+
+function moveStaticGuidedTour(direction) {
+  const tour = getStaticGuidedTourState();
+  if (!tour) {
+    return;
+  }
+
+  if (direction > 0 && tour.step >= GUIDED_TOUR_STEPS.length - 1) {
+    clearStaticGuidedTour();
+    return;
+  }
+
+  const nextStepIndex = clamp(tour.step + direction, 0, GUIDED_TOUR_STEPS.length - 1);
+  const nextStep = GUIDED_TOUR_STEPS[nextStepIndex];
+  if (!nextStep) {
+    clearStaticGuidedTour();
+    return;
+  }
+
+  setStaticGuidedTourState(nextStepIndex);
+  if (nextStep.page === state.pageKey) {
+    syncStaticGuidedTour();
+    return;
+  }
+  const href = direction > 0 ? nextStep.href : `./${nextStep.page}.html?tour=1`;
+  playStaticPageTransition(nextStep.page, href);
+}
+
 function initializeStaticSite() {
   setStaticPageAccent();
   bindStaticPointerAura();
   mountStaticTransitionLayer();
   bindStaticNarrativeLinks();
   hydrateStaticArrivalNarrative();
+  mountStaticTourEntry();
+  syncStaticGuidedTour();
 
   renderWorkflow();
   renderHeroChart();
@@ -994,6 +1307,25 @@ function renderWorkflow() {
   refreshStaticMotion();
 }
 
+function describeStaticCalibrationRangeCompare(mode, compareKey) {
+  const compare = getStaticRangeCompareState(compareKey);
+  if (!compare.A || !compare.B) {
+    return "先把当前窗口设成 A / B，平台会直接比较两段时间窗的平均生存率和拟合误差。";
+  }
+  const monthLabels = ["0", "3", "6", "9", "12", "15", "18", "21"];
+  const series = calibrationPredicted[mode];
+  const avgFor = ([start, end], source) => mean(source.slice(start, end + 1));
+  const gapFor = ([start, end]) =>
+    mean(
+      calibrationObserved.slice(start, end + 1).map((value, index) => Math.abs(value - series[start + index]))
+    );
+  const avgA = avgFor(compare.A, series);
+  const avgB = avgFor(compare.B, series);
+  const gapA = gapFor(compare.A);
+  const gapB = gapFor(compare.B);
+  return `A ${monthLabels[compare.A[0]]}-${monthLabels[compare.A[1]]} 月 vs B ${monthLabels[compare.B[0]]}-${monthLabels[compare.B[1]]} 月 · 预测平均生存率 ${(avgA * 100).toFixed(1)}% -> ${(avgB * 100).toFixed(1)}% · 平均拟合误差 ${(gapA * 100).toFixed(2)} -> ${(gapB * 100).toFixed(2)} pct`;
+}
+
 function renderHeroChart() {
   if (!heroChart) {
     return;
@@ -1010,14 +1342,17 @@ function renderHeroChart() {
       state.heroCompareMode === "compare"
         ? "这张首页图先告诉客户，平台不只会出一条线，而是能把低位、基线和高位预测一起放进同一张校准图里。"
         : "这张首页图先回答一个最基础的问题: 当前基线曲线是否已经贴近真实观察点。",
-    controls: createStaticToggleMarkup({
-      group: "hero-calibration-mode",
-      active: state.heroCompareMode,
-      options: [
-        { value: "single", label: "只看基线" },
-        { value: "compare", label: "三情景对比" },
-      ],
-    }),
+    controls: joinStaticControls(
+      createStaticToggleMarkup({
+        group: "hero-calibration-mode",
+        active: state.heroCompareMode,
+        options: [
+          { value: "single", label: "只看基线" },
+          { value: "compare", label: "三情景对比" },
+        ],
+      }),
+      createStaticExportMarkup("hero-calibration-export")
+    ),
     svg: makeCalibrationSvg("base", {
       compact: true,
       note: `时间窗 ${pointLabels[start]}-${pointLabels[end]} 月`,
@@ -1033,6 +1368,7 @@ function renderHeroChart() {
       startLabel: `${pointLabels[start]} 月`,
       endLabel: `${pointLabels[end]} 月`,
       caption: "刷选时间窗",
+      compareSummary: describeStaticCalibrationRangeCompare("base", "heroCalibration"),
     }),
   });
   attachChartTooltip(heroChart, {
@@ -1042,6 +1378,7 @@ function renderHeroChart() {
         : "基线预测曲线与观察值一起解释拟合效果",
     body: "把鼠标放在线、点或不确定性带上，右侧说明会同步切换成当前对象的解释。",
   });
+  bindStaticChartExports(heroChart, "hero-calibration-export", "hero-calibration");
   bindStaticToggleGroup(heroChart, "hero-calibration-mode", (value) => {
     state.heroCompareMode = value;
     renderHeroChart();
@@ -1051,6 +1388,7 @@ function renderHeroChart() {
     length: calibrationObserved.length,
     labelForIndex: (index) => `${pointLabels[index]} 月`,
     onChange: () => renderHeroChart(),
+    onCompareChange: () => renderHeroChart(),
   });
 }
 
@@ -1645,14 +1983,17 @@ function renderCalibrationInto(target, mode, compact, options = {}) {
       compareMode === "compare"
         ? "客户可以直接看到情景切换之后，曲线是如何分开、又如何围绕观察值聚拢的。"
         : "这一视图适合逐点讲解哪几个时间窗拟合更紧，哪几个时间窗还需要继续调整。",
-    controls: createStaticToggleMarkup({
-      group: `${viewKey}-compare`,
-      active: compareMode,
-      options: [
-        { value: "single", label: "只看当前情景" },
-        { value: "compare", label: "三情景对比" },
-      ],
-    }),
+    controls: joinStaticControls(
+      createStaticToggleMarkup({
+        group: `${viewKey}-compare`,
+        active: compareMode,
+        options: [
+          { value: "single", label: "只看当前情景" },
+          { value: "compare", label: "三情景对比" },
+        ],
+      }),
+      createStaticExportMarkup(`${viewKey}-export`)
+    ),
     svg: makeCalibrationSvg(mode, {
       compact,
       note: `当前情景: ${modeLabel}`,
@@ -1668,6 +2009,7 @@ function renderCalibrationInto(target, mode, compact, options = {}) {
       startLabel: `${pointLabels[start]} 月`,
       endLabel: `${pointLabels[end]} 月`,
       caption: "刷选校准时间窗",
+      compareSummary: describeStaticCalibrationRangeCompare(mode, viewKey),
     }),
   });
   attachChartTooltip(target, {
@@ -1677,6 +2019,7 @@ function renderCalibrationInto(target, mode, compact, options = {}) {
         : `${modeLabel} 预测曲线正在和观察值对照`,
     body: "这张图会把当前悬停对象的意义直接写出来，适合在演示时边指边讲。",
   });
+  bindStaticChartExports(target, `${viewKey}-export`, `${viewKey}-${mode}`);
   bindStaticToggleGroup(target, `${viewKey}-compare`, (value) => {
     state[compareStateKey] = value;
     renderCalibrationInto(target, mode, compact, options);
@@ -1686,6 +2029,7 @@ function renderCalibrationInto(target, mode, compact, options = {}) {
     length: calibrationObserved.length,
     labelForIndex: (index) => `${pointLabels[index]} 月`,
     onChange: () => renderCalibrationInto(target, mode, compact, options),
+    onCompareChange: () => renderCalibrationInto(target, mode, compact, options),
   });
 }
 
@@ -1861,14 +2205,17 @@ function renderScatterInto(target, xKey, yKey, options = {}) {
       compareMode === "compare"
         ? "客户可以直接看到，当参数转向更保守的情景时，样本云团会往哪个方向移动。"
         : "散点云越集中，客户越容易理解这条结果在当前假设下的稳定程度。",
-    controls: createStaticToggleMarkup({
-      group: `${viewKey}-compare`,
-      active: compareMode,
-      options: [
-        { value: "single", label: "只看当前运行" },
-        { value: "compare", label: "叠加保守情景" },
-      ],
-    }),
+    controls: joinStaticControls(
+      createStaticToggleMarkup({
+        group: `${viewKey}-compare`,
+        active: compareMode,
+        options: [
+          { value: "single", label: "只看当前运行" },
+          { value: "compare", label: "叠加保守情景" },
+        ],
+      }),
+      createStaticExportMarkup(`${viewKey}-export`)
+    ),
     svg: makeScatterSvg(xKey, yKey, { compareMode }),
   });
 
@@ -1879,6 +2226,7 @@ function renderScatterInto(target, xKey, yKey, options = {}) {
         : "当前样本云正在解释方案稳不稳",
     body: "把鼠标放在任意样本点上，图例会同步切换到该点对应的业务解释。",
   });
+  bindStaticChartExports(target, `${viewKey}-export`, `${viewKey}-${xKey}-${yKey}`);
   bindStaticToggleGroup(target, `${viewKey}-compare`, (value) => {
     state[compareStateKey] = value;
     renderScatterInto(target, xKey, yKey, options);
@@ -2015,14 +2363,17 @@ function renderCeacInto(target) {
       state.exampleCeacCompareMode === "compare"
         ? "客户可以直接看到，更保守的假设会把整条接受概率曲线整体下压多少。"
         : "这条曲线适合解释在不同支付意愿阈值下，方案被接受的概率如何变化。",
-    controls: createStaticToggleMarkup({
-      group: "example-ceac-compare",
-      active: state.exampleCeacCompareMode,
-      options: [
-        { value: "single", label: "只看当前运行" },
-        { value: "compare", label: "加入保守情景" },
-      ],
-    }),
+    controls: joinStaticControls(
+      createStaticToggleMarkup({
+        group: "example-ceac-compare",
+        active: state.exampleCeacCompareMode,
+        options: [
+          { value: "single", label: "只看当前运行" },
+          { value: "compare", label: "加入保守情景" },
+        ],
+      }),
+      createStaticExportMarkup("example-ceac-export")
+    ),
     svg: `
       <svg class="svg-root" viewBox="0 0 ${width} ${height}" role="img" aria-label="成本效果可接受性曲线">
         <line class="gridline" x1="${padding}" y1="${normalizeY(0.5)}" x2="${width - padding}" y2="${normalizeY(0.5)}" />
@@ -2075,6 +2426,7 @@ function renderCeacInto(target) {
         : "当前 CEAC 正在解释阈值敏感性",
     body: "把鼠标放在曲线或节点上，可以直接读到该阈值点的业务含义。",
   });
+  bindStaticChartExports(target, "example-ceac-export", "example-ceac");
   bindStaticToggleGroup(target, "example-ceac-compare", (value) => {
     state.exampleCeacCompareMode = value;
     renderCeacInto(target);
@@ -2152,6 +2504,20 @@ function attachChartTooltip(container, fallbackLegend = null) {
 
   const legendTitle = container.querySelector('[data-chart-legend="title"]');
   const legendBody = container.querySelector('[data-chart-legend="body"]');
+  const shellHead = container.querySelector(".site-chart-shell-head");
+  let legendActions = shellHead?.querySelector(".site-chart-legend-actions");
+  if (shellHead && !legendActions) {
+    legendActions = document.createElement("div");
+    legendActions.className = "site-chart-legend-actions";
+    legendActions.innerHTML = `
+      <span class="site-chart-pin-status">点击图形固定说明</span>
+      <button class="site-chart-pin-clear" type="button" hidden>取消固定</button>
+    `;
+    shellHead.appendChild(legendActions);
+  }
+  const pinStatus = legendActions?.querySelector(".site-chart-pin-status");
+  const pinClear = legendActions?.querySelector(".site-chart-pin-clear");
+  let pinnedNode = null;
 
   const resetLegend = () => {
     if (!fallbackLegend) {
@@ -2164,12 +2530,26 @@ function attachChartTooltip(container, fallbackLegend = null) {
       legendBody.textContent = fallbackLegend.body;
     }
   };
+  const updatePinState = () => {
+    if (pinStatus) {
+      pinStatus.textContent = pinnedNode ? "说明已固定" : "点击图形固定说明";
+    }
+    if (pinClear) {
+      pinClear.hidden = !pinnedNode;
+    }
+  };
 
   const show = (event) => {
     const target = event.target.closest("[data-tip]");
     if (!target || !container.contains(target)) {
-      tooltip.classList.remove("is-visible");
-      resetLegend();
+      if (!pinnedNode) {
+        tooltip.classList.remove("is-visible");
+        resetLegend();
+      }
+      return;
+    }
+
+    if (pinnedNode && target !== pinnedNode) {
       return;
     }
 
@@ -2194,6 +2574,9 @@ function attachChartTooltip(container, fallbackLegend = null) {
   };
 
   const hide = () => {
+    if (pinnedNode) {
+      return;
+    }
     tooltip.classList.remove("is-visible");
     resetLegend();
   };
@@ -2202,7 +2585,26 @@ function attachChartTooltip(container, fallbackLegend = null) {
   container.onpointerleave = hide;
   container.onfocusin = show;
   container.onfocusout = hide;
+  container.onclick = (event) => {
+    const target = event.target.closest("[data-tip]");
+    if (!target || !container.contains(target)) {
+      return;
+    }
+    pinnedNode = pinnedNode === target ? null : target;
+    updatePinState();
+    if (!pinnedNode) {
+      hide();
+      return;
+    }
+    show(event);
+  };
+  pinClear?.addEventListener("click", () => {
+    pinnedNode = null;
+    updatePinState();
+    hide();
+  });
   resetLegend();
+  updatePinState();
 }
 
 initializeStaticSite();
