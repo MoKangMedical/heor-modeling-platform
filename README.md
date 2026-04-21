@@ -102,3 +102,9 @@ python -m app.workers.job_worker
 2. 增加认证、组织权限和更稳健的任务编排
 3. 给 calibration 配置、优化日志和 overlay artifact 接入更完整的求解器
 4. 增加 benchmark-backed integration tests 和可观测性
+
+## 📐 理论基础
+
+> **Harness理论**：在AI领域，Harness（环境设计）比模型本身更重要。使性能提升64%。
+
+> **红杉论点**：从卖工具到卖结果。
