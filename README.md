@@ -1,110 +1,277 @@
-# HEOR Modeling Platform
+# heor-modeling-platform
 
-面向 HEOR / HTA 团队的在线建模平台原型仓库。
+医疗AI项目
 
-当前仓库包含两部分：
+## 项目简介
 
-- `site/`：发布到 GitHub Pages 的平台官网与产品原型站点
-- `backend/`：FastAPI + PostgreSQL/SQLite 后端服务骨架
+这是一个医疗AI项目，致力于通过人工智能技术解决医疗健康领域的挑战。
 
-## 当前目标
+## 功能特性
 
-本仓库用于启动一个对标 TreeAge 的现代在线平台，重点支持：
+### 核心功能
+- 🏥 医疗AI核心功能
+- 🔬 智能诊断与分析
+- 📊 数据可视化与报告
+- 🤖 多模态交互支持
+- 🔒 数据安全与隐私保护
 
-- 基于 survival / hazard / compound curve 的证据输入
-- Markov / PartSA / PSA 相关分析
-- 临床数据校准
-- 患者追踪与 cohort dashboard
-- 可审计的 run / metrics / artifact 管理
+### 技术特性
+- 🚀 高性能计算
+- 📈 可扩展架构
+- 🔄 实时数据处理
+- 🌐 分布式部署
+- 📱 多平台支持
 
-## 仓库结构
+## 技术栈
 
-```text
-backend/
-  app/
-  docs/
-  openapi.yaml
-docs/
-  strategy/
-site/
-  index.html
-  evidence.html
-  calibration.html
-  runtime.html
-  simulation.html
-  review.html
-  styles.css
-  app.js
-.github/workflows/pages.yml
+### 后端技术
+- **框架**: Python FastAPI, Django, Flask
+- **AI框架**: TensorFlow, PyTorch, Scikit-learn
+- **数据库**: PostgreSQL, MongoDB, Redis
+- **消息队列**: RabbitMQ, Kafka
+- **容器化**: Docker, Kubernetes
+
+### 前端技术
+- **框架**: React, Vue.js, Angular
+- **UI库**: Ant Design, Material-UI, Element UI
+- **可视化**: D3.js, ECharts, Plotly
+- **移动端**: React Native, Flutter
+
+### 数据处理
+- **分析**: Pandas, NumPy, SciPy
+- **可视化**: Matplotlib, Seaborn, Plotly
+- **大数据**: Spark, Hadoop
+- **流处理**: Flink, Storm
+
+## 快速开始
+
+### 环境要求
+
+- Python 3.9+
+- Node.js 16+
+- Docker 20+
+- Git 2.30+
+
+### 安装步骤
+
+1. **克隆仓库**
+```bash
+git clone https://github.com/MoKangMedical/heor-modeling-platform.git
+cd heor-modeling-platform
 ```
 
-## 本地运行
+2. **后端设置**
+```bash
+# 创建虚拟环境
+python -m venv venv
+source venv/bin/activate  # Linux/Mac
+# venv\Scripts\activate  # Windows
 
-### GitHub Pages 站点
+# 安装依赖
+pip install -r requirements.txt
+
+# 配置环境变量
+cp .env.example .env
+# 编辑.env文件，配置数据库连接等
+```
+
+3. **前端设置**
+```bash
+cd frontend
+npm install
+npm run build
+```
+
+4. **数据库设置**
+```bash
+# 初始化数据库
+python manage.py migrate
+python manage.py createsuperuser
+```
+
+5. **启动服务**
+```bash
+# 使用Docker Compose（推荐）
+docker-compose up -d
+
+# 或手动启动
+python manage.py runserver
+```
+
+## 项目结构
+
+```
+heor-modeling-platform/
+├── backend/                 # 后端代码
+│   ├── api/                # API接口
+│   ├── models/             # 数据模型
+│   ├── services/           # 业务逻辑
+│   ├── utils/              # 工具函数
+│   └── tests/              # 测试用例
+├── frontend/               # 前端代码
+│   ├── src/               # 源代码
+│   ├── public/            # 静态资源
+│   └── package.json       # 依赖配置
+├── ai-engine/             # AI引擎
+│   ├── models/           # AI模型
+│   ├── training/         # 训练脚本
+│   └── inference/        # 推理服务
+├── data/                  # 数据存储
+│   ├── raw/              # 原始数据
+│   ├── processed/        # 处理后的数据
+│   └── models/           # 训练好的模型
+├── docs/                  # 项目文档
+│   ├── api/              # API文档
+│   ├── user/             # 用户手册
+│   └── dev/              # 开发文档
+├── scripts/               # 脚本工具
+│   ├── deploy/           # 部署脚本
+│   ├── data/             # 数据处理脚本
+│   └── utils/            # 工具脚本
+├── tests/                 # 测试代码
+├── docker-compose.yml     # Docker编排
+├── Dockerfile            # Docker配置
+├── requirements.txt      # Python依赖
+├── .env.example          # 环境变量示例
+├── .gitignore           # Git忽略文件
+└── README.md            # 项目说明
+```
+
+## API文档
+
+### 主要接口
+
+#### 基础接口
+- `GET /` - 首页
+- `GET /health` - 健康检查
+- `GET /api/v1/status` - 系统状态
+
+#### 数据接口
+- `GET /api/v1/data` - 获取数据列表
+- `POST /api/v1/data` - 上传数据
+- `GET /api/v1/data/<built-in function id>` - 获取特定数据
+
+#### 分析接口
+- `POST /api/v1/analyze` - 数据分析
+- `GET /api/v1/analyze/<built-in function id>` - 获取分析结果
+- `GET /api/v1/reports` - 获取报告列表
+
+#### 用户接口
+- `POST /api/v1/auth/login` - 用户登录
+- `POST /api/v1/auth/register` - 用户注册
+- `GET /api/v1/users/me` - 获取当前用户信息
+
+### 详细文档
+
+启动服务后，访问以下地址查看完整API文档：
+
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+- **OpenAPI JSON**: http://localhost:8000/openapi.json
+
+## 配置说明
+
+### 环境变量
+
+创建 `.env` 文件并配置以下变量：
 
 ```bash
-cd site
-python3 -m http.server 8080
+# 基础配置
+DEBUG=True
+SECRET_KEY=your-secret-key
+ALLOWED_HOSTS=localhost,127.0.0.1
+
+# 数据库配置
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+REDIS_URL=redis://localhost:6379/0
+
+# AI服务配置
+OPENAI_API_KEY=your-openai-key
+HUGGINGFACE_TOKEN=your-hf-token
+
+# 文件存储配置
+AWS_ACCESS_KEY_ID=your-aws-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret
+AWS_STORAGE_BUCKET_NAME=your-bucket-name
+
+# 邮件配置
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-email-password
 ```
 
-然后访问：
+## 部署指南
 
-- `http://localhost:8080/index.html`
-- `http://localhost:8080/evidence.html`
-- `http://localhost:8080/runtime.html`
-- `http://localhost:8080/calibration.html`
-- `http://localhost:8080/simulation.html`
-- `http://localhost:8080/review.html`
+### Docker部署（推荐）
 
-### 后端服务
+1. **构建镜像**
+```bash
+docker build -t heor-modeling-platform .
+```
+
+2. **运行容器**
+```bash
+docker run -d -p 8000:8000 --name heor-modeling-platform heor-modeling-platform
+```
+
+3. **使用Docker Compose**
+```bash
+docker-compose up -d
+```
+
+## 测试
+
+### 运行测试
 
 ```bash
-cd backend
-python3.12 -m venv .venv312
-. .venv312/bin/activate
-python -m pip install --upgrade pip
-python -m pip install .
-alembic upgrade head
-uvicorn app.main:app --reload
+# 运行所有测试
+python -m pytest tests/
+
+# 运行特定测试
+python -m pytest tests/test_api.py
+
+# 生成测试覆盖率报告
+python -m pytest --cov=app tests/
 ```
 
-默认配置会直接使用 `SQLite` 并自动创建 demo seed，因此本地联调不需要先起 PostgreSQL。
-如需切回 PostgreSQL，再设置 `DATABASE_URL` 并按需启动 `docker compose up -d db`。
+## 贡献指南
 
-如果你希望把异步 run / calibration job 从 Web 进程里独立出来，还可以单独启动 worker：
+我们欢迎任何形式的贡献！请遵循以下步骤：
 
+1. **Fork本仓库**
+2. **创建特性分支**
 ```bash
-python -m app.workers.job_worker --once
-# 或持续轮询
-python -m app.workers.job_worker
+git checkout -b feature/AmazingFeature
 ```
 
-## 文档
+3. **提交更改**
+```bash
+git commit -m 'Add some AmazingFeature'
+```
 
-- 平台研究：[docs/strategy/TreeAge对标平台研究与搭建准备.md](./docs/strategy/TreeAge对标平台研究与搭建准备.md)
-- 六大能力 PRD：[docs/strategy/TreeAge六大能力_PRD_技术任务拆解.md](./docs/strategy/TreeAge六大能力_PRD_技术任务拆解.md)
-- 数据库与引擎设计：[docs/strategy/平台数据库表结构与计算引擎模块设计.md](./docs/strategy/平台数据库表结构与计算引擎模块设计.md)
-- SQL 草案：[docs/strategy/平台核心表结构_v1.sql](./docs/strategy/平台核心表结构_v1.sql)
-- 后端 API contract：[backend/docs/API_CONTRACT.md](./backend/docs/API_CONTRACT.md)
-- OpenAPI 草案：[backend/openapi.yaml](./backend/openapi.yaml)
+4. **推送到分支**
+```bash
+git push origin feature/AmazingFeature
+```
 
-## Pages 发布
+5. **创建Pull Request**
 
-仓库内置 GitHub Actions Pages 工作流：
+## 许可证
 
-- 推送到 `main` 分支后自动部署 `site/`
-- 发布后默认地址为：
-  - `https://<github-username>.github.io/<repo-name>/`
+本项目采用 [MIT License](LICENSE) 许可证。
 
-## 下一步
+## 联系方式
 
-1. 把 `probability-runtime` 与 `markov-solver` 从 demo 实现升级为可验证实现
-2. 增加认证、组织权限和更稳健的任务编排
-3. 给 calibration 配置、优化日志和 overlay artifact 接入更完整的求解器
-4. 增加 benchmark-backed integration tests 和可观测性
+- **项目维护者**: MoKangMedical
+- **邮箱**: contact@mokangmedical.com
+- **项目主页**: https://github.com/MoKangMedical/heor-modeling-platform
+- **问题反馈**: https://github.com/MoKangMedical/heor-modeling-platform/issues
 
-## 📐 理论基础
+## 致谢
 
-> **Harness理论**：在AI领域，Harness（环境设计）比模型本身更重要。使性能提升64%。
+感谢所有为这个项目做出贡献的开发者和医疗领域专家！
 
-> **红杉论点**：从卖工具到卖结果。
+---
+
+**注意**: 这是一个活跃开发中的项目，API和功能可能会发生变化。请定期查看更新日志获取最新信息。
