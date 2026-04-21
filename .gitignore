@@ -16,3 +16,12 @@ backend/.mypy_cache/
 backend/.venv/
 backend/.venv312/
 backend/*.db
+
+# Environment — Hermes安全规则
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*_secret*
+credentials.json
