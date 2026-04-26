@@ -1,0 +1,22 @@
+[
+  {
+    "disease": "糖尿病",
+    "qaly_per_year": 0.85
+  },
+  {
+    "disease": "高血压",
+    "qaly_per_year": 0.92
+  },
+  {
+    "disease": "冠心病",
+    "qaly_per_year": 0.78
+  },
+  {
+    "disease": "COPD",
+    "qaly_per_year": 0.7
+  },
+  {
+    "disease": "抑郁症",
+    "qaly_per_year": 0.65
+  }
+]

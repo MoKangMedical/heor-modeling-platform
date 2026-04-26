@@ -1,0 +1,17 @@
+[
+  {
+    "payer": "医保",
+    "coverage": 0.7,
+    "copay": 0.3
+  },
+  {
+    "payer": "商业保险",
+    "coverage": 0.8,
+    "copay": 0.2
+  },
+  {
+    "payer": "自费",
+    "coverage": 0,
+    "copay": 1.0
+  }
+]
