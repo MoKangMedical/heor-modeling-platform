@@ -1,0 +1,209 @@
+{
+  "metadata": {
+    "version": "1.0.0",
+    "last_updated": "2026-04-26",
+    "description": "HEOR建模模板库 — 支持Markov、分区生存、微观模拟三大主流模型"
+  },
+  "templates": [
+    {
+      "id": "markov-cohort",
+      "name": "Markov队列模型",
+      "type": "markov",
+      "description": "适用于慢性病长期成本-效果分析的经典队列Markov模型，支持半周期校正和多种贴现方式",
+      "use_cases": [
+        "慢性病长期管理策略评估",
+        "疫苗经济学评价",
+        "筛查项目成本-效果分析",
+        "慢病干预措施比较"
+      ],
+      "parameters": {
+        "states": ["健康", "疾病", "严重疾病", "死亡"],
+        "cycle_length": 1,
+        "cycle_unit": "年",
+        "num_cycles": 30,
+        "half_cycle_correction": true,
+        "discount_rate": 0.03,
+        "discount_type": "连续",
+        "perspective": "卫生体系",
+        "time_horizon": "终生"
+      },
+      "transition_matrix_template": [
+        [0.85, 0.10, 0.00, 0.05],
+        [0.00, 0.75, 0.15, 0.10],
+        [0.00, 0.00, 0.70, 0.30],
+        [0.00, 0.00, 0.00, 1.00]
+      ],
+      "costs_template": {
+        "健康": {"direct_medical": 0, "direct_non_medical": 0, "indirect": 0},
+        "疾病": {"direct_medical": 15000, "direct_non_medical": 3000, "indirect": 5000},
+        "严重疾病": {"direct_medical": 50000, "direct_non_medical": 10000, "indirect": 15000},
+        "死亡": {"direct_medical": 0, "direct_non_medical": 0, "indirect": 0}
+      },
+      "utilities_template": {
+        "健康": 1.00,
+        "疾病": 0.75,
+        "严重疾病": 0.45,
+        "死亡": 0.00
+      },
+      "output_metrics": ["ICER", "INMB", "QALYs", "LYs", "total_cost"],
+      "sensitivity_analysis": {
+        "deterministic": {"one_way": true, "two_way": true, "tornado": true},
+        "probabilistic": {"n_simulations": 1000, "distribution_types": ["beta", "gamma", "lognormal"]}
+      }
+    },
+    {
+      "id": "partitioned-survival",
+      "name": "分区生存模型（PartSA）",
+      "type": "partitioned_survival",
+      "description": "基于PFS和OS曲线的分区生存模型，特别适用于肿瘤药物经济学评价",
+      "use_cases": [
+        "抗肿瘤药物经济学评价",
+        "免疫治疗药物价值评估",
+        "靶向治疗成本-效果分析",
+        "罕见肿瘤药物定价支持"
+      ],
+      "parameters": {
+        "states": ["无进展生存（PFS）", "进展后生存（PPS）", "死亡"],
+        "cycle_length": 1,
+        "cycle_unit": "月",
+        "num_cycles": 120,
+        "half_cycle_correction": true,
+        "discount_rate": 0.03,
+        "discount_type": "连续",
+        "perspective": "卫生体系",
+        "time_horizon": "终生"
+      },
+      "survival_models": {
+        "PFS": {
+          "distributions": ["exponential", "weibull", "lognormal", "loglogistic", "gompertz"],
+          "recommended": "weibull",
+          "parameters": {"shape": 0.85, "scale": 14.2}
+        },
+        "OS": {
+          "distributions": ["exponential", "weibull", "lognormal", "loglogistic", "gompertz"],
+          "recommended": "weibull",
+          "parameters": {"shape": 0.92, "scale": 22.5}
+        }
+      },
+      "costs_template": {
+        "PFS": {
+          "drug_cost": 8500,
+          "monitoring": 2000,
+          "adverse_events": 1500,
+          "supportive_care": 500
+        },
+        "PPS": {
+          "drug_cost": 0,
+          "progression_treatment": 12000,
+          "palliative_care": 6000,
+          "hospitalization": 8000
+        },
+        "死亡": {"terminal_care": 15000}
+      },
+      "utilities_template": {
+        "PFS": 0.80,
+        "PPS": 0.55,
+        "死亡": 0.00,
+        "adverse_event_disutility": {
+          "grade_1_2": -0.05,
+          "grade_3_4": -0.15
+        }
+      },
+      "output_metrics": ["ICER", "INMB", "QALYs", "LYs", "PFS_months", "OS_months", "total_cost"],
+      "sensitivity_analysis": {
+        "deterministic": {"one_way": true, "two_way": true, "tornado": true},
+        "probabilistic": {"n_simulations": 1000},
+        "scenario": ["best_case", "worst_case", "cross_over_adjusted"]
+      }
+    },
+    {
+      "id": "microsimulation",
+      "name": "微观模拟模型",
+      "type": "microsimulation",
+      "description": "个体层面离散事件模拟模型，支持患者异质性和复杂临床路径建模",
+      "use_cases": [
+        "需要个体异质性的复杂疾病建模",
+        "治疗序列策略评估",
+        "精准医疗经济性分析",
+        "联合干预措施评估"
+      ],
+      "parameters": {
+        "num_patients": 10000,
+        "num_simulations": 100,
+        "cycle_length": 1,
+        "cycle_unit": "月",
+        "time_horizon": "终生",
+        "discount_rate": 0.03,
+        "perspective": "卫生体系",
+        "random_seed": 42
+      },
+      "patient_attributes": {
+        "age": {"distribution": "normal", "mean": 60, "sd": 10, "min": 18, "max": 100},
+        "sex": {"distribution": "categorical", "probabilities": {"male": 0.55, "female": 0.45}},
+        "disease_stage": {"distribution": "categorical", "probabilities": {"I": 0.20, "II": 0.35, "III": 0.30, "IV": 0.15}},
+        "comorbidity_index": {"distribution": "poisson", "lambda": 1.5, "min": 0, "max": 10},
+        "egfr_status": {"distribution": "categorical", "probabilities": {"positive": 0.40, "negative": 0.60}}
+      },
+      "events": [
+        {"name": "diagnosis", "type": "start", "trigger": "simulation_start"},
+        {"name": "treatment_initiation", "type": "treatment", "trigger": "post_diagnosis", "delay_days": 14},
+        {"name": "response_assessment", "type": "evaluation", "trigger": "post_treatment", "delay_months": 3},
+        {"name": "progression", "type": "clinical", "trigger": "probability_based"},
+        {"name": "death", "type": "terminal", "trigger": "probability_based"}
+      ],
+      "costs_template": {
+        "diagnosis": {"workup": 5000, "biopsy": 3000, "imaging": 2000},
+        "treatment": {"drug": 10000, "administration": 500, "monitoring": 1000},
+        "progression": {"second_line": 15000, "palliative": 8000},
+        "death": {"terminal_care": 20000}
+      },
+      "utilities_template": {
+        "baseline": 0.85,
+        "on_treatment": 0.78,
+        "progression": 0.50,
+        "terminal": 0.30,
+        "death": 0.00
+      },
+      "heterogeneity_parameters": {
+        "age_effect_on_utility": -0.002,
+        "comorbidity_effect_on_cost": 1.15,
+        "stage_effect_on_survival": {"I": 1.0, "II": 0.85, "III": 0.65, "IV": 0.40}
+      },
+      "output_metrics": ["ICER", "INMB", "QALYs", "LYs", "total_cost", "survival_curve", "cost_curve"],
+      "subgroup_analyses": [
+        {"name": "按年龄分组", "variable": "age", "groups": ["<50", "50-65", ">65"]},
+        {"name": "按疾病分期", "variable": "disease_stage", "groups": ["I", "II", "III", "IV"]},
+        {"name": "按基因状态", "variable": "egfr_status", "groups": ["positive", "negative"]}
+      ]
+    }
+  ],
+  "common_distributions": {
+    "beta": {"use": "概率、效用值", "params": ["alpha", "beta"]},
+    "gamma": {"use": "成本、住院天数", "params": ["shape", "scale"]},
+    "lognormal": {"use": "成本、RR", "params": ["mu", "sigma"]},
+    "normal": {"use": "连续变量", "params": ["mean", "sd"]},
+    "uniform": {"use": "无先验信息", "params": ["min", "max"]},
+    "triangular": {"use": "专家意见", "params": ["min", "mode", "max"]},
+    "weibull": {"use": "生存时间", "params": ["shape", "scale"]},
+    "exponential": {"use": "恒定风险", "params": ["rate"]}
+  },
+  "willingness_to_pay_thresholds": {
+    "china": {
+      "recommended": 31250,
+      "unit": "元/QALY",
+      "source": "WHO推荐1-3倍人均GDP",
+      "note": "2024年中国人均GDP约¥125,000，推荐阈值1倍人均GDP"
+    },
+    "who_recommendation": {
+      "high_value": 93750,
+      "moderate_value": 31250,
+      "low_value": 10417,
+      "unit": "元/QALY",
+      "note": "WHO-CHOICE推荐：高值3倍、中值1倍、低值1/3倍人均GDP"
+    },
+    "netherlands": 80000,
+    "uk_nice": 30000,
+    "usa": 150000,
+    "unit_note": "除中国外均以各国货币计"
+  }
+}
