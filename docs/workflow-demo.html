@@ -3,11 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HEOR 完整工作流演示 | 从证据到结果</title>
-  <meta name="description" content="HEOR Modeling Platform 完整工作流演示 - 从证据上传、概率函数生成、临床校准、Markov/PSA模拟到结果分析的端到端演示">
-  <meta property="og:title" content="HEOR 完整工作流演示">
-  <meta property="og:description" content="从证据上传到结果分析的端到端演示">
-  <link rel="stylesheet" href="./styles.css">
+  <title>HEOR 完整工作流演示</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
@@ -82,22 +78,13 @@
       .workflow-sidebar { width: 100%; }
     }
   </style>
-  <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/workflow-demo.html" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E" />
-  </head>
+</head>
 <body>
   <header>
-    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
-      <div>
-        <h1>HEOR Modeling Platform</h1>
-        <p>完整工作流演示 - 从证据上传到结果分析</p>
-      </div>
-      <div style="display: flex; align-items: center; gap: 15px;">
-        <div id="connection-status" class="status-bar status-offline" style="display: inline-block; margin: 0;">
-          检查连接中...
-        </div>
-        <button class="lang-toggle" id="langToggle" onclick="toggleLang()" title="Switch to English" style="padding: 6px 14px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.1); color: white; cursor: pointer; font-size: 13px;">EN</button>
-      </div>
+    <h1>HEOR Modeling Platform</h1>
+    <p>完整工作流演示 - 从证据上传到结果分析</p>
+    <div id="connection-status" class="status-bar status-offline" style="display: inline-block; margin-top: 15px;">
+      检查连接中...
     </div>
   </header>
 
@@ -141,7 +128,7 @@
       <div class="workflow-main">
         <!-- Step 1: 证据上传 -->
         <div id="step-1" class="panel">
-          <h2 data-zh="Step 1: 上传证据" data-en="Step 1: Upload Evidence">Step 1: 上传证据</h2>
+          <h2>Step 1: 上传证据</h2>
           <p style="margin-bottom: 20px; color: #666;">上传KM表或生存数据，平台会自动校验并生成证据对象。</p>
           
           <div class="form-group">
@@ -187,7 +174,7 @@
 
         <!-- Step 2: 概率函数 -->
         <div id="step-2" class="panel hidden">
-          <h2 data-zh="Step 2: 生成概率函数" data-en="Step 2: Generate Probability Function">Step 2: 生成概率函数</h2>
+          <h2>Step 2: 生成概率函数</h2>
           <p style="margin-bottom: 20px; color: #666;">将证据转换为每个周期可调用的事件概率。</p>
           
           <div class="form-group">
@@ -223,7 +210,7 @@
 
         <!-- Step 3: 校准 -->
         <div id="step-3" class="panel hidden">
-          <h2 data-zh="Step 3: 临床校准" data-en="Step 3: Clinical Calibration">Step 3: 临床校准</h2>
+          <h2>Step 3: 临床校准</h2>
           <p style="margin-bottom: 20px; color: #666;">将模型预测与真实世界观察数据进行拟合。</p>
           
           <div class="form-group">
@@ -249,7 +236,7 @@
 
         <!-- Step 4: 模拟 -->
         <div id="step-4" class="panel hidden">
-          <h2 data-zh="Step 4: 运行模拟" data-en="Step 4: Run Simulation">Step 4: 运行模拟</h2>
+          <h2>Step 4: 运行模拟</h2>
           <p style="margin-bottom: 20px; color: #666;">运行Markov模型和概率敏感性分析。</p>
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -297,7 +284,7 @@
 
         <!-- Step 5: 结果 -->
         <div id="step-5" class="panel hidden">
-          <h2 data-zh="Step 5: 查看结果" data-en="Step 5: View Results">Step 5: 查看结果</h2>
+          <h2>Step 5: 查看结果</h2>
           <p style="margin-bottom: 20px; color: #666;">查看成本效果分析、敏感性分析和预算影响。</p>
           
           <div id="results-content">
@@ -341,8 +328,8 @@
     </div>
   </div>
 
-  <script src="./api-client.js?v=3"></script>
-  <script src="./workflow.js?v=2"></script>
+  <script src="./api-client.js"></script>
+  <script src="./workflow.js"></script>
   <script>
     // 全局函数
     function addLog(message, type = 'info') {
@@ -520,6 +507,7 @@
     function resetWorkflow() {
       EvidenceWorkflow.reset();
       
+      // 重置UI
       document.querySelectorAll('.step-item').forEach(el => {
         el.classList.remove('active', 'completed', 'error');
       });
@@ -535,6 +523,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       addLog('系统初始化完成');
       
+      // 检查API连接
       HEOR_API.checkConnection().then(result => {
         const statusEl = document.getElementById('connection-status');
         if (result.connected) {
@@ -549,6 +538,5 @@
       });
     });
   </script>
-  <script src="./ux-enhance.js?v=1"></script>
 </body>
 </html>
