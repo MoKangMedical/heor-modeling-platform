@@ -4,7 +4,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    app_name: str = "TreeAge Platform Backend"
+    app_name: str = "HEOR Modeling Platform Backend"
     app_env: str = "local"
     api_v1_prefix: str = "/api/v1"
     database_url: str = "sqlite:///./treeage_platform.db"
