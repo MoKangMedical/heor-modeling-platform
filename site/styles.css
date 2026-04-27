@@ -2546,3 +2546,31 @@ select {
     grid-template-columns: 1fr;
   }
 }
+
+/* Language Toggle */
+.lang-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 6px;
+  background: var(--paper);
+  color: var(--navy);
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+  letter-spacing: 0.5px;
+}
+.lang-toggle:hover {
+  background: var(--navy);
+  color: var(--paper-strong);
+  border-color: var(--navy);
+}
+body[data-lang="en"] .lang-toggle {
+  background: var(--navy);
+  color: var(--paper-strong);
+}

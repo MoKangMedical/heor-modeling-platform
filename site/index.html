@@ -3,29 +3,22 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>HEOR Modeling Platform</title>
-    <meta name="description" content="卫生经济学与结果研究建模平台，药物经济学评价自动化">
+    <title>HEOR Modeling Platform | 卫生经济学建模平台</title>
+    <meta name="description" content="任务驱动型 HEOR / HTA 在线建模平台，从证据上传到 Markov / PSA 输出，一条流程完成校准、模拟和审阅。支持成本-效果分析、预算影响分析、敏感性分析。">
     <meta property="og:title" content="HEOR Modeling Platform">
-    <meta property="og:description" content="卫生经济学与结果研究建模平台，药物经济学评价自动化">
+    <meta property="og:description" content="任务驱动型 HEOR / HTA 在线建模平台，从证据上传到 Markov / PSA 输出，一条流程完成校准、模拟和审阅。">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://github.com/MoKangMedical/heor-modeling-platform">
+    <meta property="og:url" content="https://mokangmedical.github.io/heor-modeling-platform/">
+    <meta property="og:image" content="https://mokangmedical.github.io/heor-modeling-platform/assets/demo-video/demo-poster.png">
     <meta name="twitter:card" content="summary_large_image">
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
-
-    <meta
-      name="description"
-      content="任务驱动型 HEOR / HTA 在线建模平台首页，从证据上传到 Markov / PSA 输出，一条流程完成校准、模拟和审阅。"
-    />
-    <link
-      rel="icon"
-      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E"
-    />
+    <meta name="twitter:title" content="HEOR Modeling Platform">
+    <meta name="twitter:description" content="卫生经济学与结果研究建模平台，药物经济学评价自动化">
+    <meta name="keywords" content="HEOR, HTA, 卫生经济学, 药物经济学, Markov模型, PSA, 成本效果分析, QALY, ICER">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E" />
+    <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap"
-      rel="stylesheet"
-    />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
   </head>
   <body>
@@ -39,26 +32,27 @@
         </span>
       </div>
       <nav class="nav">
-        <a href="./index.html">总览</a>
-        <a href="./evidence.html">上传证据</a>
-        <a href="./calibration.html">临床校准</a>
-        <a href="./simulation.html">运行模拟</a>
-        <a href="./review.html">结果审阅</a>
-        <a href="./example-run.html">示例结果</a>
+        <a href="./index.html" data-zh="总览" data-en="Overview">总览</a>
+        <a href="./evidence.html" data-zh="上传证据" data-en="Evidence">上传证据</a>
+        <a href="./calibration.html" data-zh="临床校准" data-en="Calibration">临床校准</a>
+        <a href="./simulation.html" data-zh="运行模拟" data-en="Simulation">运行模拟</a>
+        <a href="./review.html" data-zh="结果审阅" data-en="Review">结果审阅</a>
+        <a href="./example-run.html" data-zh="示例结果" data-en="Example">示例结果</a>
+        <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
       </nav>
     </header>
 
     <main class="landing-main">
       <section class="hero hero-refined">
         <div class="hero-copy card">
-          <h1>在线卫生经济学建模平台</h1>
-          <p class="hero-text">
+          <h1 data-zh="在线卫生经济学建模平台" data-en="Online HEOR Modeling Platform">在线卫生经济学建模平台</h1>
+          <p class="hero-text" data-zh="上传 KM 表或 survival 数据后，平台会在同一条链路里完成证据整理、概率函数生成、临床校准、Markov / PSA 运行和结果审阅。" data-en="Upload KM tables or survival data, and the platform completes evidence curation, probability function generation, clinical calibration, Markov/PSA simulation, and result review in a single workflow.">
             上传 KM 表或 survival 数据后，平台会在同一条链路里完成证据整理、概率函数生成、临床校准、
             Markov / PSA 运行和结果审阅。
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="./evidence.html?demo=1">载入示例流程</a>
-            <a class="button secondary" href="./evidence.html">从上传证据开始</a>
+            <a class="button primary" href="./evidence.html?demo=1" data-zh="载入示例流程" data-en="Load Demo">载入示例流程</a>
+            <a class="button secondary" href="./evidence.html" data-zh="从上传证据开始" data-en="Start with Evidence">从上传证据开始</a>
           </div>
         </div>
 
