@@ -2608,3 +2608,38 @@ function attachChartTooltip(container, fallbackLegend = null) {
 }
 
 initializeStaticSite();
+
+/* ===== Bilingual Language Toggle ===== */
+(function() {
+  const LANG_KEY = 'heor-lang';
+  const toggle = document.getElementById('langToggle');
+  if (!toggle) return;
+
+  function getLang() {
+    return localStorage.getItem(LANG_KEY) || 'zh';
+  }
+
+  function setLang(lang) {
+    localStorage.setItem(LANG_KEY, lang);
+    document.body.setAttribute('data-lang', lang);
+    toggle.textContent = lang === 'zh' ? 'EN' : '中文';
+    toggle.title = lang === 'zh' ? 'Switch to English' : '切换为中文';
+
+    document.querySelectorAll('[data-zh][data-en]').forEach(el => {
+      const text = el.getAttribute(`data-${lang}`);
+      if (text) {
+        if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+          el.placeholder = text;
+        } else {
+          el.textContent = text;
+        }
+      }
+    });
+  }
+
+  toggle.addEventListener('click', () => {
+    setLang(getLang() === 'zh' ? 'en' : 'zh');
+  });
+
+  setLang(getLang());
+})();
