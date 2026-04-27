@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HEOR Modeling Platform | 卫生经济学建模平台</title>
+    <meta name="description" content="任务驱动型 HEOR / HTA 在线建模平台，从证据上传到 Markov / PSA 输出，一条流程完成校准、模拟和审阅。支持成本-效果分析、预算影响分析、敏感性分析。">
+    <meta property="og:title" content="HEOR Modeling Platform">
+    <meta property="og:description" content="任务驱动型 HEOR / HTA 在线建模平台，从证据上传到 Markov / PSA 输出，一条流程完成校准、模拟和审阅。">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://mokangmedical.github.io/heor-modeling-platform/">
+    <meta property="og:image" content="https://mokangmedical.github.io/heor-modeling-platform/assets/demo-video/demo-poster.png">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="HEOR Modeling Platform">
+    <meta name="twitter:description" content="卫生经济学与结果研究建模平台，药物经济学评价自动化">
+    <meta name="keywords" content="HEOR, HTA, 卫生经济学, 药物经济学, Markov模型, PSA, 成本效果分析, QALY, ICER">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E" />
+    <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="backdrop"></div>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">HM</span>
+        <span class="brand-copy">
+          <strong>HEOR Modeling Platform</strong>
+          <small>任务驱动型建模工作台</small>
+        </span>
+      </div>
+      <nav class="nav">
+        <a href="./index.html" data-zh="总览" data-en="Overview">总览</a>
+        <a href="./evidence.html" data-zh="上传证据" data-en="Evidence">上传证据</a>
+        <a href="./calibration.html" data-zh="临床校准" data-en="Calibration">临床校准</a>
+        <a href="./simulation.html" data-zh="运行模拟" data-en="Simulation">运行模拟</a>
+        <a href="./review.html" data-zh="结果审阅" data-en="Review">结果审阅</a>
+        <a href="./example-run.html" data-zh="示例结果" data-en="Example">示例结果</a>
+        <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
+      </nav>
+    </header>
+
+    <main class="landing-main">
+      <section class="hero hero-refined">
+        <div class="hero-copy card">
+          <h1 data-zh="在线卫生经济学建模平台" data-en="Online HEOR Modeling Platform">在线卫生经济学建模平台</h1>
+          <p class="hero-text" data-zh="上传 KM 表或 survival 数据后，平台会在同一条链路里完成证据整理、概率函数生成、临床校准、Markov / PSA 运行和结果审阅。" data-en="Upload KM tables or survival data, and the platform completes evidence curation, probability function generation, clinical calibration, Markov/PSA simulation, and result review in a single workflow.">
+            上传 KM 表或 survival 数据后，平台会在同一条链路里完成证据整理、概率函数生成、临床校准、
+            Markov / PSA 运行和结果审阅。
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="./evidence.html?demo=1" data-zh="载入示例流程" data-en="Load Demo">载入示例流程</a>
+            <a class="button secondary" href="./evidence.html" data-zh="从上传证据开始" data-en="Start with Evidence">从上传证据开始</a>
+          </div>
+        </div>
+
+        <div class="hero-stage card">
+          <div class="hero-stage-head">
+            <div>
+              <span class="mini-label tone-calibration">当前示例运行</span>
+              <h2>先看懂一条真实运行，再进入工作台继续操作。</h2>
+            </div>
+            <a class="text-link" href="./example-run.html">查看示例运行</a>
+          </div>
+          <div class="hero-stage-body">
+            <section class="hero-stage-visual">
+              <div class="mini-topline">
+                <span>校准覆盖图</span>
+                <span>Run R-2026-0315 · RMSE 0.018</span>
+              </div>
+              <div id="hero-chart" class="chart-frame hero-stage-chart"></div>
+              <p class="hero-stage-caption">
+                悬停图上的观察点和预测线，可以直接看到校准后的拟合关系。
+              </p>
+            </section>
+            <aside class="hero-stage-sidebar">
+              <article class="hero-stat-card">
+                <span>基线 ICER</span>
+                <strong>$29,742 / QALY</strong>
+                <small>低于 $50k 阈值</small>
+              </article>
+              <article class="hero-stat-card">
+                <span>PSA 抽样</span>
+                <strong>8,000 样本</strong>
+                <small>LHS 样本矩阵已留痕</small>
+              </article>
+              <article class="hero-stat-card">
+                <span>导出状态</span>
+                <strong>审阅包已就绪</strong>
+                <small>图、表、元数据可直接导出</small>
+              </article>
+              <div class="hero-status-list">
+                <div><span>证据对象</span><strong>3 个已校验</strong></div>
+                <div><span>概率函数</span><strong>按月周期可调用</strong></div>
+                <div><span>运行记录</span><strong>版本、随机种子已保存</strong></div>
+              </div>
+            </aside>
+          </div>
+          <div class="hero-stage-footer">
+            <span>KM / 生存表</span>
+            <span>概率函数</span>
+            <span>临床校准</span>
+            <span>Markov + PSA</span>
+            <span>结果审阅</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="entry-points" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">开始方式</p>
+            <h2>先选一种最贴近你当前任务的进入方式。</h2>
+          </div>
+          <p class="section-note">
+            首页只保留三个入口，避免你第一次进入时在一堆模块名之间来回判断。
+          </p>
+        </div>
+        <div class="entry-grid entry-grid-compact">
+          <article class="entry-card card">
+            <span class="mini-label tone-calibration">首次体验</span>
+            <h3>先加载一条完整示例流程</h3>
+            <p>适合第一次进入平台。你会直接看到证据、校准、模拟和结果页是如何连起来工作的。</p>
+            <div class="entry-meta">
+              <span>推荐首次使用</span>
+              <span>预计 3 分钟</span>
+            </div>
+            <a class="button secondary" href="./evidence.html?demo=1">加载 Demo</a>
+          </article>
+          <article class="entry-card card">
+            <span class="mini-label tone-evidence">开始建模</span>
+            <h3>上传真实 KM / hazard 数据开始建模</h3>
+            <p>适合已经有输入文件的项目。先校验字段和时间粒度，再进入概率函数和模拟。</p>
+            <div class="entry-meta">
+              <span>从证据页开始</span>
+              <span>输出: 证据对象</span>
+            </div>
+            <a class="button secondary" href="./evidence.html">进入证据页</a>
+          </article>
+          <article class="entry-card card">
+            <span class="mini-label tone-review">结果导向</span>
+            <h3>直接查看完成态结果与审阅页</h3>
+            <p>适合演示给团队或客户。直接展示 ICER、校准拟合、PSA、队列轨迹和导出包。</p>
+            <div class="entry-meta">
+              <span>最快路径</span>
+              <span>输出: 示例结果</span>
+            </div>
+            <a class="button secondary" href="./review.html">打开结果页</a>
+          </article>
+        </div>
+      </section>
+
+      <section id="demo-video" class="section demo-video">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">产品故事</p>
+            <h2>60 秒情真意切的产品演示，让客户先看见真实业务流。</h2>
+          </div>
+          <p class="section-note">
+            这段动画会按“证据 → 概率函数 → 校准 → 模拟 → 审阅”的顺序讲完一条真实工作流。
+          </p>
+        </div>
+        <div class="demo-video-shell card">
+          <div class="demo-video-meta">
+            <span class="mini-label tone-calibration">60s Demo</span>
+            <h3>一条完整运行，从输入证据到交付结果。</h3>
+            <p>
+              你会看到证据如何被整理成对象、概率函数如何生成、校准如何贴近真实世界，以及
+              Markov / PSA 的输出如何被整理成可审阅结果。
+            </p>
+            <div class="demo-video-actions">
+              <a class="button primary" href="./assets/demo-video/demo.mp4" download>下载 MP4</a>
+              <a class="button secondary" href="./assets/demo-video/demo.webm" download>下载 WebM</a>
+            </div>
+            <div class="demo-video-meta-list">
+              <span>1080p · 16:9</span>
+              <span>中文旁白 + 中文字幕</span>
+              <span>60 秒</span>
+            </div>
+          </div>
+          <div class="demo-video-player">
+            <video controls playsinline preload="metadata" poster="./assets/demo-video/demo-poster.png">
+              <source src="./assets/demo-video/demo.webm" type="video/webm" />
+              <source src="./assets/demo-video/demo.mp4" type="video/mp4" />
+              <track src="./assets/demo-video/subtitles.vtt" kind="subtitles" srclang="zh" label="中文" default />
+            </video>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">四步流程</p>
+            <h2>每一步都告诉你“输入是什么、系统做什么、最后得到什么”。</h2>
+          </div>
+          <p class="section-note">
+            这部分是首页的主线，不再堆叠底层对象名词和架构说明。
+          </p>
+        </div>
+        <div id="workflow-rail" class="workflow-rail"></div>
+      </section>
+
+      <section id="outputs" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">结果承诺</p>
+            <h2>一条运行结束后，你先看结论，再看图，再决定要不要导出给团队。</h2>
+          </div>
+          <p class="section-note">
+            这也是结果页的默认阅读顺序: 先回答“值不值得”，再回答“稳不稳”，最后回答“能不能交付”。
+          </p>
+        </div>
+        <div class="result-hero card">
+          <div>
+            <span class="mini-label tone-review">默认阅读顺序</span>
+            <h3>一次 run 结束后，先回答“值不值得”“拟合够不够好”“能不能直接用于汇报”。</h3>
+            <p>
+              结果页不会只给你一堆图。它会先把 ICER、QALY、阈值判断和校准状态放在最前面，然后再进入
+              PSA 散点图、CEAC、队列轨迹和产物列表。
+            </p>
+          </div>
+          <div class="result-actions">
+            <a class="button primary" href="./example-run.html">查看完整示例运行</a>
+            <a class="button secondary" href="./review.html">打开结果页</a>
+          </div>
+        </div>
+        <div id="metric-cards" class="metric-cards"></div>
+        <div class="promise-grid promise-grid-clean">
+          <article class="promise-card card">
+            <span class="mini-label tone-calibration">校准覆盖图</span>
+            <h3>先确认模型是否贴近真实观察数据</h3>
+            <p>默认展示观察值对预测值覆盖图，并给出 RMSE 或拟合优度，帮助你判断校准是否可接受。</p>
+          </article>
+          <article class="promise-card card">
+            <span class="mini-label tone-simulation">不确定性</span>
+            <h3>用 PSA scatter 和 CEAC 解释不确定性</h3>
+            <p>不是只给一个 ICER，而是直接告诉你样本分布和在阈值下的成本效果可接受概率。</p>
+          </article>
+          <article class="promise-card card">
+            <span class="mini-label tone-review">队列轨迹</span>
+            <h3>看患者队列什么时候开始明显转移</h3>
+            <p>动态 Markov 与 cohort trace 会一起出现，帮助你判断状态流动是否符合临床逻辑，并直接导出审阅包。</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-links">
+        <a class="text-link" href="./platform.html">平台细节</a>
+        <a class="text-link" href="./research.html">研究追踪</a>
+        <a class="text-link" href="./openapi.yaml">OpenAPI 草案</a>
+      </div>
+      <p>每一次运行都会保留版本、留痕来源，并可直接导出用于审阅。</p>
+    </footer>
+
+    <script src="./app.js"></script>
+  </body>
+</html>
