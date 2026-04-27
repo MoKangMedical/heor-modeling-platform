@@ -162,13 +162,13 @@ const HEOR_API = (() => {
 
   // ============ 运行管理 ============
 
-  async function createRun(config) {
+  async function createRun(runConfig) {
     if (config.offlineMode) {
-      return DemoData.createRun(config);
+      return DemoData.createRun(runConfig);
     }
     return request('/runs', {
       method: 'POST',
-      body: JSON.stringify(config),
+      body: JSON.stringify(runConfig),
     });
   }
 
