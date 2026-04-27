@@ -511,3 +511,44 @@
     function exportResults() {
       try {
         EvidenceWorkflow.exportResults('json');
+        addLog('结果已导出', 'success');
+      } catch (error) {
+        addLog(`导出失败: ${error.message}`, 'error');
+      }
+    }
+
+    function resetWorkflow() {
+      EvidenceWorkflow.reset();
+      
+      document.querySelectorAll('.step-item').forEach(el => {
+        el.classList.remove('active', 'completed', 'error');
+      });
+      document.querySelectorAll('.step-item')[0].classList.add('active');
+      
+      document.querySelectorAll('[id$="-result"]').forEach(el => el.classList.add('hidden'));
+      
+      goToStep(1);
+      addLog('工作流已重置');
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      addLog('系统初始化完成');
+      
+      HEOR_API.checkConnection().then(result => {
+        const statusEl = document.getElementById('connection-status');
+        if (result.connected) {
+          statusEl.className = 'status-bar status-connected';
+          statusEl.textContent = '✓ API已连接';
+          addLog('API连接成功', 'success');
+        } else {
+          statusEl.className = 'status-bar status-offline';
+          statusEl.textContent = '⚡ 离线演示模式';
+          addLog('离线模式 - 使用模拟数据', 'info');
+        }
+      });
+    });
+  </script>
+  <script src="./ux-enhance.js?v=1"></script>
+</body>
+</html>
