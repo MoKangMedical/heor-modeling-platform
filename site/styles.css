@@ -2737,3 +2737,18 @@ body.dark-theme .shortcuts-dialog h3 { color: #e2e8f0; }
   .cmd-palette-dialog { width: 95vw; margin: 0 10px; }
   .shortcuts-dialog { width: 95vw; padding: 24px; }
 }
+
+
+/* ===== Status Bar Top ===== */
+.status-bar-top { display: flex; align-items: center; justify-content: space-between; padding: 6px 20px; background: var(--navy-deep, #10213f); color: rgba(255,255,255,0.8); font-size: 12px; position: sticky; top: 0; z-index: 100; }
+.status-left, .status-center, .status-right { display: flex; align-items: center; gap: 8px; }
+.status-indicator { width: 8px; height: 8px; border-radius: 50%; }
+.status-indicator.online { background: #2e9d6b; box-shadow: 0 0 6px rgba(46,157,107,0.5); }
+.status-indicator.offline { background: #c78a24; box-shadow: 0 0 6px rgba(199,138,36,0.5); }
+.status-text { color: rgba(255,255,255,0.6); }
+.status-version { color: rgba(255,255,255,0.4); font-family: monospace; }
+.status-sep { color: rgba(255,255,255,0.2); }
+.status-env { color: rgba(255,255,255,0.6); }
+.status-btn { display: flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.7); cursor: pointer; font-size: 12px; transition: all 0.2s; }
+.status-btn:hover { background: rgba(255,255,255,0.1); color: white; }
+.status-btn kbd { font-size: 10px; padding: 1px 4px; background: rgba(255,255,255,0.1); border-radius: 3px; font-family: monospace; }
