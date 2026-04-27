@@ -1,0 +1,17 @@
+[
+  {
+    "disease": "糖尿病",
+    "direct_cost": 12000,
+    "indirect_cost": 5000
+  },
+  {
+    "disease": "高血压",
+    "direct_cost": 8000,
+    "indirect_cost": 3000
+  },
+  {
+    "disease": "冠心病",
+    "direct_cost": 25000,
+    "indirect_cost": 10000
+  }
+]

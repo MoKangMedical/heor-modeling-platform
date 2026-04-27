@@ -1,0 +1,14 @@
+[
+  {
+    "disease": "糖尿病",
+    "prevalence": 0.11,
+    "mortality": 0.02,
+    "disability": 0.15
+  },
+  {
+    "disease": "高血压",
+    "prevalence": 0.27,
+    "mortality": 0.05,
+    "disability": 0.08
+  }
+]

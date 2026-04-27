@@ -1,0 +1,22 @@
+[
+  {
+    "state": "健康",
+    "utility": 1.0
+  },
+  {
+    "state": "轻度疾病",
+    "utility": 0.85
+  },
+  {
+    "state": "中度疾病",
+    "utility": 0.65
+  },
+  {
+    "state": "重度疾病",
+    "utility": 0.4
+  },
+  {
+    "state": "死亡",
+    "utility": 0.0
+  }
+]
