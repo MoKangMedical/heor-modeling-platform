@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>临床校准 | 校准工作台</title>
+    <meta name="description" content="卫生经济学与结果研究建模平台，药物经济学评价自动化">
+    <meta property="og:title" content="HEOR Modeling Platform">
+    <meta property="og:description" content="卫生经济学与结果研究建模平台，药物经济学评价自动化">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/MoKangMedical/heor-modeling-platform">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+
+    <meta
+      name="description"
+      content="HEOR Modeling Platform 多页面产品 demo：利用真实 API 运行观察值对预测值的校准闭环。"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./demo.css" />
+    <script defer src="./demo.js"></script>
+  </head>
+  <body data-page="calibration">
+    <div class="demo-backdrop"></div>
+    <header class="demo-topbar">
+      <div class="brand">
+        <span class="brand-mark">HM</span>
+        <span class="brand-copy">
+          <strong>HEOR Modeling Platform</strong>
+          <small>第 3 步 · 用真实观察数据校准模型</small>
+        </span>
+      </div>
+<nav class="top-links">
+        <a href="./index.html" data-zh="总览" data-en="Overview">总览</a>
+        <a href="./runtime.html" data-zh="概率函数" data-en="Probability">概率函数</a>
+        <a href="./calibration.html" data-zh="临床校准" data-en="Calibration">临床校准</a>
+        <a href="./simulation.html" data-zh="运行模拟" data-en="Simulation">运行模拟</a>
+        <a href="./review.html" data-zh="结果审阅" data-en="Review">结果审阅</a>
+        <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
+      </nav>
+    </header>
+
+    <main class="workspace-shell">
+      <aside class="workspace-sidebar">
+        <section class="sidebar-card">
+          <div class="workspace-links">
+            <a class="workspace-link" href="./evidence.html">
+              <div>
+                <span>第 1 步</span>
+                <strong>上传证据</strong>
+              </div>
+            </a>
+            <a class="workspace-link" href="./runtime.html">
+              <div>
+                <span>第 2 步</span>
+                <strong>构建概率函数</strong>
+              </div>
+            </a>
+            <a class="workspace-link is-active" href="./calibration.html">
+              <div>
+                <span>第 3 步</span>
+                <strong>临床校准</strong>
+              </div>
+              <span class="tone-pill calibration">正在拟合</span>
+            </a>
+            <a class="workspace-link" href="./simulation.html">
+              <div>
+                <span>第 4 步</span>
+                <strong>运行模拟</strong>
+              </div>
+            </a>
+            <a class="workspace-link" href="./review.html">
+              <div>
+                <span>第 5 步</span>
+                <strong>审阅结果</strong>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>当前工作区</h3>
+          <ul class="context-list">
+            <li>
+              <span>项目</span>
+              <strong id="context-project">正在连接...</strong>
+            </li>
+            <li>
+              <span>模型</span>
+              <strong id="context-model">等待示例上下文</strong>
+            </li>
+            <li>
+              <span>模式</span>
+              <strong id="context-mode">等待真实 API</strong>
+            </li>
+          </ul>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>对象数量</h3>
+          <ul class="count-list">
+            <li>
+              <span>已整理证据</span>
+              <strong id="sidebar-series-count">0</strong>
+            </li>
+            <li>
+              <span>可运行函数</span>
+              <strong id="sidebar-function-count">0</strong>
+            </li>
+            <li>
+              <span>已完成分析</span>
+              <strong id="sidebar-run-count">0</strong>
+            </li>
+          </ul>
+        </section>
+      </aside>
+
+      <section class="workspace-main">
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="kicker">第 3 步 · 先把模型拉近真实临床数据</span>
+            <h1>先用真实观察数据把模型校准到可信范围。</h1>
+            <p>
+              你可以选择目标曲线、参数边界和迭代次数。平台会真实创建校准配置、异步排队运行校准任务，
+              并把覆盖图、最佳参数和优化记录一起返回。
+            </p>
+          </div>
+
+          <div class="connection-panel">
+            <div class="connection-top">
+              <div>
+                <span class="kicker">连接状态</span>
+                <h3 class="panel-title">连接你的分析环境</h3>
+              </div>
+              <span id="connection-badge" class="status-badge warning">正在连接</span>
+            </div>
+            <p id="connection-copy" class="status-copy">
+              平台会先尝试连接你的本地 FastAPI；如果没有连上，会自动切换到离线样本模式，你仍然可以演示完整校准流程。
+            </p>
+            <div class="connection-form">
+              <label>
+                API Base
+                <input id="api-base" type="text" value="http://127.0.0.1:8000/api/v1" />
+              </label>
+              <div class="action-row">
+                <button id="connect-api" class="button-primary">重新连接 API</button>
+                <a class="button button-secondary" href="./simulation.html">下一步：运行模拟</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="journey-panel">
+          <article class="journey-card">
+            <span class="journey-label">这一步你要做什么</span>
+            <strong>指定目标曲线和参数边界，让模型先贴近真实临床观察数据。</strong>
+            <p>这一步不是为了“求漂亮图”，而是为了让后面的模拟更可信。</p>
+          </article>
+          <article class="journey-card">
+            <span class="journey-label">完成标志</span>
+            <ul>
+              <li>校准任务成功排队并完成</li>
+              <li>出现观察值对预测值覆盖图</li>
+              <li>best-fit 参数可以直接用于下一步模拟</li>
+            </ul>
+          </article>
+          <article class="journey-card">
+            <span class="journey-label">然后你会去哪里</span>
+            <p>当覆盖图已经合理，下一步就是用这组函数和参数启动一条真实运行任务。</p>
+            <a class="button button-secondary" href="./simulation.html">继续去运行模拟</a>
+          </article>
+        </section>
+
+        <section class="page-grid">
+          <article class="panel span-7">
+            <div class="panel-heading">
+              <div>
+              <span class="panel-kicker">校准设置</span>
+              <h3>设定目标数据和参数边界</h3>
+            </div>
+            <span class="panel-chip">校准任务</span>
+            </div>
+            <div class="form-grid two">
+              <label>
+                校准名称
+                <input id="calibration-name" type="text" value="模拟晚期 NSCLC PFS 校准" />
+              </label>
+              <label>
+                目标证据
+                <select id="calibration-target-series"></select>
+              </label>
+            </div>
+            <div class="form-grid three">
+              <label>
+                使用的概率函数
+                <select id="calibration-function-select"></select>
+              </label>
+              <label>
+                最大迭代次数
+                <input id="calibration-max-iterations" type="number" min="3" step="1" value="12" />
+              </label>
+              <label>
+                周期数
+                <input id="calibration-cycles" type="number" min="6" step="1" value="15" />
+              </label>
+            </div>
+            <div class="form-grid three">
+              <label>
+                人群规模
+                <input id="calibration-population" type="number" min="100" step="100" value="1000" />
+              </label>
+              <label>
+                目标函数
+                <input type="text" value="rmse" disabled />
+              </label>
+              <label>
+                优化器
+                <input type="text" value="deterministic_grid" disabled />
+              </label>
+            </div>
+
+            <div class="result-card">
+              <strong>建议先校准 3 个参数</strong>
+              <p class="helper">这 3 个参数足够让你看到观察值对预测值覆盖图的变化，也方便团队快速理解校准逻辑。</p>
+              <div class="form-grid three">
+                <label>
+                  事件比例下界
+                  <input id="calibration-event-scale-lower" type="number" step="0.01" value="0.7" />
+                </label>
+                <label>
+                  事件比例上界
+                  <input id="calibration-event-scale-upper" type="number" step="0.01" value="1.3" />
+                </label>
+                <label>
+                  事件比例初始值
+                  <input id="calibration-event-scale-initial" type="number" step="0.01" value="1.0" />
+                </label>
+              </div>
+              <div class="form-grid three">
+                <label>
+                  无进展死亡下界
+                  <input id="calibration-pf-death-lower" type="number" step="0.001" value="0.004" />
+                </label>
+                <label>
+                  无进展死亡上界
+                  <input id="calibration-pf-death-upper" type="number" step="0.001" value="0.03" />
+                </label>
+                <label>
+                  无进展死亡初始值
+                  <input id="calibration-pf-death-initial" type="number" step="0.001" value="0.01" />
+                </label>
+              </div>
+              <div class="form-grid three">
+                <label>
+                  进展后死亡下界
+                  <input id="calibration-pd-death-lower" type="number" step="0.001" value="0.04" />
+                </label>
+                <label>
+                  进展后死亡上界
+                  <input id="calibration-pd-death-upper" type="number" step="0.001" value="0.14" />
+                </label>
+                <label>
+                  进展后死亡初始值
+                  <input id="calibration-pd-death-initial" type="number" step="0.001" value="0.08" />
+                </label>
+              </div>
+            </div>
+
+            <div class="action-row">
+              <button id="load-calibration-template" class="button-secondary">载入推荐边界</button>
+              <button id="launch-calibration" class="button-primary">开始这次校准</button>
+            </div>
+            <div class="progress-track">
+              <div id="calibration-progress" class="progress-value"></div>
+            </div>
+            <div id="calibration-status" class="preview-card">
+              <strong>准备好开始校准</strong>
+              <p class="helper">点击后会先创建校准配置，再异步启动观察值对预测值拟合，并告诉你下一步什么时候可以去运行模拟。</p>
+            </div>
+          </article>
+
+          <article class="panel span-5">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">最佳拟合</span>
+                <h3>这次校准先给你什么结论</h3>
+              </div>
+              <span class="tone-pill calibration">覆盖图</span>
+            </div>
+            <div id="calibration-best" class="empty-state">
+              还没有校准结果。先设置参数边界并启动这次校准。
+            </div>
+          </article>
+
+          <article class="panel span-12">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">观察值对预测值</span>
+                <h3>一眼看拟合程度，而不是只看一个数值目标函数</h3>
+              </div>
+              <span id="calibration-overlay-label" class="hero-chip">等待校准结果</span>
+            </div>
+            <div id="calibration-overlay-chart" class="chart-frame"></div>
+          </article>
+
+          <article class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">已保存配置</span>
+                <h3>你最近创建的校准配置</h3>
+              </div>
+              <a class="nav-chip" href="./simulation.html">用校准后的设定去跑模拟</a>
+            </div>
+            <div id="calibration-config-list" class="empty-state">
+              暂无校准配置。先提交一组参数边界。
+            </div>
+          </article>
+
+          <article class="panel span-6">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">诊断信息</span>
+                <h3>把这次拟合过程讲清楚</h3>
+              </div>
+              <span class="panel-chip">历史记录</span>
+            </div>
+            <div id="calibration-diagnostics" class="empty-state">
+              运行结束后，这里会显示优化器、候选次数和最佳参数。
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <footer class="demo-footer">
+      <p>校准页先帮你回答一个问题：模型现在和真实临床数据离得有多远，以及如何更接近。</p>
+    </footer>
+  </body>
+</html>
