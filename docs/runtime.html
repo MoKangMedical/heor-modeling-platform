@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>构建概率函数 | 概率函数工作台</title>
+    <meta name="description" content="卫生经济学与结果研究建模平台，药物经济学评价自动化">
+    <meta property="og:title" content="HEOR Modeling Platform">
+    <meta property="og:description" content="卫生经济学与结果研究建模平台，药物经济学评价自动化">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/MoKangMedical/heor-modeling-platform">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+
+    <meta
+      name="description"
+      content="HEOR Modeling Platform 多页面产品 demo：把证据序列编译成可复用的概率函数。"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./demo.css" />
+    <script defer src="./demo.js"></script>
+  </head>
+  <body data-page="runtime">
+    <div class="demo-backdrop"></div>
+    <header class="demo-topbar">
+      <div class="brand">
+        <span class="brand-mark">HM</span>
+        <span class="brand-copy">
+          <strong>HEOR Modeling Platform</strong>
+          <small>第 2 步 · 把证据编译成函数</small>
+        </span>
+      </div>
+<nav class="top-links">
+        <a href="./index.html" data-zh="总览" data-en="Overview">总览</a>
+        <a href="./runtime.html" data-zh="概率函数" data-en="Probability">概率函数</a>
+        <a href="./calibration.html" data-zh="临床校准" data-en="Calibration">临床校准</a>
+        <a href="./simulation.html" data-zh="运行模拟" data-en="Simulation">运行模拟</a>
+        <a href="./review.html" data-zh="结果审阅" data-en="Review">结果审阅</a>
+        <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
+      </nav>
+    </header>
+
+    <main class="workspace-shell">
+      <aside class="workspace-sidebar">
+        <section class="sidebar-card">
+          <div class="workspace-links">
+            <a class="workspace-link" href="./evidence.html">
+              <div>
+                <span>第 1 步</span>
+                <strong>上传证据</strong>
+              </div>
+            </a>
+            <a class="workspace-link is-active" href="./runtime.html">
+              <div>
+                <span>第 2 步</span>
+                <strong>构建概率函数</strong>
+              </div>
+              <span class="tone-pill calibration">已编译</span>
+            </a>
+            <a class="workspace-link" href="./calibration.html">
+              <div>
+                <span>第 3 步</span>
+                <strong>临床校准</strong>
+              </div>
+            </a>
+            <a class="workspace-link" href="./simulation.html">
+              <div>
+                <span>第 4 步</span>
+                <strong>运行模拟</strong>
+              </div>
+            </a>
+            <a class="workspace-link" href="./review.html">
+              <div>
+                <span>第 5 步</span>
+                <strong>审阅结果</strong>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>当前工作区</h3>
+          <ul class="context-list">
+            <li>
+              <span>项目</span>
+              <strong id="context-project">正在连接...</strong>
+            </li>
+            <li>
+              <span>模型</span>
+              <strong id="context-model">等待示例上下文</strong>
+            </li>
+            <li>
+              <span>模式</span>
+              <strong id="context-mode">等待真实 API</strong>
+            </li>
+          </ul>
+        </section>
+
+        <section class="sidebar-card">
+          <h3>对象数量</h3>
+          <ul class="count-list">
+            <li>
+              <span>已整理证据</span>
+              <strong id="sidebar-series-count">0</strong>
+            </li>
+            <li>
+              <span>可运行函数</span>
+              <strong id="sidebar-function-count">0</strong>
+            </li>
+            <li>
+              <span>已完成分析</span>
+              <strong id="sidebar-run-count">0</strong>
+            </li>
+          </ul>
+        </section>
+      </aside>
+
+      <section class="workspace-main">
+        <section class="hero-panel">
+          <div class="hero-copy">
+            <span class="kicker">第 2 步 · 把证据变成模型能直接调用的函数</span>
+            <h1>把证据编译成模型可直接调用的概率函数。</h1>
+            <p>
+              你只需要选择一份已整理好的证据，平台就会把它编译成 cycle-level event probability 函数。
+              编译完成后，还能直接验证任意时间区间的事件概率。
+            </p>
+          </div>
+
+          <div class="connection-panel">
+            <div class="connection-top">
+              <div>
+                <span class="kicker">连接状态</span>
+                <h3 class="panel-title">连接你的分析环境</h3>
+              </div>
+              <span id="connection-badge" class="status-badge warning">正在连接</span>
+            </div>
+            <p id="connection-copy" class="status-copy">
+              平台会先尝试连接你的本地 FastAPI；如果没有连上，会自动切换到离线样本模式，你仍然可以验证这一层怎么工作。
+            </p>
+            <div class="connection-form">
+              <label>
+                API Base
+                <input id="api-base" type="text" value="http://127.0.0.1:8000/api/v1" />
+              </label>
+              <div class="action-row">
+                <button id="connect-api" class="button-primary">重新连接 API</button>
+                <a class="button button-secondary" href="./calibration.html">下一步：进入临床校准</a>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="journey-panel">
+          <article class="journey-card">
+            <span class="journey-label">这一步你要做什么</span>
+            <strong>把刚整理好的证据，编译成后续所有分析都会复用的概率函数。</strong>
+            <p>这是从“原始证据”走向“可运行模型”的关键一步。</p>
+          </article>
+          <article class="journey-card">
+            <span class="journey-label">完成标志</span>
+            <ul>
+              <li>函数生成成功</li>
+              <li>区间求值能返回合理概率</li>
+              <li>函数出现在右侧可复用列表</li>
+            </ul>
+          </article>
+          <article class="journey-card">
+            <span class="journey-label">然后你会去哪里</span>
+            <p>下一步一般是先用真实观察数据做一次校准，确认模型输出不会明显偏离临床现实。</p>
+            <a class="button button-secondary" href="./calibration.html">继续去临床校准</a>
+          </article>
+        </section>
+
+        <section class="page-grid">
+          <article class="panel span-7">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">函数构建器</span>
+                <h3>从证据对象生成可运行函数</h3>
+              </div>
+              <span class="panel-chip">函数编译</span>
+            </div>
+            <div class="form-grid two">
+              <label>
+                选择证据对象
+                <select id="series-select"></select>
+              </label>
+              <label>
+                生成方式
+                <select id="function-kind">
+                  <option value="survival_interval_probability">survival_interval_probability</option>
+                  <option value="hazard_interval_probability">hazard_interval_probability</option>
+                </select>
+              </label>
+            </div>
+            <div class="form-grid two">
+              <label>
+                函数名称
+                <input id="function-name" type="text" value="模拟晚期 NSCLC 月度进展概率函数" />
+              </label>
+              <label>
+                每个周期的长度
+                <input id="function-cycle-length" type="number" min="0.25" step="0.25" value="1" />
+              </label>
+            </div>
+            <div class="action-row">
+              <button id="compile-function" class="button-primary">生成可运行函数</button>
+              <a class="button button-secondary" href="./evidence.html">返回证据页</a>
+            </div>
+            <div id="function-output" class="result-card">
+              <strong>还没有可运行函数</strong>
+              <p class="helper">生成后，这里会显示它来自哪份证据、当前是否可复用，以及你下一步最适合做什么。</p>
+            </div>
+          </article>
+
+          <article class="panel span-5">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">函数列表</span>
+                <h3>你已经准备好的函数层</h3>
+              </div>
+              <span class="tone-pill calibration">函数层</span>
+            </div>
+            <div id="function-list" class="empty-state">
+              暂无函数。先从一份已整理好的证据开始编译。
+            </div>
+          </article>
+
+          <article class="panel span-12">
+            <div class="panel-heading">
+              <div>
+                <span class="panel-kicker">区间验证</span>
+                <h3>先验证一个时间区间的事件概率</h3>
+              </div>
+              <a class="nav-chip" href="./calibration.html">带去做临床校准</a>
+            </div>
+            <div class="form-grid three">
+              <label>
+                选择函数
+                <select id="debug-function-select"></select>
+              </label>
+              <label>
+                t0
+                <input id="debug-t0" type="number" min="0" step="0.5" value="0" />
+              </label>
+              <label>
+                t1
+                <input id="debug-t1" type="number" min="0.5" step="0.5" value="1" />
+              </label>
+            </div>
+            <div class="action-row">
+              <button id="debug-function" class="button-primary">验证这个区间</button>
+            </div>
+            <div class="result-grid">
+              <div id="debug-result" class="result-card">
+                <strong>等待验证</strong>
+                <p class="helper">这里会显示区间概率，以及你为什么可以相信这次求值结果。</p>
+              </div>
+              <div id="debug-chart" class="chart-frame"></div>
+            </div>
+          </article>
+        </section>
+      </section>
+    </main>
+
+    <footer class="demo-footer">
+      <p>函数层一旦稳定，后面的 calibration、simulation 和 review 都会复用同一套概率定义。</p>
+    </footer>
+  </body>
+</html>
