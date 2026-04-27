@@ -28,6 +28,7 @@
     />
     <link rel="stylesheet" href="./demo.css" />
     <script defer src="./demo.js"></script>
+    <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/calibration.html" />
   </head>
   <body data-page="calibration">
     <div class="demo-backdrop"></div>
@@ -45,6 +46,9 @@
         <a href="./calibration.html" data-zh="临床校准" data-en="Calibration">临床校准</a>
         <a href="./simulation.html" data-zh="运行模拟" data-en="Simulation">运行模拟</a>
         <a href="./review.html" data-zh="结果审阅" data-en="Review">结果审阅</a>
+        <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
+      
+        <a href="./workflow-demo.html" data-zh="完整流程" data-en="Workflow">完整流程</a>
         <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
       </nav>
     </header>
@@ -341,8 +345,45 @@
       </section>
     </main>
 
-    <footer class="demo-footer">
-      <p>校准页先帮你回答一个问题：模型现在和真实临床数据离得有多远，以及如何更接近。</p>
+        <footer class="footer">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <span class="brand-mark">HM</span>
+            <div>
+              <strong>HEOR Modeling Platform</strong>
+              <small>卫生经济学与结果研究建模平台</small>
+            </div>
+          </div>
+          <p class="footer-desc">为药物经济学评价提供标准化建模工具，支持成本-效果分析、预算影响分析、敏感性分析。</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4>产品</h4>
+            <a href="./evidence.html">上传证据</a>
+            <a href="./calibration.html">临床校准</a>
+            <a href="./simulation.html">运行模拟</a>
+            <a href="./review.html">结果审阅</a>
+            <a href="./workflow-demo.html">完整流程</a>
+          </div>
+          <div class="footer-col">
+            <h4>资源</h4>
+            <a href="./platform.html">平台细节</a>
+            <a href="./research.html">研究追踪</a>
+            <a href="./example-run.html">示例运行</a>
+            <a href="./openapi.yaml">API文档</a>
+          </div>
+          <div class="footer-col">
+            <h4>关于</h4>
+            <a href="https://github.com/MoKangMedical/heor-modeling-platform" target="_blank">GitHub</a>
+            <a href="https://github.com/MoKangMedical" target="_blank">MoKangMedical</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HEOR Modeling Platform. Built for Health Economics and Outcomes Research.</p>
+        <p>每一次运行都会保留版本、留痕来源，并可直接导出用于审阅。</p>
+      </div>
     </footer>
   </body>
 </html>
