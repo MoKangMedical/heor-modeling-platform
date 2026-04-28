@@ -10,7 +10,7 @@ sqlalchemy==2.0.25
 alembic==1.13.1
 
 # Data Validation
-pydantic==2.5.3
+pydantic==2.13.3
 pydantic-settings==2.1.0
 
 # Data Processing
