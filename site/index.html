@@ -20,6 +20,32 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "HEOR Modeling Platform",
+      "description": "Task-driven HEOR/HTA online modeling platform. Complete evidence curation, Markov/PSA simulation, and result review in a single workflow.",
+      "url": "https://mokangmedical.github.io/heor-modeling-platform/",
+      "applicationCategory": "BusinessApplication",
+      "operatingSystem": "Web",
+      "offers": [
+        {"@type": "Offer", "name": "Starter", "price": "0", "priceCurrency": "USD"},
+        {"@type": "Offer", "name": "Professional", "price": "99", "priceCurrency": "USD", "billingIncrement": "MONTHLY"},
+        {"@type": "Offer", "name": "Enterprise", "price": "499", "priceCurrency": "USD", "billingIncrement": "MONTHLY"}
+      ],
+      "provider": {
+        "@type": "Organization",
+        "name": "MoKangMedical",
+        "url": "https://github.com/MoKangMedical"
+      },
+      "featureList": [
+        "Markov Model", "Decision Tree", "Microsimulation", "PSA",
+        "Sensitivity Analysis", "Survival Analysis", "Cost-Effectiveness Analysis",
+        "Budget Impact Analysis", "Network Meta-Analysis", "HTA Report Generation"
+      ]
+    }
+    </script>
   </head>
   <body>
 
@@ -64,6 +90,8 @@
         <a href="./api-docs.html" data-zh="API文档" data-en="API Docs">API文档</a>
         <a href="./pricing.html" data-zh="定价" data-en="Pricing">定价</a>
         <a href="./about.html" data-zh="关于" data-en="About">关于</a>
+        <a href="./markov-demo.html" data-zh="Markov Demo" data-en="Markov Demo">Markov Demo</a>
+        <a href="./contact.html" data-zh="联系" data-en="Contact">联系</a>
         <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
       </nav>
     </header>
