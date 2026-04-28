@@ -2723,15 +2723,107 @@ body[data-lang="en"] .lang-toggle {
 .shortcuts-close { margin-top: 24px; width: 100%; padding: 10px; background: #f3f4f6; border: none; border-radius: 8px; font-size: 14px; cursor: pointer; color: #374151; }
 .shortcuts-close:hover { background: #e5e7eb; }
 
-/* ===== Dark Theme ===== */
-body.dark-theme { --bg: #0f172a; --paper: #1e293b; --paper-strong: #334155; --ink: #e2e8f0; --muted: #94a3b8; --line: rgba(255,255,255,0.1); }
+/* ===== Dark Theme (Lancet) ===== */
+body.dark-theme {
+  --bg: #0f172a;
+  --bg-soft: #1e293b;
+  --paper: #1e293b;
+  --paper-strong: #334155;
+  --ink: #e2e8f0;
+  --muted: #94a3b8;
+  --line: rgba(255,255,255,0.1);
+  --line-strong: rgba(255,255,255,0.16);
+  --navy: #A51C30;
+  --navy-deep: #8B1528;
+  --evidence: #A51C30;
+  --evidence-soft: rgba(165,28,48,0.18);
+  --calibration: #c75bb8;
+  --calibration-soft: rgba(199,91,184,0.15);
+  --simulation: #38bdf8;
+  --simulation-soft: rgba(56,189,248,0.12);
+  --review: #f59e0b;
+  --review-soft: rgba(245,158,11,0.14);
+  --success: #4ade80;
+  --success-soft: rgba(74,222,128,0.12);
+  --shadow-lg: 0 26px 80px rgba(0,0,0,0.4);
+  --shadow-md: 0 18px 42px rgba(0,0,0,0.3);
+  --site-accent: rgba(165,28,48,0.18);
+  background: #0f172a;
+  color-scheme: dark;
+}
+body.dark-theme .backdrop { opacity: 0.15; }
+body.dark-theme .topbar { background: rgba(15,23,42,0.92); border-bottom-color: rgba(255,255,255,0.08); }
+body.dark-theme .brand-mark { background: linear-gradient(135deg, #A51C30, #8B1528); }
+body.dark-theme .brand-copy strong { color: #e2e8f0; }
+body.dark-theme .nav a { color: #e2e8f0; }
+body.dark-theme .nav a::after { background: linear-gradient(90deg, #A51C30, #c75bb8); }
+body.dark-theme .card, body.dark-theme .surface-shell, body.dark-theme .dashboard-panel,
+body.dark-theme .workflow-step, body.dark-theme .object-card, body.dark-theme .capability-card,
+body.dark-theme .lancet-card, body.dark-theme .architecture-layer, body.dark-theme .roadmap-column {
+  background: rgba(30,41,59,0.85);
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.25);
+}
+body.dark-theme .card:hover, body.dark-theme .lancet-card:hover {
+  border-color: rgba(165,28,48,0.3);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+}
+body.dark-theme .footer { background: #0b1120; border-top-color: rgba(255,255,255,0.06); }
+body.dark-theme .footer-main { color: #94a3b8; }
+body.dark-theme .footer-col a { color: #94a3b8; }
+body.dark-theme .footer-col a:hover { color: #e2e8f0; }
+body.dark-theme .footer-bottom { border-top-color: rgba(255,255,255,0.06); color: #64748b; }
+body.dark-theme .section-head h2, body.dark-theme h1, body.dark-theme h2, body.dark-theme h3 { color: #e2e8f0; }
+body.dark-theme .hero-text, body.dark-theme .section-note, body.dark-theme p { color: #94a3b8; }
+body.dark-theme .button.primary { background: #A51C30; color: #fff; }
+body.dark-theme .button.primary:hover { background: #8B1528; }
+body.dark-theme .button.secondary { background: rgba(165,28,48,0.12); color: #f87171; border-color: rgba(165,28,48,0.3); }
+body.dark-theme .button.secondary:hover { background: rgba(165,28,48,0.2); }
+body.dark-theme input, body.dark-theme select, body.dark-theme textarea {
+  background: #1e293b;
+  border-color: rgba(255,255,255,0.12);
+  color: #e2e8f0;
+}
+body.dark-theme input:focus, body.dark-theme select:focus {
+  border-color: #A51C30;
+  box-shadow: 0 0 0 3px rgba(165,28,48,0.2);
+}
+body.dark-theme .eyebrow { color: #f87171; }
+body.dark-theme .mini-label { background: rgba(255,255,255,0.08); }
+body.dark-theme .nav-chip { background: rgba(165,28,48,0.15); color: #f87171; border-color: rgba(165,28,48,0.3); }
+body.dark-theme .text-link { color: #f87171; }
+body.dark-theme .status-bar-top { background: #070d1a; }
+body.dark-theme .lang-toggle { background: rgba(255,255,255,0.08); color: #e2e8f0; border-color: rgba(255,255,255,0.15); }
 body.dark-theme .cmd-palette-dialog { background: #1e293b; }
-body.dark-theme .cmd-palette-header input { color: #e2e8f0; }
+body.dark-theme .cmd-palette-header input { color: #e2e8f0; background: #0f172a; border-color: rgba(255,255,255,0.12); }
 body.dark-theme .cmd-item:hover, body.dark-theme .cmd-item.selected { background: #334155; }
 body.dark-theme .cmd-label { color: #e2e8f0; }
 body.dark-theme .toast { background: #1e293b; color: #e2e8f0; }
 body.dark-theme .shortcuts-dialog { background: #1e293b; }
 body.dark-theme .shortcuts-dialog h3 { color: #e2e8f0; }
+body.dark-theme .workflow-rail .wf-step { background: rgba(30,41,59,0.85); border-color: rgba(255,255,255,0.08); }
+body.dark-theme .hero-stage { background: rgba(30,41,59,0.85); }
+body.dark-theme .hero-stat-card { background: rgba(30,41,59,0.7); border-color: rgba(255,255,255,0.06); }
+body.dark-theme .testimonial-card { background: rgba(30,41,59,0.85); }
+body.dark-theme .faq-item { background: rgba(30,41,59,0.85); }
+body.dark-theme .faq-item summary { color: #e2e8f0; }
+body.dark-theme .icer-result, body.dark-theme .icer-inputs { background: rgba(30,41,59,0.85); }
+body.dark-theme .icer-verdict.good { background: rgba(74,222,128,0.12); color: #4ade80; }
+body.dark-theme .icer-verdict.bad { background: rgba(165,28,48,0.12); color: #f87171; }
+body.dark-theme details summary { color: #e2e8f0; }
+body.dark-theme code, body.dark-theme pre { background: #0f172a; color: #e2e8f0; border-color: rgba(255,255,255,0.08); }
+body.dark-theme table th { background: #0f172a; color: #e2e8f0; border-color: rgba(255,255,255,0.08); }
+body.dark-theme table td { border-color: rgba(255,255,255,0.06); color: #cbd5e1; }
+body.dark-theme .breadcrumb a { color: #f87171; }
+body.dark-theme .pricing-hero { background: linear-gradient(135deg, #0f172a 0%, #A51C30 100%); }
+body.dark-theme .pricing-card { background: #1e293b; color: #e2e8f0; }
+body.dark-theme .pricing-card.featured { border-color: #A51C30; }
+body.dark-theme .pricing-card.featured::before { background: #A51C30; }
+body.dark-theme .pricing-name, body.dark-theme .pricing-price { color: #e2e8f0; }
+body.dark-theme .pricing-btn-primary { background: #A51C30; }
+body.dark-theme .pricing-btn-primary:hover { background: #8B1528; }
+body.dark-theme .pricing-btn-secondary { color: #f87171; border-color: #A51C30; }
+body.dark-theme .opc-fab { background: linear-gradient(135deg,#A51C30,#8B1528); box-shadow: 0 4px 20px rgba(165,28,48,0.4); }
 
 @media (max-width: 640px) {
   .cmd-palette-dialog { width: 95vw; margin: 0 10px; }
