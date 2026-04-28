@@ -1,280 +1,631 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HEOR Modeling Platform - MoKangMedical</title>
-<meta property="og:title" content="HEOR Modeling Platform - MoKangMedical">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://mokangmedical.github.io/heor-modeling-platform/">
-<meta name="twitter:card" content="summary_large_image">
-    <meta property="og:title" content="heor-modeling-platform - MoKangMedical">
-    <meta property="og:description" content="AI-powered healthcare solution by MoKangMedical">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>HEOR Modeling Platform | 卫生经济学建模平台</title>
+    <meta name="description" content="任务驱动型 HEOR / HTA 在线建模平台，从证据上传到 Markov / PSA 输出，一条流程完成校准、模拟和审阅。支持成本-效果分析、预算影响分析、敏感性分析。">
+    <meta property="og:title" content="HEOR Modeling Platform">
+    <meta property="og:description" content="任务驱动型 HEOR / HTA 在线建模平台，从证据上传到 Markov / PSA 输出，一条流程完成校准、模拟和审阅。">
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://mokangmedical.github.io/heor-modeling-platform/">
-    <meta property="og:site_name" content="MoKangMedical">
+    <meta property="og:image" content="https://mokangmedical.github.io/heor-modeling-platform/assets/demo-video/demo-poster.png">
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="heor-modeling-platform - MoKangMedical">
-    <meta name="twitter:description" content="AI-powered healthcare solution by MoKangMedical">
-    <meta name="description" content="卫生经济学与结果研究建模平台">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        :root {
-            --primary: #d946ef;
-            --dark: #0f172a;
-            --darker: #020617;
-            --light: #f8fafc;
-            --gray: #64748b;
-            --border: #1e293b;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--darker);
-            color: var(--light);
-            line-height: 1.6;
-        }
-        .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
-        .hero {
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            background: linear-gradient(135deg, var(--darker) 0%, #1e1b4b 50%, var(--darker) 100%);
-        }
-        .hero h1 {
-            font-size: clamp(2.5rem, 6vw, 4rem);
-            font-weight: 800;
-            margin-bottom: 16px;
-            background: linear-gradient(135deg, #fff 0%, #d946ef 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-        .hero p {
-            font-size: 1.25rem;
-            color: var(--gray);
-            max-width: 600px;
-            margin: 0 auto 40px;
-        }
-        .btn {
-            padding: 14px 32px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 16px;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .btn-primary {
-            background: var(--primary);
-            color: white;
-        }
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        }
-        .btn-secondary {
-            background: transparent;
-            color: var(--light);
-            border: 2px solid var(--border);
-        }
-        .features {
-            padding: 100px 0;
-            background: var(--dark);
-        }
-        .section-title {
-            text-align: center;
-            margin-bottom: 60px;
-        }
-        .section-title h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 24px;
-        }
-        .feature-card {
-            background: var(--darker);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            padding: 32px;
-            transition: all 0.3s ease;
-        }
-        .feature-card:hover {
-            border-color: var(--primary);
-            transform: translateY(-4px);
-        }
-        .feature-card h3 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 借鉴12px;
-            color: var(--primary);
-        }
-        .feature-card p {
-            color: var(--gray);
-            font-size: 14px;
-        }
-        .cta {
-            padding: 100px 0;
-            background: linear-gradient(135deg, #d946ef 0%, #7c3aed 100%);
-            text-align: center;
-        }
-        .cta h2 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            margin-bottom: 16px;
-        }
-        footer {
-            padding: 40px 0;
-            background: var(--darker);
-            border-top: 1px solid var(--border);
-            text-align: center;
-            color: var(--gray);
-            font-size: 14px;
-        }
-        footer a {
-            color: var(--primary);
-            text-decoration: none;
-        }
-    </style>
-<meta name="theme-color" content="#0a0a0f">
-</head>
-<body>
-    <section class="hero">
-        <div class="container">
-            <h1>HEOR Modeling Platform</h1>
-            <p>卫生经济学与结果研究建模平台</p>
-            <div style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
-                <a href="#features" class="btn btn-primary">了解功能</a>
-                <a href="https://github.com/MoKangMedical/heor-modeling-platform" class="btn btn-secondary">GitHub</a>
-            </div>
+    <meta name="twitter:title" content="HEOR Modeling Platform">
+    <meta name="twitter:description" content="卫生经济学与结果研究建模平台，药物经济学评价自动化">
+    <meta name="keywords" content="HEOR, HTA, 卫生经济学, 药物经济学, Markov模型, PSA, 成本效果分析, QALY, ICER">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E" />
+    <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+
+    <div class="status-bar-top" id="status-bar">
+      <div class="status-left">
+        <span class="status-indicator online" id="api-status"></span>
+        <span class="status-text" id="api-status-text">检查连接...</span>
+      </div>
+      <div class="status-center">
+        <span class="status-version">v1.0.0</span>
+        <span class="status-sep">|</span>
+        <span class="status-env" id="env-mode">演示模式</span>
+      </div>
+      <div class="status-right">
+        <button class="status-btn" onclick="HEOR_UX.openPalette()" title="命令面板 (Ctrl+K)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+          <kbd>⌘K</kbd>
+        </button>
+        <button class="status-btn" onclick="HEOR_UX.toggleTheme()" title="切换主题">🌙</button>
+      </div>
+    </div>
+
+    <div class="backdrop"></div>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">HM</span>
+        <span class="brand-copy">
+          <strong>HEOR Modeling Platform</strong>
+          <small>任务驱动型建模工作台</small>
+        </span>
+      </div>
+      <nav class="nav">
+        <a href="./index.html" data-zh="总览" data-en="Overview">总览</a>
+        <a href="./evidence.html" data-zh="上传证据" data-en="Evidence">上传证据</a>
+        <a href="./calibration.html" data-zh="临床校准" data-en="Calibration">临床校准</a>
+        <a href="./simulation.html" data-zh="运行模拟" data-en="Simulation">运行模拟</a>
+        <a href="./review.html" data-zh="结果审阅" data-en="Review">结果审阅</a>
+        <a href="./example-run.html" data-zh="示例结果" data-en="Example">示例结果</a>
+        <a href="./workflow-demo.html" data-zh="完整流程" data-en="Workflow">完整流程</a>
+        
+        <a href="./disease-data.html" data-zh="疾病数据" data-en="Disease Data">疾病数据</a>
+        <a href="./api-docs.html" data-zh="API文档" data-en="API Docs">API文档</a>
+        <a href="./pricing.html" data-zh="定价" data-en="Pricing">定价</a>
+        <a href="./about.html" data-zh="关于" data-en="About">关于</a>
+        <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
+      </nav>
+    </header>
+
+    <main class="landing-main">
+      <section class="hero hero-refined">
+        <div class="hero-copy card">
+          <h1 data-zh="在线卫生经济学建模平台" data-en="Online HEOR Modeling Platform">在线卫生经济学建模平台</h1>
+          <p class="hero-text" data-zh="上传 KM 表或 survival 数据后，平台会在同一条链路里完成证据整理、概率函数生成、临床校准、Markov / PSA 运行和结果审阅。" data-en="Upload KM tables or survival data, and the platform completes evidence curation, probability function generation, clinical calibration, Markov/PSA simulation, and result review in a single workflow.">
+            上传 KM 表或 survival 数据后，平台会在同一条链路里完成证据整理、概率函数生成、临床校准、
+            Markov / PSA 运行和结果审阅。
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="./evidence.html?demo=1" data-zh="载入示例流程" data-en="Load Demo">载入示例流程</a>
+            <a class="button secondary" href="./evidence.html" data-zh="从上传证据开始" data-en="Start with Evidence">从上传证据开始</a>
+          </div>
         </div>
+
+        <div class="hero-stage card">
+          <div class="hero-stage-head">
+            <div>
+              <span class="mini-label tone-calibration">当前示例运行</span>
+              <h2>先看懂一条真实运行，再进入工作台继续操作。</h2>
+            </div>
+            <a class="text-link" href="./example-run.html">查看示例运行</a>
+          </div>
+          <div class="hero-stage-body">
+            <section class="hero-stage-visual">
+              <div class="mini-topline">
+                <span>校准覆盖图</span>
+                <span>Run R-2026-0315 · RMSE 0.018</span>
+              </div>
+              <div id="hero-chart" class="chart-frame hero-stage-chart"></div>
+              <p class="hero-stage-caption">
+                悬停图上的观察点和预测线，可以直接看到校准后的拟合关系。
+              </p>
+            </section>
+            <aside class="hero-stage-sidebar">
+              <article class="hero-stat-card">
+                <span>基线 ICER</span>
+                <strong>$29,742 / QALY</strong>
+                <small>低于 $50k 阈值</small>
+              </article>
+              <article class="hero-stat-card">
+                <span>PSA 抽样</span>
+                <strong>8,000 样本</strong>
+                <small>LHS 样本矩阵已留痕</small>
+              </article>
+              <article class="hero-stat-card">
+                <span>导出状态</span>
+                <strong>审阅包已就绪</strong>
+                <small>图、表、元数据可直接导出</small>
+              </article>
+              <div class="hero-status-list">
+                <div><span>证据对象</span><strong>3 个已校验</strong></div>
+                <div><span>概率函数</span><strong>按月周期可调用</strong></div>
+                <div><span>运行记录</span><strong>版本、随机种子已保存</strong></div>
+              </div>
+            </aside>
+          </div>
+          <div class="hero-stage-footer">
+            <span>KM / 生存表</span>
+            <span>概率函数</span>
+            <span>临床校准</span>
+            <span>Markov + PSA</span>
+            <span>结果审阅</span>
+          </div>
+        </div>
+      </section>
+
+      <section id="entry-points" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">开始方式</p>
+            <h2>先选一种最贴近你当前任务的进入方式。</h2>
+          </div>
+          <p class="section-note">
+            首页只保留三个入口，避免你第一次进入时在一堆模块名之间来回判断。
+          </p>
+        </div>
+        <div class="entry-grid entry-grid-compact">
+          <article class="entry-card card">
+            <span class="mini-label tone-calibration">首次体验</span>
+            <h3>先加载一条完整示例流程</h3>
+            <p>适合第一次进入平台。你会直接看到证据、校准、模拟和结果页是如何连起来工作的。</p>
+            <div class="entry-meta">
+              <span>推荐首次使用</span>
+              <span>预计 3 分钟</span>
+            </div>
+            <a class="button secondary" href="./evidence.html?demo=1">加载 Demo</a>
+          </article>
+          <article class="entry-card card">
+            <span class="mini-label tone-evidence">开始建模</span>
+            <h3>上传真实 KM / hazard 数据开始建模</h3>
+            <p>适合已经有输入文件的项目。先校验字段和时间粒度，再进入概率函数和模拟。</p>
+            <div class="entry-meta">
+              <span>从证据页开始</span>
+              <span>输出: 证据对象</span>
+            </div>
+            <a class="button secondary" href="./evidence.html">进入证据页</a>
+          </article>
+          <article class="entry-card card">
+            <span class="mini-label tone-review">结果导向</span>
+            <h3>直接查看完成态结果与审阅页</h3>
+            <p>适合演示给团队或客户。直接展示 ICER、校准拟合、PSA、队列轨迹和导出包。</p>
+            <div class="entry-meta">
+              <span>最快路径</span>
+              <span>输出: 示例结果</span>
+            </div>
+            <a class="button secondary" href="./review.html">打开结果页</a>
+          </article>
+        </div>
+      </section>
+
+      <!-- ICER Calculator Section -->
+      <section id="icer-calc" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-zh="交互工具" data-en="Interactive Tool">交互工具</p>
+            <h2 data-zh="ICER 计算器：输入参数，即时判断成本-效果" data-en="ICER Calculator: Input parameters, instant cost-effectiveness judgment">ICER 计算器：输入参数，即时判断成本-效果</h2>
+          </div>
+          <p class="section-note" data-zh="ICER = (C1 - C0) / (E1 - E0)，阈值参考 $50,000/QALY（WHO）和 $150,000/QALY（美国常见）" data-en="ICER = (C1-C0)/(E1-E0), thresholds: $50,000/QALY (WHO) and $150,000/QALY (US common)">ICER = (C1 - C0) / (E1 - E0)，阈值参考 $50,000/QALY（WHO）和 $150,000/QALY（美国常见）</p>
+        </div>
+        <div class="icer-calc-shell">
+          <div class="icer-inputs card">
+            <h3>输入参数</h3>
+            <div class="icer-field">
+              <label>干预组成本 (C1) <small>USD</small></label>
+              <input type="number" id="icer-c1" value="52000" min="0" step="100">
+            </div>
+            <div class="icer-field">
+              <label>对照组成本 (C0) <small>USD</small></label>
+              <input type="number" id="icer-c0" value="18000" min="0" step="100">
+            </div>
+            <div class="icer-field">
+              <label>干预组效果 (E1) <small>QALYs</small></label>
+              <input type="number" id="icer-e1" value="4.2" min="0" step="0.1">
+            </div>
+            <div class="icer-field">
+              <label>对照组效果 (E0) <small>QALYs</small></label>
+              <input type="number" id="icer-e0" value="3.5" min="0" step="0.1">
+            </div>
+            <button class="button primary" onclick="calcICER()" style="width:100%;margin-top:12px">计算 ICER</button>
+          </div>
+          <div class="icer-result card">
+            <h3>分析结果</h3>
+            <div id="icer-result-num" class="icer-big-num">$48,571 <small>/ QALY</small></div>
+            <div id="icer-verdict" class="icer-verdict good">低于 $50,000 阈值 — 具有成本-效果</div>
+            <div class="icer-plane-wrap">
+              <svg id="icer-plane" viewBox="0 0 320 240" class="icer-plane"></svg>
+            </div>
+            <div class="icer-plane-legend">
+              <span><i style="background:#2e9d6b"></i> 优选 (Dominant)</span>
+              <span><i style="background:#2f6fed"></i> 低于阈值</span>
+              <span><i style="background:#d9852c"></i> 高于阈值</span>
+              <span><i style="background:#c7382f"></i> 劣势 (Dominated)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="demo-video" class="section demo-video">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">产品故事</p>
+            <h2>60 秒情真意切的产品演示，让客户先看见真实业务流。</h2>
+          </div>
+          <p class="section-note">
+            这段动画会按“证据 → 概率函数 → 校准 → 模拟 → 审阅”的顺序讲完一条真实工作流。
+          </p>
+        </div>
+        <div class="demo-video-shell card">
+          <div class="demo-video-meta">
+            <span class="mini-label tone-calibration">60s Demo</span>
+            <h3>一条完整运行，从输入证据到交付结果。</h3>
+            <p>
+              你会看到证据如何被整理成对象、概率函数如何生成、校准如何贴近真实世界，以及
+              Markov / PSA 的输出如何被整理成可审阅结果。
+            </p>
+            <div class="demo-video-actions">
+              <a class="button primary" href="./assets/demo-video/demo.mp4" download>下载 MP4</a>
+              <a class="button secondary" href="./assets/demo-video/demo.webm" download>下载 WebM</a>
+            </div>
+            <div class="demo-video-meta-list">
+              <span>1080p · 16:9</span>
+              <span>中文旁白 + 中文字幕</span>
+              <span>60 秒</span>
+            </div>
+          </div>
+          <div class="demo-video-player">
+            <video controls playsinline preload="metadata" poster="./assets/demo-video/demo-poster.png">
+              <source src="./assets/demo-video/demo.webm" type="video/webm" />
+              <source src="./assets/demo-video/demo.mp4" type="video/mp4" />
+              <track src="./assets/demo-video/subtitles.vtt" kind="subtitles" srclang="zh" label="中文" default />
+            </video>
+          </div>
+        </div>
+      </section>
+
+      <section id="workflow" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">四步流程</p>
+            <h2>每一步都告诉你“输入是什么、系统做什么、最后得到什么”。</h2>
+          </div>
+          <p class="section-note">
+            这部分是首页的主线，不再堆叠底层对象名词和架构说明。
+          </p>
+        </div>
+        <div id="workflow-rail" class="workflow-rail"></div>
+      </section>
+
+      <!-- Technology Architecture Section -->
+      <section id="tech-stack" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-zh="技术架构" data-en="Architecture">技术架构</p>
+            <h2 data-zh="18 个专业引擎，覆盖 HEOR 全场景" data-en="18 specialized engines covering all HEOR scenarios">18 个专业引擎，覆盖 HEOR 全场景</h2>
+          </div>
+          <p class="section-note" data-zh="每个引擎独立运行、可组合调用，支持从简单 Markov 到复杂微模拟的全谱建模需求。" data-en="Each engine runs independently and can be combined, supporting everything from simple Markov to complex microsimulation.">每个引擎独立运行、可组合调用，支持从简单 Markov 到复杂微模拟的全谱建模需求。</p>
+        </div>
+        <div class="tech-categories">
+          <div class="tech-cat card">
+            <div class="tech-cat-head" style="border-left:4px solid var(--evidence)">
+              <h3>核心模型</h3>
+              <span class="mini-label tone-evidence">4 engines</span>
+            </div>
+            <ul>
+              <li><strong>Markov Model</strong><span>队列/微观 Markov，支持循环校正</span></li>
+              <li><strong>Decision Tree</strong><span>多分支决策分析，期望值计算</span></li>
+              <li><strong>Microsimulation</strong><span>个体级模拟，支持异质性建模</span></li>
+              <li><strong>Iceberg Model</strong><span>疾病负担全景模型</span></li>
+            </ul>
+          </div>
+          <div class="tech-cat card">
+            <div class="tech-cat-head" style="border-left:4px solid var(--calibration)">
+              <h3>统计分析</h3>
+              <span class="mini-label tone-calibration">4 engines</span>
+            </div>
+            <ul>
+              <li><strong>PSA</strong><span>概率敏感性分析，LHS 采样</span></li>
+              <li><strong>Sensitivity Analysis</strong><span>单因素/龙卷风图/阈值分析</span></li>
+              <li><strong>Survival Analysis</strong><span>KM / Cox / 参数生存模型</span></li>
+              <li><strong>Scenario Analysis</strong><span>多场景对比分析</span></li>
+            </ul>
+          </div>
+          <div class="tech-cat card">
+            <div class="tech-cat-head" style="border-left:4px solid var(--simulation)">
+              <h3>经济评估</h3>
+              <span class="mini-label tone-simulation">4 engines</span>
+            </div>
+            <ul>
+              <li><strong>Cost-Effectiveness</strong><span>ICER / CEAC / 成本效果平面</span></li>
+              <li><strong>Budget Impact</strong><span>多年度预算影响分析</span></li>
+              <li><strong>Network Meta</strong><span>贝叶斯/频率网络 Meta 分析</span></li>
+              <li><strong>Utility Measurement</strong><span>EQ-5D / HUI / QALY 计算</span></li>
+            </ul>
+          </div>
+          <div class="tech-cat card">
+            <div class="tech-cat-head" style="border-left:4px solid var(--review)">
+              <h3>数据与报告</h3>
+              <span class="mini-label tone-review">4 engines</span>
+            </div>
+            <ul>
+              <li><strong>Data Import</strong><span>CSV / Excel / JSON 多格式导入</span></li>
+              <li><strong>Literature Review</strong><span>PRISMA 流程文献管理</span></li>
+              <li><strong>Report Generator</strong><span>HTA 申报报告自动生成</span></li>
+              <li><strong>Calibration</strong><span>贝叶斯校准 / 拟合优度</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Case Studies Section -->
+      <section id="case-studies" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-zh="应用案例" data-en="Case Studies">应用案例</p>
+            <h2 data-zh="真实世界建模案例，展示平台在肿瘤、慢病、罕见病领域的应用" data-en="Real-world modeling cases in oncology, chronic disease, and rare disease">真实世界建模案例，展示平台在肿瘤、慢病、罕见病领域的应用</h2>
+          </div>
+        </div>
+        <div class="case-grid">
+          <article class="case-card card">
+            <div class="case-header" style="background:linear-gradient(135deg,rgba(47,111,237,0.08),rgba(124,92,224,0.06))">
+              <span class="mini-label tone-evidence">肿瘤</span>
+              <h3>Pembrolizumab vs 化疗 — 晚期 NSCLC</h3>
+            </div>
+            <div class="case-body">
+              <div class="case-metrics">
+                <div><span class="case-label">ICER</span><strong>$45,200 / QALY</strong></div>
+                <div><span class="case-label">增量 QALY</span><strong>+1.82</strong></div>
+                <div><span class="case-label">方法</span><strong>Markov + PSA (5000)</strong></div>
+              </div>
+              <p>三状态 Markov 模型（PFS/PD/OS），基于 KEYNOTE-024 试验数据校准。PSA 结果显示在 $50K 阈值下有 78% 概率具有成本-效果。</p>
+            </div>
+          </article>
+          <article class="case-card card">
+            <div class="case-header" style="background:linear-gradient(135deg,rgba(24,166,160,0.08),rgba(46,157,107,0.06))">
+              <span class="mini-label tone-simulation">慢病</span>
+              <h3>GLP-1 RA vs 胰岛素 — 2 型糖尿病</h3>
+            </div>
+            <div class="case-body">
+              <div class="case-metrics">
+                <div><span class="case-label">5 年预算影响</span><strong>$2.3B 节省</strong></div>
+                <div><span class="case-label">并发症减少</span><strong>心血管 -18%</strong></div>
+                <div><span class="case-label">方法</span><strong>Budget Impact + Markov</strong></div>
+              </div>
+              <p>基于 UKPDS 框架的 5 状态 Markov 模型，整合 BMI、HbA1c、低血糖事件的微观模拟。预算影响分析覆盖 1000 万患者人群。</p>
+            </div>
+          </article>
+          <article class="case-card card">
+            <div class="case-header" style="background:linear-gradient(135deg,rgba(217,133,44,0.08),rgba(199,138,36,0.06))">
+              <span class="mini-label tone-review">罕见病</span>
+              <h3>基因疗法 vs 标准治疗 — SMA I 型</h3>
+            </div>
+            <div class="case-body">
+              <div class="case-metrics">
+                <div><span class="case-label">ICER</span><strong>$1.2M / QALY</strong></div>
+                <div><span class="case-label">生命年增益</span><strong>+15.3 LYG</strong></div>
+                <div><span class="case-label">方法</span><strong>Microsimulation + PSA</strong></div>
+              </div>
+              <p>个体级微模拟模型，追踪运动里程碑进展、呼吸支持需求和死亡率。ICER 高于传统阈值，但通过扩展成本-效果分析 (ECEA) 考虑了公平性权重。</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section id="outputs" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">结果承诺</p>
+            <h2>一条运行结束后，你先看结论，再看图，再决定要不要导出给团队。</h2>
+          </div>
+          <p class="section-note">
+            这也是结果页的默认阅读顺序: 先回答“值不值得”，再回答“稳不稳”，最后回答“能不能交付”。
+          </p>
+        </div>
+        <div class="result-hero card">
+          <div>
+            <span class="mini-label tone-review">默认阅读顺序</span>
+            <h3>一次 run 结束后，先回答“值不值得”“拟合够不够好”“能不能直接用于汇报”。</h3>
+            <p>
+              结果页不会只给你一堆图。它会先把 ICER、QALY、阈值判断和校准状态放在最前面，然后再进入
+              PSA 散点图、CEAC、队列轨迹和产物列表。
+            </p>
+          </div>
+          <div class="result-actions">
+            <a class="button primary" href="./example-run.html">查看完整示例运行</a>
+            <a class="button secondary" href="./review.html">打开结果页</a>
+          </div>
+        </div>
+        <div id="metric-cards" class="metric-cards"></div>
+        <div class="promise-grid promise-grid-clean">
+          <article class="promise-card card">
+            <span class="mini-label tone-calibration">校准覆盖图</span>
+            <h3>先确认模型是否贴近真实观察数据</h3>
+            <p>默认展示观察值对预测值覆盖图，并给出 RMSE 或拟合优度，帮助你判断校准是否可接受。</p>
+          </article>
+          <article class="promise-card card">
+            <span class="mini-label tone-simulation">不确定性</span>
+            <h3>用 PSA scatter 和 CEAC 解释不确定性</h3>
+            <p>不是只给一个 ICER，而是直接告诉你样本分布和在阈值下的成本效果可接受概率。</p>
+          </article>
+          <article class="promise-card card">
+            <span class="mini-label tone-review">队列轨迹</span>
+            <h3>看患者队列什么时候开始明显转移</h3>
+            <p>动态 Markov 与 cohort trace 会一起出现，帮助你判断状态流动是否符合临床逻辑，并直接导出审阅包。</p>
+          </article>
+        </div>
+      </section>
+    </main>
+
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="section" style="max-width:var(--max-width);margin:0 auto;padding:0 24px">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" data-zh="用户评价" data-en="Testimonials">用户评价</p>
+          <h2 data-zh="来自全球 HEOR 专业人士的真实反馈" data-en="Real feedback from HEOR professionals worldwide">来自全球 HEOR 专业人士的真实反馈</h2>
+        </div>
+      </div>
+      <div class="testimonial-grid">
+        <div class="testimonial-card card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"这个平台彻底改变了我们团队的建模流程。以前用 TreeAge 需要两周的工作，现在两天就能完成，而且结果可追溯、可复现。"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">SC</div>
+            <div><strong>Dr. Sarah Chen</strong><small>HEOR Director, Top-10 Pharma</small></div>
+          </div>
+        </div>
+        <div class="testimonial-card card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"作为卫生经济学教学工具，这个平台让学生能够直观理解 Markov 模型和 PSA 的工作原理，而不是停留在 Excel 公式层面。"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">LW</div>
+            <div><strong>Prof. Li Wei</strong><small>Health Economics, Peking University</small></div>
+          </div>
+        </div>
+        <div class="testimonial-card card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"We use it for rapid HTA dossier prototyping. The API allows us to integrate with our existing R pipeline, and the reproducibility features are exactly what auditors want to see."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MR</div>
+            <div><strong>Maria Rodriguez</strong><small>HTA Consultant, IQVIA</small></div>
+          </div>
+        </div>
+        <div class="testimonial-card card">
+          <div class="testimonial-stars">★★★★☆</div>
+          <p>"预算影响分析模块帮助我们向医院决策层展示了 GLP-1 RA 的长期经济价值，直接推动了进院决策。"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">JP</div>
+            <div><strong>James Park</strong><small>Market Access Lead, Samsung Medical Center</small></div>
+          </div>
+        </div>
+      </div>
     </section>
-    <section class="features" id="features">
-        <div class="container">
-            <div class="section-title">
-                <h2>核心功能</h2>
-            </div>
-            <div class="features-grid">
-                <div class="feature-card"><h3>成本效益分析</h3><p>专业的成本效益分析能力，助力医疗AI发展</p></div><div class="feature-card"><h3>预算影响分析</h3><p>专业的预算影响分析能力，助力医疗AI发展</p></div><div class="feature-card"><h3>生存分析</h3><p>专业的生存分析能力，助力医疗AI发展</p></div><div class="feature-card"><h3>Markov模型</h3><p>专业的Markov模型能力，助力医疗AI发展</p></div><div class="feature-card"><h3>决策树</h3><p>专业的决策树能力，助力医疗AI发展</p></div><div class="feature-card"><h3>敏感性分析</h3><p>专业的敏感性分析能力，助力医疗AI发展</p></div>
-            </div>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="section" style="max-width:var(--max-width);margin:0 auto;padding:40px 24px 60px">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" data-zh="常见问题" data-en="FAQ">常见问题</p>
+          <h2 data-zh="关于平台的常见问题解答" data-en="Frequently asked questions about the platform">关于平台的常见问题解答</h2>
         </div>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item card">
+          <summary>平台支持哪些 HEOR 模型？</summary>
+          <p>支持 Markov 模型（队列/微观）、决策树、微模拟、分区生存模型 (PSM)、冰山模型等 18 种建模方法。每种方法都有对应的引擎模块，可独立运行或组合使用。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>校准是如何工作的？</summary>
+          <p>平台支持贝叶斯校准和最小二乘校准。上传观察数据后，系统自动拟合模型参数，并输出 RMSE、拟合优度和校准覆盖图。校准结果会与模型参数一起版本化保存。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>输出可以直接用于 NICE/ICER 申报吗？</summary>
+          <p>可以。平台输出的审阅包包含 NICE 和 ICER 要求的标准图表（CEAC、PSA 散点图、龙卷风图、队列轨迹）和元数据。Enterprise 用户可以自定义输出模板以匹配特定 HTA 机构要求。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>支持哪些数据格式？</summary>
+          <p>支持 CSV、Excel (.xlsx)、JSON、SAS (.sas7bdat) 和 R (.rds) 格式。平台会自动识别字段类型并进行数据校验，确保时间粒度和事件定义符合建模要求。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>有 API 访问吗？</summary>
+          <p>有。平台提供完整的 RESTful API（OpenAPI 3.0 规范），支持程序化提交建模任务、查询结果和导出报告。API 文档可在 api-docs.html 查看。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>数据安全如何保障？</summary>
+          <p>所有数据传输使用 TLS 1.3 加密，存储使用 AES-256 加密。平台支持数据驻留选项（美国、欧盟、亚太），符合 HIPAA 和 GDPR 要求。每次运行的数据在 30 天后自动清除，用户可随时手动删除。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>Starter、Professional、Enterprise 有什么区别？</summary>
+          <p>Starter（免费）提供示例流程和基础 Markov 模型。Professional（$99/月）解锁完整建模流水线和所有引擎。Enterprise（$499/月）增加多国 HTA 模板、自定义导出、专属客户经理和 SLA 保障。详见 pricing.html。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>支持多国 HTA 吗？</summary>
+          <p>支持。平台内置 12 个国家/地区的 HTA 模板、成本数据和支付方数据。Professional 用户可进行单国分析，Enterprise 用户可进行多国对比分析并生成各国特定格式的申报材料。</p>
+        </details>
+      </div>
     </section>
-    <section class="cta">
-        <div class="container">
-            <h2>开始使用 HEOR Modeling Platform</h2>
-            <p>加入MoKangMedical生态，探索AI医疗的无限可能</p>
-            <a href="https://github.com/MoKangMedical/heor-modeling-platform" class="btn" style="background:white;color:var(--primary)">立即开始</a>
-        </div>
-    </section>
-    <section id="pricing" style="padding:100px 0;background:#0a0e1a">
-        <div style="max-width:1200px;margin:0 auto;padding:0 24px">
-            <div style="text-align:center;margin-bottom:60px">
-                <h2 style="font-size:2.5rem;font-weight:700;margin-bottom:16px;color:#fff">Pricing</h2>
-                <p style="font-size:1.1rem;color:#94a3b8;max-width:560px;margin:0 auto">选择适合您的 HEOR 建模方案</p>
+
+    <footer class="footer">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <span class="brand-mark">HM</span>
+            <div>
+              <strong>HEOR Modeling Platform</strong>
+              <small>卫生经济学与结果研究建模平台</small>
             </div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:1000px;margin:0 auto">
-                <div style="background:#111827;border:1px solid #1e293b;border-radius:16px;padding:40px 32px">
-                    <h3 style="font-size:1.1rem;font-weight:600;color:#94a3b8;margin-bottom:8px">Starter</h3>
-                    <div style="font-size:2.5rem;font-weight:800;color:#fff;margin-bottom:4px">$0<span style="font-size:1rem;color:#64748b;font-weight:400">/mo</span></div>
-                    <p style="color:#64748b;font-size:14px;margin-bottom:24px">适合个人研究者探索</p>
-                    <ul style="list-style:none;padding:0;margin:0 0 32px">
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 示例流程体验</li>
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 基础 Markov 模型</li>
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 社区支持</li>
-                    </ul>
-                    <a href="https://github.com/MoKangMedical/heor-modeling-platform" style="display:block;text-align:center;padding:12px 24px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:#fff;background:transparent;border:1px solid #1e293b">Get Started</a>
-                </div>
-                <div style="background:#111827;border:2px solid #3b82f6;border-radius:16px;padding:40px 32px;position:relative;transform:scale(1.02)">
-                    <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;padding:4px 16px;border-radius:20px;font-size:12px;font-weight:600">Most Popular</div>
-                    <h3 style="font-size:1.1rem;font-weight:600;color:#3b82f6;margin-bottom:8px">Professional</h3>
-                    <div style="font-size:2.5rem;font-weight:800;color:#fff;margin-bottom:4px">$99<span style="font-size:1rem;color:#64748b;font-weight:400">/mo</span></div>
-                    <p style="color:#64748b;font-size:14px;margin-bottom:24px">适合 HEOR 团队完整建模</p>
-                    <ul style="list-style:none;padding:0;margin:0 0 32px">
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 完整建模流水线</li>
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> Markov / PSA / 敏感性分析</li>
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 成本-效果 & 预算影响</li>
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 优先邮件支持</li>
-                    </ul>
-                    <a href="https://github.com/MoKangMedical/heor-modeling-platform" style="display:block;text-align:center;padding:12px 24px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:#fff;background:#3b82f6;border:none">Get Started</a>
-                </div>
-                <div style="background:#111827;border:1px solid #1e293b;border-radius:16px;padding:40px 32px">
-                    <h3 style="font-size:1.1rem;font-weight:600;color:#94a3b8;margin-bottom:8px">Enterprise</h3>
-                    <div style="font-size:2.5rem;font-weight:800;color:#fff;margin-bottom:4px">$499<span style="font-size:1rem;color:#64748b;font-weight:400">/mo</span></div>
-                    <p style="color:#64748b;font-size:14px;margin-bottom:24px">适合企业级 HTA 申报</p>
-                    <ul style="list-style:none;padding:0;margin:0 0 32px">
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 所有 Professional 功能</li>
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 多国 HTA 模板</li>
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 审阅包定制导出</li>
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 专属客户经理</li>
-                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> SLA 保障</li>
-                    </ul>
-                    <a href="https://github.com/MoKangMedical/heor-modeling-platform" style="display:block;text-align:center;padding:12px 24px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:#fff;background:transparent;border:1px solid #1e293b">Contact Sales</a>
-                </div>
-            </div>
+          </div>
+          <p class="footer-desc">为药物经济学评价提供标准化建模工具，支持成本-效果分析、预算影响分析、敏感性分析。</p>
         </div>
-    </section>
-    <footer>
-        <div class="container">
-            <p>&copy; 2026 MoKangMedical. All rights reserved. | <a href="https://mokangmedical.github.io/opc-homepage/">生态首页</a></p>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4>产品</h4>
+            <a href="./evidence.html">上传证据</a>
+            <a href="./calibration.html">临床校准</a>
+            <a href="./simulation.html">运行模拟</a>
+            <a href="./review.html">结果审阅</a>
+            <a href="./workflow-demo.html">完整流程</a>
+          </div>
+          <div class="footer-col">
+            <h4>资源</h4>
+            <a href="./platform.html">平台细节</a>
+            <a href="./research.html">研究追踪</a>
+            <a href="./example-run.html">示例运行</a>
+            <a href="./openapi.yaml">API文档</a>
+          </div>
+          <div class="footer-col">
+            <h4>关于</h4>
+            <a href="https://github.com/MoKangMedical/heor-modeling-platform" target="_blank">GitHub</a>
+            <a href="https://github.com/MoKangMedical" target="_blank">MoKangMedical</a>
+          </div>
         </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HEOR Modeling Platform. Built for Health Economics and Outcomes Research.</p>
+        <p>每一次运行都会保留版本、留痕来源，并可直接导出用于审阅。</p>
+      </div>
     </footer>
-<script>
-// Scroll reveal animation
-const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-        if (entry.isIntersecting) {
-            entry.target.style.opacity = '1';
-            entry.target.style.transform = 'translateY(0)';
-            observer.unobserve(entry.target);
-        }
-    });
-}, { threshold: 0.1 });
 
-document.querySelectorAll('.feature-card, .card, .pricing-card, .stat-card, [class*="feature"], [class*="card"]').forEach(el => {
-    el.style.opacity = '0';
-    el.style.transform = 'translateY(20px)';
-    el.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
-    observer.observe(el);
-});
-
-// Smooth scroll for anchor links
-document.querySelectorAll('a[href^="#"]').forEach(a => {
-    a.addEventListener('click', e => {
-        e.preventDefault();
-        const target = document.querySelector(a.getAttribute('href'));
-        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
-});
-
-// Navbar background on scroll
-const nav = document.querySelector('nav, .nav, .navbar, header');
-if (nav) {
-    window.addEventListener('scroll', () => {
-        nav.style.background = window.scrollY > 50 ? 'rgba(10,10,15,0.98)' : 'rgba(10,10,15,0.85)';
-    });
-}
-
-// Counter animation for stats
-document.querySelectorAll('[data-count], .stat-number, .counter').forEach(el => {
-    const target = parseInt(el.dataset.count || el.textContent);
-    if (isNaN(target)) return;
-    let current = 0;
-    const increment = target / 60;
-    const suffix = el.dataset.suffix || '';
-    const timer = setInterval(() => {
-        current += increment;
-        if (current >= target) { current = target; clearInterval(timer); }
-        el.textContent = Math.floor(current).toLocaleString() + suffix;
-    }, 25);
-});
-
-console.log('MoKangMedical interactive features loaded');
-</script>
-</body>
+    <script src="./app.js"></script>
+    <script src="./ux-enhance.js?v=1"></script>
+    <script src="./tour.js?v=1"></script>
+    <script src="./charts.js?v=1"></script>
+    <script src="./opc-nav.js"></script>
+    <script>
+    /* ICER Calculator */
+    function calcICER(){
+      var c1=parseFloat(document.getElementById('icer-c1').value)||0;
+      var c0=parseFloat(document.getElementById('icer-c0').value)||0;
+      var e1=parseFloat(document.getElementById('icer-e1').value)||0;
+      var e0=parseFloat(document.getElementById('icer-e0').value)||0;
+      var dc=c1-c0, de=e1-e0;
+      var resultEl=document.getElementById('icer-result-num');
+      var verdictEl=document.getElementById('icer-verdict');
+      var planeSvg=document.getElementById('icer-plane');
+      if(de===0){resultEl.innerHTML='∞ <small>/ QALY</small>';verdictEl.textContent='效果无差异，无法计算 ICER';verdictEl.className='icer-verdict warn';drawPlane(planeSvg,dc,0);return}
+      var icer=dc/de;
+      resultEl.innerHTML='$'+Math.abs(icer).toLocaleString('en-US',{maximumFractionDigits:0})+' <small>/ QALY</small>';
+      if(dc<=0&&de>=0){verdictEl.textContent='干预组占优 (Dominant) — 更便宜且更有效';verdictEl.className='icer-verdict good'}
+      else if(dc>=0&&de<=0){verdictEl.textContent='干预组劣势 (Dominated) — 更贵且更无效';verdictEl.className='icer-verdict bad'}
+      else if(icer<0){verdictEl.textContent='成本降低但效果也降低 — 需要判断是否值得';verdictEl.className='icer-verdict warn'}
+      else if(icer<=50000){verdictEl.textContent='低于 $50,000/QALY 阈值 — 具有成本-效果';verdictEl.className='icer-verdict good'}
+      else if(icer<=150000){verdictEl.textContent='$50K-$150K 区间 — 需结合预算和公平性判断';verdictEl.className='icer-verdict warn'}
+      else{verdictEl.textContent='高于 $150,000/QALY — 通常不具有成本-效果';verdictEl.className='icer-verdict bad'}
+      drawPlane(planeSvg,dc,de);
+    }
+    function drawPlane(svg,dc,de){
+      var w=320,h=240,pad=40;
+      var xScale=function(v){return pad+(v/(Math.max(Math.abs(dc)*1.5,50000)||50000)+1)*(w-2*pad)/2};
+      var yScale=function(v){return h-pad-(v/(Math.max(Math.abs(de)*1.5,2)||2)+1)*(h-2*pad)/2};
+      var html='<rect x="'+pad+'" y="'+pad+'" width="'+(w-2*pad)+'" height="'+(h-2*pad)+'" fill="#f8fafc" stroke="#e2e8f0" rx="4"/>';
+      // Quadrant backgrounds
+      var cx=xScale(0),cy=yScale(0);
+      html+='<rect x="'+cx+'" y="'+pad+'" width="'+(w-pad-cx)+'" height="'+(cy-pad)+'" fill="rgba(46,157,107,0.06)" rx="2"/>';
+      html+='<rect x="'+pad+'" y="'+pad+'" width="'+(cx-pad)+'" height="'+(cy-pad)+'" fill="rgba(47,111,237,0.06)" rx="2"/>';
+      html+='<rect x="'+pad+'" y="'+cy+'" width="'+(cx-pad)+'" height="'+(h-pad-cy)+'" fill="rgba(199,56,47,0.06)" rx="2"/>';
+      html+='<rect x="'+cx+'" y="'+cy+'" width="'+(w-pad-cx)+'" height="'+(h-pad-cy)+'" fill="rgba(217,133,44,0.06)" rx="2"/>';
+      // Axes
+      html+='<line x1="'+pad+'" y1="'+cy+'" x2="'+(w-pad)+'" y2="'+cy+'" stroke="#94a3b8" stroke-width="1"/>';
+      html+='<line x1="'+cx+'" y1="'+pad+'" x2="'+cx+'" y2="'+(h-pad)+'" stroke="#94a3b8" stroke-width="1"/>';
+      // Threshold lines
+      html+='<line x1="'+pad+'" y1="'+yScale(50000*1)+'" x2="'+(w-pad)+'" y2="'+yScale(50000*1-50000)+'" stroke="#d9852c" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>';
+      // Labels
+      html+='<text x="'+(w/2)+'" y="'+(h-8)+'" text-anchor="middle" font-size="10" fill="#64748b">Incremental Cost (ΔC)</text>';
+      html+='<text x="12" y="'+(h/2)+'" text-anchor="middle" font-size="10" fill="#64748b" transform="rotate(-90,12,'+(h/2)+')">Incremental Effect (ΔE)</text>';
+      // Quadrant labels
+      html+='<text x="'+((pad+cx)/2)+'" y="'+(pad+14)+'" text-anchor="middle" font-size="9" fill="#94a3b8">More effective</text>';
+      html+='<text x="'+((cx+w-pad)/2)+'" y="'+(pad+14)+'" text-anchor="middle" font-size="9" fill="#94a3b8">Dominant</text>';
+      // Point
+      var px=xScale(dc),py=yScale(de);
+      var color=(dc<=0&&de>=0)?'#2e9d6b':(dc>=0&&de<=0)?'#c7382f':(icer<=50000)?'#2f6fed':'#d9852c';
+      if(isFinite(dc)&&isFinite(de)){
+        html+='<circle cx="'+px+'" cy="'+py+'" r="8" fill="'+color+'" opacity="0.8"/>';
+        html+='<circle cx="'+px+'" cy="'+py+'" r="12" fill="'+color+'" opacity="0.2"/>';
+        html+='<text x="'+(px+16)+'" y="'+(py-8)+'" font-size="11" fill="'+color+'" font-weight="600">ICER</text>';
+      }
+      svg.innerHTML=html;
+    }
+    // Initial draw
+    if(document.getElementById('icer-plane')) calcICER();
+    </script>
+  </body>
 </html>

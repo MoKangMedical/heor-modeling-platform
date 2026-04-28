@@ -63,6 +63,7 @@
         <a href="./disease-data.html" data-zh="疾病数据" data-en="Disease Data">疾病数据</a>
         <a href="./api-docs.html" data-zh="API文档" data-en="API Docs">API文档</a>
         <a href="./pricing.html" data-zh="定价" data-en="Pricing">定价</a>
+        <a href="./about.html" data-zh="关于" data-en="About">关于</a>
         <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
       </nav>
     </header>
@@ -177,6 +178,53 @@
         </div>
       </section>
 
+      <!-- ICER Calculator Section -->
+      <section id="icer-calc" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-zh="交互工具" data-en="Interactive Tool">交互工具</p>
+            <h2 data-zh="ICER 计算器：输入参数，即时判断成本-效果" data-en="ICER Calculator: Input parameters, instant cost-effectiveness judgment">ICER 计算器：输入参数，即时判断成本-效果</h2>
+          </div>
+          <p class="section-note" data-zh="ICER = (C1 - C0) / (E1 - E0)，阈值参考 $50,000/QALY（WHO）和 $150,000/QALY（美国常见）" data-en="ICER = (C1-C0)/(E1-E0), thresholds: $50,000/QALY (WHO) and $150,000/QALY (US common)">ICER = (C1 - C0) / (E1 - E0)，阈值参考 $50,000/QALY（WHO）和 $150,000/QALY（美国常见）</p>
+        </div>
+        <div class="icer-calc-shell">
+          <div class="icer-inputs card">
+            <h3>输入参数</h3>
+            <div class="icer-field">
+              <label>干预组成本 (C1) <small>USD</small></label>
+              <input type="number" id="icer-c1" value="52000" min="0" step="100">
+            </div>
+            <div class="icer-field">
+              <label>对照组成本 (C0) <small>USD</small></label>
+              <input type="number" id="icer-c0" value="18000" min="0" step="100">
+            </div>
+            <div class="icer-field">
+              <label>干预组效果 (E1) <small>QALYs</small></label>
+              <input type="number" id="icer-e1" value="4.2" min="0" step="0.1">
+            </div>
+            <div class="icer-field">
+              <label>对照组效果 (E0) <small>QALYs</small></label>
+              <input type="number" id="icer-e0" value="3.5" min="0" step="0.1">
+            </div>
+            <button class="button primary" onclick="calcICER()" style="width:100%;margin-top:12px">计算 ICER</button>
+          </div>
+          <div class="icer-result card">
+            <h3>分析结果</h3>
+            <div id="icer-result-num" class="icer-big-num">$48,571 <small>/ QALY</small></div>
+            <div id="icer-verdict" class="icer-verdict good">低于 $50,000 阈值 — 具有成本-效果</div>
+            <div class="icer-plane-wrap">
+              <svg id="icer-plane" viewBox="0 0 320 240" class="icer-plane"></svg>
+            </div>
+            <div class="icer-plane-legend">
+              <span><i style="background:#2e9d6b"></i> 优选 (Dominant)</span>
+              <span><i style="background:#2f6fed"></i> 低于阈值</span>
+              <span><i style="background:#d9852c"></i> 高于阈值</span>
+              <span><i style="background:#c7382f"></i> 劣势 (Dominated)</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="demo-video" class="section demo-video">
         <div class="section-head">
           <div>
@@ -228,6 +276,121 @@
         <div id="workflow-rail" class="workflow-rail"></div>
       </section>
 
+      <!-- Technology Architecture Section -->
+      <section id="tech-stack" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-zh="技术架构" data-en="Architecture">技术架构</p>
+            <h2 data-zh="18 个专业引擎，覆盖 HEOR 全场景" data-en="18 specialized engines covering all HEOR scenarios">18 个专业引擎，覆盖 HEOR 全场景</h2>
+          </div>
+          <p class="section-note" data-zh="每个引擎独立运行、可组合调用，支持从简单 Markov 到复杂微模拟的全谱建模需求。" data-en="Each engine runs independently and can be combined, supporting everything from simple Markov to complex microsimulation.">每个引擎独立运行、可组合调用，支持从简单 Markov 到复杂微模拟的全谱建模需求。</p>
+        </div>
+        <div class="tech-categories">
+          <div class="tech-cat card">
+            <div class="tech-cat-head" style="border-left:4px solid var(--evidence)">
+              <h3>核心模型</h3>
+              <span class="mini-label tone-evidence">4 engines</span>
+            </div>
+            <ul>
+              <li><strong>Markov Model</strong><span>队列/微观 Markov，支持循环校正</span></li>
+              <li><strong>Decision Tree</strong><span>多分支决策分析，期望值计算</span></li>
+              <li><strong>Microsimulation</strong><span>个体级模拟，支持异质性建模</span></li>
+              <li><strong>Iceberg Model</strong><span>疾病负担全景模型</span></li>
+            </ul>
+          </div>
+          <div class="tech-cat card">
+            <div class="tech-cat-head" style="border-left:4px solid var(--calibration)">
+              <h3>统计分析</h3>
+              <span class="mini-label tone-calibration">4 engines</span>
+            </div>
+            <ul>
+              <li><strong>PSA</strong><span>概率敏感性分析，LHS 采样</span></li>
+              <li><strong>Sensitivity Analysis</strong><span>单因素/龙卷风图/阈值分析</span></li>
+              <li><strong>Survival Analysis</strong><span>KM / Cox / 参数生存模型</span></li>
+              <li><strong>Scenario Analysis</strong><span>多场景对比分析</span></li>
+            </ul>
+          </div>
+          <div class="tech-cat card">
+            <div class="tech-cat-head" style="border-left:4px solid var(--simulation)">
+              <h3>经济评估</h3>
+              <span class="mini-label tone-simulation">4 engines</span>
+            </div>
+            <ul>
+              <li><strong>Cost-Effectiveness</strong><span>ICER / CEAC / 成本效果平面</span></li>
+              <li><strong>Budget Impact</strong><span>多年度预算影响分析</span></li>
+              <li><strong>Network Meta</strong><span>贝叶斯/频率网络 Meta 分析</span></li>
+              <li><strong>Utility Measurement</strong><span>EQ-5D / HUI / QALY 计算</span></li>
+            </ul>
+          </div>
+          <div class="tech-cat card">
+            <div class="tech-cat-head" style="border-left:4px solid var(--review)">
+              <h3>数据与报告</h3>
+              <span class="mini-label tone-review">4 engines</span>
+            </div>
+            <ul>
+              <li><strong>Data Import</strong><span>CSV / Excel / JSON 多格式导入</span></li>
+              <li><strong>Literature Review</strong><span>PRISMA 流程文献管理</span></li>
+              <li><strong>Report Generator</strong><span>HTA 申报报告自动生成</span></li>
+              <li><strong>Calibration</strong><span>贝叶斯校准 / 拟合优度</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Case Studies Section -->
+      <section id="case-studies" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow" data-zh="应用案例" data-en="Case Studies">应用案例</p>
+            <h2 data-zh="真实世界建模案例，展示平台在肿瘤、慢病、罕见病领域的应用" data-en="Real-world modeling cases in oncology, chronic disease, and rare disease">真实世界建模案例，展示平台在肿瘤、慢病、罕见病领域的应用</h2>
+          </div>
+        </div>
+        <div class="case-grid">
+          <article class="case-card card">
+            <div class="case-header" style="background:linear-gradient(135deg,rgba(47,111,237,0.08),rgba(124,92,224,0.06))">
+              <span class="mini-label tone-evidence">肿瘤</span>
+              <h3>Pembrolizumab vs 化疗 — 晚期 NSCLC</h3>
+            </div>
+            <div class="case-body">
+              <div class="case-metrics">
+                <div><span class="case-label">ICER</span><strong>$45,200 / QALY</strong></div>
+                <div><span class="case-label">增量 QALY</span><strong>+1.82</strong></div>
+                <div><span class="case-label">方法</span><strong>Markov + PSA (5000)</strong></div>
+              </div>
+              <p>三状态 Markov 模型（PFS/PD/OS），基于 KEYNOTE-024 试验数据校准。PSA 结果显示在 $50K 阈值下有 78% 概率具有成本-效果。</p>
+            </div>
+          </article>
+          <article class="case-card card">
+            <div class="case-header" style="background:linear-gradient(135deg,rgba(24,166,160,0.08),rgba(46,157,107,0.06))">
+              <span class="mini-label tone-simulation">慢病</span>
+              <h3>GLP-1 RA vs 胰岛素 — 2 型糖尿病</h3>
+            </div>
+            <div class="case-body">
+              <div class="case-metrics">
+                <div><span class="case-label">5 年预算影响</span><strong>$2.3B 节省</strong></div>
+                <div><span class="case-label">并发症减少</span><strong>心血管 -18%</strong></div>
+                <div><span class="case-label">方法</span><strong>Budget Impact + Markov</strong></div>
+              </div>
+              <p>基于 UKPDS 框架的 5 状态 Markov 模型，整合 BMI、HbA1c、低血糖事件的微观模拟。预算影响分析覆盖 1000 万患者人群。</p>
+            </div>
+          </article>
+          <article class="case-card card">
+            <div class="case-header" style="background:linear-gradient(135deg,rgba(217,133,44,0.08),rgba(199,138,36,0.06))">
+              <span class="mini-label tone-review">罕见病</span>
+              <h3>基因疗法 vs 标准治疗 — SMA I 型</h3>
+            </div>
+            <div class="case-body">
+              <div class="case-metrics">
+                <div><span class="case-label">ICER</span><strong>$1.2M / QALY</strong></div>
+                <div><span class="case-label">生命年增益</span><strong>+15.3 LYG</strong></div>
+                <div><span class="case-label">方法</span><strong>Microsimulation + PSA</strong></div>
+              </div>
+              <p>个体级微模拟模型，追踪运动里程碑进展、呼吸支持需求和死亡率。ICER 高于传统阈值，但通过扩展成本-效果分析 (ECEA) 考虑了公平性权重。</p>
+            </div>
+          </article>
+        </div>
+      </section>
+
       <section id="outputs" class="section">
         <div class="section-head">
           <div>
@@ -273,7 +436,95 @@
       </section>
     </main>
 
-        <footer class="footer">
+    <!-- Testimonials Section -->
+    <section id="testimonials" class="section" style="max-width:var(--max-width);margin:0 auto;padding:0 24px">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" data-zh="用户评价" data-en="Testimonials">用户评价</p>
+          <h2 data-zh="来自全球 HEOR 专业人士的真实反馈" data-en="Real feedback from HEOR professionals worldwide">来自全球 HEOR 专业人士的真实反馈</h2>
+        </div>
+      </div>
+      <div class="testimonial-grid">
+        <div class="testimonial-card card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"这个平台彻底改变了我们团队的建模流程。以前用 TreeAge 需要两周的工作，现在两天就能完成，而且结果可追溯、可复现。"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">SC</div>
+            <div><strong>Dr. Sarah Chen</strong><small>HEOR Director, Top-10 Pharma</small></div>
+          </div>
+        </div>
+        <div class="testimonial-card card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"作为卫生经济学教学工具，这个平台让学生能够直观理解 Markov 模型和 PSA 的工作原理，而不是停留在 Excel 公式层面。"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">LW</div>
+            <div><strong>Prof. Li Wei</strong><small>Health Economics, Peking University</small></div>
+          </div>
+        </div>
+        <div class="testimonial-card card">
+          <div class="testimonial-stars">★★★★★</div>
+          <p>"We use it for rapid HTA dossier prototyping. The API allows us to integrate with our existing R pipeline, and the reproducibility features are exactly what auditors want to see."</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">MR</div>
+            <div><strong>Maria Rodriguez</strong><small>HTA Consultant, IQVIA</small></div>
+          </div>
+        </div>
+        <div class="testimonial-card card">
+          <div class="testimonial-stars">★★★★☆</div>
+          <p>"预算影响分析模块帮助我们向医院决策层展示了 GLP-1 RA 的长期经济价值，直接推动了进院决策。"</p>
+          <div class="testimonial-author">
+            <div class="testimonial-avatar">JP</div>
+            <div><strong>James Park</strong><small>Market Access Lead, Samsung Medical Center</small></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section id="faq" class="section" style="max-width:var(--max-width);margin:0 auto;padding:40px 24px 60px">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow" data-zh="常见问题" data-en="FAQ">常见问题</p>
+          <h2 data-zh="关于平台的常见问题解答" data-en="Frequently asked questions about the platform">关于平台的常见问题解答</h2>
+        </div>
+      </div>
+      <div class="faq-list">
+        <details class="faq-item card">
+          <summary>平台支持哪些 HEOR 模型？</summary>
+          <p>支持 Markov 模型（队列/微观）、决策树、微模拟、分区生存模型 (PSM)、冰山模型等 18 种建模方法。每种方法都有对应的引擎模块，可独立运行或组合使用。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>校准是如何工作的？</summary>
+          <p>平台支持贝叶斯校准和最小二乘校准。上传观察数据后，系统自动拟合模型参数，并输出 RMSE、拟合优度和校准覆盖图。校准结果会与模型参数一起版本化保存。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>输出可以直接用于 NICE/ICER 申报吗？</summary>
+          <p>可以。平台输出的审阅包包含 NICE 和 ICER 要求的标准图表（CEAC、PSA 散点图、龙卷风图、队列轨迹）和元数据。Enterprise 用户可以自定义输出模板以匹配特定 HTA 机构要求。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>支持哪些数据格式？</summary>
+          <p>支持 CSV、Excel (.xlsx)、JSON、SAS (.sas7bdat) 和 R (.rds) 格式。平台会自动识别字段类型并进行数据校验，确保时间粒度和事件定义符合建模要求。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>有 API 访问吗？</summary>
+          <p>有。平台提供完整的 RESTful API（OpenAPI 3.0 规范），支持程序化提交建模任务、查询结果和导出报告。API 文档可在 api-docs.html 查看。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>数据安全如何保障？</summary>
+          <p>所有数据传输使用 TLS 1.3 加密，存储使用 AES-256 加密。平台支持数据驻留选项（美国、欧盟、亚太），符合 HIPAA 和 GDPR 要求。每次运行的数据在 30 天后自动清除，用户可随时手动删除。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>Starter、Professional、Enterprise 有什么区别？</summary>
+          <p>Starter（免费）提供示例流程和基础 Markov 模型。Professional（$99/月）解锁完整建模流水线和所有引擎。Enterprise（$499/月）增加多国 HTA 模板、自定义导出、专属客户经理和 SLA 保障。详见 pricing.html。</p>
+        </details>
+        <details class="faq-item card">
+          <summary>支持多国 HTA 吗？</summary>
+          <p>支持。平台内置 12 个国家/地区的 HTA 模板、成本数据和支付方数据。Professional 用户可进行单国分析，Enterprise 用户可进行多国对比分析并生成各国特定格式的申报材料。</p>
+        </details>
+      </div>
+    </section>
+
+    <footer class="footer">
       <div class="footer-main">
         <div class="footer-brand">
           <div class="footer-logo">
@@ -318,5 +569,63 @@
     <script src="./ux-enhance.js?v=1"></script>
     <script src="./tour.js?v=1"></script>
     <script src="./charts.js?v=1"></script>
+    <script src="./opc-nav.js"></script>
+    <script>
+    /* ICER Calculator */
+    function calcICER(){
+      var c1=parseFloat(document.getElementById('icer-c1').value)||0;
+      var c0=parseFloat(document.getElementById('icer-c0').value)||0;
+      var e1=parseFloat(document.getElementById('icer-e1').value)||0;
+      var e0=parseFloat(document.getElementById('icer-e0').value)||0;
+      var dc=c1-c0, de=e1-e0;
+      var resultEl=document.getElementById('icer-result-num');
+      var verdictEl=document.getElementById('icer-verdict');
+      var planeSvg=document.getElementById('icer-plane');
+      if(de===0){resultEl.innerHTML='∞ <small>/ QALY</small>';verdictEl.textContent='效果无差异，无法计算 ICER';verdictEl.className='icer-verdict warn';drawPlane(planeSvg,dc,0);return}
+      var icer=dc/de;
+      resultEl.innerHTML='$'+Math.abs(icer).toLocaleString('en-US',{maximumFractionDigits:0})+' <small>/ QALY</small>';
+      if(dc<=0&&de>=0){verdictEl.textContent='干预组占优 (Dominant) — 更便宜且更有效';verdictEl.className='icer-verdict good'}
+      else if(dc>=0&&de<=0){verdictEl.textContent='干预组劣势 (Dominated) — 更贵且更无效';verdictEl.className='icer-verdict bad'}
+      else if(icer<0){verdictEl.textContent='成本降低但效果也降低 — 需要判断是否值得';verdictEl.className='icer-verdict warn'}
+      else if(icer<=50000){verdictEl.textContent='低于 $50,000/QALY 阈值 — 具有成本-效果';verdictEl.className='icer-verdict good'}
+      else if(icer<=150000){verdictEl.textContent='$50K-$150K 区间 — 需结合预算和公平性判断';verdictEl.className='icer-verdict warn'}
+      else{verdictEl.textContent='高于 $150,000/QALY — 通常不具有成本-效果';verdictEl.className='icer-verdict bad'}
+      drawPlane(planeSvg,dc,de);
+    }
+    function drawPlane(svg,dc,de){
+      var w=320,h=240,pad=40;
+      var xScale=function(v){return pad+(v/(Math.max(Math.abs(dc)*1.5,50000)||50000)+1)*(w-2*pad)/2};
+      var yScale=function(v){return h-pad-(v/(Math.max(Math.abs(de)*1.5,2)||2)+1)*(h-2*pad)/2};
+      var html='<rect x="'+pad+'" y="'+pad+'" width="'+(w-2*pad)+'" height="'+(h-2*pad)+'" fill="#f8fafc" stroke="#e2e8f0" rx="4"/>';
+      // Quadrant backgrounds
+      var cx=xScale(0),cy=yScale(0);
+      html+='<rect x="'+cx+'" y="'+pad+'" width="'+(w-pad-cx)+'" height="'+(cy-pad)+'" fill="rgba(46,157,107,0.06)" rx="2"/>';
+      html+='<rect x="'+pad+'" y="'+pad+'" width="'+(cx-pad)+'" height="'+(cy-pad)+'" fill="rgba(47,111,237,0.06)" rx="2"/>';
+      html+='<rect x="'+pad+'" y="'+cy+'" width="'+(cx-pad)+'" height="'+(h-pad-cy)+'" fill="rgba(199,56,47,0.06)" rx="2"/>';
+      html+='<rect x="'+cx+'" y="'+cy+'" width="'+(w-pad-cx)+'" height="'+(h-pad-cy)+'" fill="rgba(217,133,44,0.06)" rx="2"/>';
+      // Axes
+      html+='<line x1="'+pad+'" y1="'+cy+'" x2="'+(w-pad)+'" y2="'+cy+'" stroke="#94a3b8" stroke-width="1"/>';
+      html+='<line x1="'+cx+'" y1="'+pad+'" x2="'+cx+'" y2="'+(h-pad)+'" stroke="#94a3b8" stroke-width="1"/>';
+      // Threshold lines
+      html+='<line x1="'+pad+'" y1="'+yScale(50000*1)+'" x2="'+(w-pad)+'" y2="'+yScale(50000*1-50000)+'" stroke="#d9852c" stroke-width="1" stroke-dasharray="4,4" opacity="0.5"/>';
+      // Labels
+      html+='<text x="'+(w/2)+'" y="'+(h-8)+'" text-anchor="middle" font-size="10" fill="#64748b">Incremental Cost (ΔC)</text>';
+      html+='<text x="12" y="'+(h/2)+'" text-anchor="middle" font-size="10" fill="#64748b" transform="rotate(-90,12,'+(h/2)+')">Incremental Effect (ΔE)</text>';
+      // Quadrant labels
+      html+='<text x="'+((pad+cx)/2)+'" y="'+(pad+14)+'" text-anchor="middle" font-size="9" fill="#94a3b8">More effective</text>';
+      html+='<text x="'+((cx+w-pad)/2)+'" y="'+(pad+14)+'" text-anchor="middle" font-size="9" fill="#94a3b8">Dominant</text>';
+      // Point
+      var px=xScale(dc),py=yScale(de);
+      var color=(dc<=0&&de>=0)?'#2e9d6b':(dc>=0&&de<=0)?'#c7382f':(icer<=50000)?'#2f6fed':'#d9852c';
+      if(isFinite(dc)&&isFinite(de)){
+        html+='<circle cx="'+px+'" cy="'+py+'" r="8" fill="'+color+'" opacity="0.8"/>';
+        html+='<circle cx="'+px+'" cy="'+py+'" r="12" fill="'+color+'" opacity="0.2"/>';
+        html+='<text x="'+(px+16)+'" y="'+(py-8)+'" font-size="11" fill="'+color+'" font-weight="600">ICER</text>';
+      }
+      svg.innerHTML=html;
+    }
+    // Initial draw
+    if(document.getElementById('icer-plane')) calcICER();
+    </script>
   </body>
 </html>

@@ -2810,3 +2810,69 @@ body.dark-theme .shortcuts-dialog h3 { color: #e2e8f0; }
 .tooltip { position: relative; }
 .tooltip::after { content: attr(data-tooltip); position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); padding: 6px 12px; background: #111; color: white; font-size: 12px; border-radius: 6px; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 0.2s; margin-bottom: 8px; }
 .tooltip:hover::after { opacity: 1; }
+
+/* ===== ICER Calculator Section ===== */
+.icer-calc-shell{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start}
+.icer-inputs{padding:28px}
+.icer-inputs h3{font-size:1rem;margin-bottom:16px;color:var(--ink)}
+.icer-field{margin-bottom:14px}
+.icer-field label{display:block;font-size:.85rem;font-weight:500;color:var(--ink);margin-bottom:4px}
+.icer-field label small{color:var(--muted);font-weight:400}
+.icer-field input{width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:.95rem;font-family:'IBM Plex Mono',monospace;background:var(--paper-strong);color:var(--ink);transition:border-color .2s}
+.icer-field input:focus{outline:none;border-color:var(--evidence);box-shadow:0 0 0 3px var(--evidence-soft)}
+.icer-result{padding:28px}
+.icer-result h3{font-size:1rem;margin-bottom:16px;color:var(--ink)}
+.icer-big-num{font-size:2.4rem;font-weight:700;color:var(--navy);font-family:'IBM Plex Mono',monospace;margin-bottom:8px}
+.icer-big-num small{font-size:1rem;font-weight:400;color:var(--muted)}
+.icer-verdict{padding:10px 16px;border-radius:var(--radius-sm);font-size:.9rem;font-weight:500;margin-bottom:20px}
+.icer-verdict.good{background:rgba(46,157,107,0.1);color:#2e9d6b;border:1px solid rgba(46,157,107,0.2)}
+.icer-verdict.warn{background:rgba(199,138,36,0.1);color:#c78a24;border:1px solid rgba(199,138,36,0.2)}
+.icer-verdict.bad{background:rgba(199,56,47,0.1);color:#c7382f;border:1px solid rgba(199,56,47,0.2)}
+.icer-plane-wrap{background:#f8fafc;border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px;margin-bottom:12px}
+.icer-plane{width:100%;height:auto;display:block}
+.icer-plane-legend{display:flex;gap:16px;flex-wrap:wrap;font-size:.75rem;color:var(--muted)}
+.icer-plane-legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:4px;vertical-align:middle}
+@media(max-width:768px){.icer-calc-shell{grid-template-columns:1fr}.icer-big-num{font-size:1.8rem}}
+
+/* ===== Technology Architecture ===== */
+.tech-categories{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.tech-cat{padding:24px}
+.tech-cat-head{display:flex;align-items:center;justify-content:space-between;padding-bottom:12px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+.tech-cat-head h3{font-size:1rem;color:var(--ink)}
+.tech-cat ul{list-style:none;padding:0;margin:0}
+.tech-cat li{padding:8px 0;border-bottom:1px solid rgba(19,32,51,0.04);font-size:.85rem}
+.tech-cat li:last-child{border-bottom:none}
+.tech-cat li strong{color:var(--ink);display:block;margin-bottom:2px}
+.tech-cat li span{color:var(--muted);font-size:.8rem}
+
+/* ===== Case Studies ===== */
+.case-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px}
+.case-card{overflow:hidden;padding:0}
+.case-header{padding:20px 24px 16px}
+.case-header h3{font-size:1rem;color:var(--ink);margin-top:8px}
+.case-body{padding:0 24px 24px}
+.case-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid var(--line)}
+.case-metrics div{text-align:center}
+.case-label{display:block;font-size:.7rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px}
+.case-metrics strong{font-size:.9rem;color:var(--ink)}
+.case-body p{font-size:.85rem;color:var(--muted);line-height:1.6}
+
+/* ===== Testimonials ===== */
+.testimonial-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px}
+.testimonial-card{padding:24px}
+.testimonial-stars{color:#f59e0b;font-size:1rem;margin-bottom:12px;letter-spacing:2px}
+.testimonial-card>p{font-size:.9rem;color:var(--ink);line-height:1.7;font-style:italic;margin-bottom:16px}
+.testimonial-author{display:flex;align-items:center;gap:12px}
+.testimonial-avatar{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,var(--evidence),var(--calibration));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:600;font-size:.8rem;flex-shrink:0}
+.testimonial-author strong{font-size:.85rem;color:var(--ink);display:block}
+.testimonial-author small{font-size:.75rem;color:var(--muted)}
+
+/* ===== FAQ ===== */
+.faq-list{display:grid;gap:12px}
+.faq-item{padding:0;overflow:hidden}
+.faq-item summary{padding:16px 20px;font-size:.95rem;font-weight:500;color:var(--ink);cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;transition:background .2s}
+.faq-item summary::after{content:'+';font-size:1.2rem;color:var(--muted);transition:transform .2s}
+.faq-item[open] summary::after{content:'−'}
+.faq-item summary:hover{background:rgba(47,111,237,0.04)}
+.faq-item[open] summary{border-bottom:1px solid var(--line);background:rgba(47,111,237,0.02)}
+.faq-item p{padding:16px 20px;font-size:.9rem;color:var(--muted);line-height:1.7;margin:0}
