@@ -129,19 +129,7 @@
             color: var(--primary);
             text-decoration: none;
         }
-    
-/* MoKangMedical Cross-Project Navigation */
-.mk-nav{position:fixed;bottom:24px;right:24px;z-index:9999}
-.mk-nav-toggle{width:48px;height:48px;border-radius:50%;background:linear-gradient(135deg,#3b82f6,#06b6d4);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(59,130,246,.3);transition:.3s}
-.mk-nav-toggle:hover{transform:scale(1.1);box-shadow:0 6px 24px rgba(59,130,246,.4)}
-.mk-nav-toggle svg{width:24px;height:24px;fill:#fff}
-.mk-nav-panel{position:absolute;bottom:60px;right:0;width:280px;background:#12121a;border:1px solid #1e1e2e;border-radius:12px;padding:16px;display:none;box-shadow:0 8px 32px rgba(0,0,0,.5)}
-.mk-nav-panel.show{display:block}
-.mk-nav-panel h4{font-size:11px;text-transform:uppercase;letter-spacing:1px;color:#888;margin-bottom:8px;margin-top:12px}
-.mk-nav-panel h4:first-child{margin-top:0}
-.mk-nav-panel a{display:block;padding:8px 12px;color:#e0e0e0;font-size:13px;border-radius:6px;text-decoration:none;transition:.2s}
-.mk-nav-panel a:hover{background:#1e1e2e;color:#fff}
-</style>
+    </style>
 </head>
 <body>
     <section class="hero">
@@ -171,139 +159,109 @@
             <a href="https://github.com/MoKangMedical/heor-modeling-platform" class="btn" style="background:white;color:var(--primary)">立即开始</a>
         </div>
     </section>
-
-<section id="pricing" style="padding:80px 20px;background:#0a0a1a">
-  <div style="max-width:1000px;margin:0 auto;text-align:center">
-    <h2 style="font-size:2rem;font-weight:700;margin-bottom:16px;color:#fff">定价方案</h2>
-    <p style="color:#888;margin-bottom:48px">灵活的定价策略，满足不同需求</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px">
-      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:32px;text-align:center">
-        <h3 style="font-size:1.2rem;margin-bottom:8px;color:#fff">开源版</h3>
-        <div style="font-size:2.5rem;font-weight:700;color:#3b82f6;margin-bottom:8px">$0</div>
-        <div style="color:#888;margin-bottom:24px">永久免费</div>
-        <ul style="list-style:none;text-align:left;color:#888;font-size:14px;line-height:2">
-          <li>✓ 基础功能</li>
-          <li>✓ 社区支持</li>
-          <li>✓ 自托管部署</li>
-        </ul>
-        <a href="https://github.com/MoKangMedical/heor-modeling-platform" style="display:inline-block;margin-top:24px;padding:12px 32px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:8px;color:#fff;text-decoration:none;font-weight:600">开始使用</a>
-      </div>
-      <div style="background:rgba(59,130,246,0.1);border:2px solid #3b82f6;border-radius:12px;padding:32px;text-align:center;position:relative">
-        <div style="position:absolute;top:-12px;left:50%;transform:translateX(-50%);background:#3b82f6;padding:4px 16px;border-radius:20px;font-size:12px;color:#fff">推荐</div>
-        <h3 style="font-size:1.2rem;margin-bottom:8px;color:#fff">专业版</h3>
-        <div style="font-size:2.5rem;font-weight:700;color:#3b82f6;margin-bottom:8px">$99</div>
-        <div style="color:#888;margin-bottom:24px">每月</div>
-        <ul style="list-style:none;text-align:left;color:#888;font-size:14px;line-height:2">
-          <li>✓ 全部功能</li>
-          <li>✓ 优先支持</li>
-          <li>✓ API访问</li>
-          <li>✓ 高级分析</li>
-        </ul>
-        <a href="https://github.com/MoKangMedical/heor-modeling-platform" style="display:inline-block;margin-top:24px;padding:12px 32px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:8px;color:#fff;text-decoration:none;font-weight:600">立即订阅</a>
-      </div>
-      <div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:32px;text-align:center">
-        <h3 style="font-size:1.2rem;margin-bottom:8px;color:#fff">企业版</h3>
-        <div style="font-size:2.5rem;font-weight:700;color:#3b82f6;margin-bottom:8px">定制</div>
-        <div style="color:#888;margin-bottom:24px">按需定价</div>
-        <ul style="list-style:none;text-align:left;color:#888;font-size:14px;line-height:2">
-          <li>✓ 私有化部署</li>
-          <li>✓ 定制开发</li>
-          <li>✓ SLA保障</li>
-          <li>✓ 专属支持</li>
-        </ul>
-        <a href="mailto:contact@mokangmedical.com" style="display:inline-block;margin-top:24px;padding:12px 32px;background:linear-gradient(135deg,#3b82f6,#06b6d4);border-radius:8px;color:#fff;text-decoration:none;font-weight:600">联系销售</a>
-      </div>
-    </div>
-  </div>
-</section>
-
+    <section id="pricing" style="padding:100px 0;background:#0a0e1a">
+        <div style="max-width:1200px;margin:0 auto;padding:0 24px">
+            <div style="text-align:center;margin-bottom:60px">
+                <h2 style="font-size:2.5rem;font-weight:700;margin-bottom:16px;color:#fff">Pricing</h2>
+                <p style="font-size:1.1rem;color:#94a3b8;max-width:560px;margin:0 auto">选择适合您的 HEOR 建模方案</p>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:24px;max-width:1000px;margin:0 auto">
+                <div style="background:#111827;border:1px solid #1e293b;border-radius:16px;padding:40px 32px">
+                    <h3 style="font-size:1.1rem;font-weight:600;color:#94a3b8;margin-bottom:8px">Starter</h3>
+                    <div style="font-size:2.5rem;font-weight:800;color:#fff;margin-bottom:4px">$0<span style="font-size:1rem;color:#64748b;font-weight:400">/mo</span></div>
+                    <p style="color:#64748b;font-size:14px;margin-bottom:24px">适合个人研究者探索</p>
+                    <ul style="list-style:none;padding:0;margin:0 0 32px">
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 示例流程体验</li>
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 基础 Markov 模型</li>
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 社区支持</li>
+                    </ul>
+                    <a href="https://github.com/MoKangMedical/heor-modeling-platform" style="display:block;text-align:center;padding:12px 24px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:#fff;background:transparent;border:1px solid #1e293b">Get Started</a>
+                </div>
+                <div style="background:#111827;border:2px solid #3b82f6;border-radius:16px;padding:40px 32px;position:relative;transform:scale(1.02)">
+                    <div style="position:absolute;top:-14px;left:50%;transform:translateX(-50%);background:linear-gradient(135deg,#3b82f6,#1d4ed8);color:#fff;padding:4px 16px;border-radius:20px;font-size:12px;font-weight:600">Most Popular</div>
+                    <h3 style="font-size:1.1rem;font-weight:600;color:#3b82f6;margin-bottom:8px">Professional</h3>
+                    <div style="font-size:2.5rem;font-weight:800;color:#fff;margin-bottom:4px">$99<span style="font-size:1rem;color:#64748b;font-weight:400">/mo</span></div>
+                    <p style="color:#64748b;font-size:14px;margin-bottom:24px">适合 HEOR 团队完整建模</p>
+                    <ul style="list-style:none;padding:0;margin:0 0 32px">
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 完整建模流水线</li>
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> Markov / PSA / 敏感性分析</li>
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 成本-效果 & 预算影响</li>
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 优先邮件支持</li>
+                    </ul>
+                    <a href="https://github.com/MoKangMedical/heor-modeling-platform" style="display:block;text-align:center;padding:12px 24px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:#fff;background:#3b82f6;border:none">Get Started</a>
+                </div>
+                <div style="background:#111827;border:1px solid #1e293b;border-radius:16px;padding:40px 32px">
+                    <h3 style="font-size:1.1rem;font-weight:600;color:#94a3b8;margin-bottom:8px">Enterprise</h3>
+                    <div style="font-size:2.5rem;font-weight:800;color:#fff;margin-bottom:4px">$499<span style="font-size:1rem;color:#64748b;font-weight:400">/mo</span></div>
+                    <p style="color:#64748b;font-size:14px;margin-bottom:24px">适合企业级 HTA 申报</p>
+                    <ul style="list-style:none;padding:0;margin:0 0 32px">
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 所有 Professional 功能</li>
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 多国 HTA 模板</li>
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 审阅包定制导出</li>
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> 专属客户经理</li>
+                        <li style="color:#cbd5e1;font-size:14px;padding:6px 0;display:flex;align-items:center;gap:8px"><span style="color:#3b82f6">&#10003;</span> SLA 保障</li>
+                    </ul>
+                    <a href="https://github.com/MoKangMedical/heor-modeling-platform" style="display:block;text-align:center;padding:12px 24px;border-radius:10px;font-weight:600;font-size:14px;text-decoration:none;color:#fff;background:transparent;border:1px solid #1e293b">Contact Sales</a>
+                </div>
+            </div>
+        </div>
+    </section>
     <footer>
         <div class="container">
             <p>&copy; 2026 MoKangMedical. All rights reserved. | <a href="https://mokangmedical.github.io/opc-homepage/">生态首页</a></p>
         </div>
     </footer>
 <script>
-(function(){
-  var p=[
-    {n:'OPC Homepage',u:'https://mokangmedical.github.io/opc-homepage/',g:'Core'},
-    {n:'Tianyan',u:'https://mokangmedical.github.io/tianyan/',g:'AI'},
-    {n:'DrugMind',u:'https://mokangmedical.github.io/drugmind/',g:'AI'},
-    {n:'PharmaSim',u:'https://mokangmedical.github.io/PharmaSim/',g:'AI'},
-    {n:'MediChat-RD',u:'https://mokangmedical.github.io/medichat-rd/',g:'AI'},
-    {n:'ChroniCare OS',u:'https://mokangmedical.github.io/chronicdiseasemanagement/',g:'Health'},
-    {n:'VoiceHealth',u:'https://mokangmedical.github.io/ai-health-platform/',g:'Health'},
-    {n:'Digital Sage',u:'https://mokangmedical.github.io/digital-sage/',g:'Edu'},
-    {n:'Kondratiev Wave',u:'https://mokangmedical.github.io/kondratiev-wave/',g:'Edu'},
-    {n:'Cloud Memorial',u:'https://mokangmedical.github.io/cloud-memorial/',g:'Life'},
-    {n:'NarrowGate',u:'https://mokangmedical.github.io/narrowgate/',g:'Life'},
-    {n:'Virtual Cell',u:'https://mokangmedical.github.io/virtual-cell/',g:'Research'},
-    {n:'MetaForge',u:'https://mokangmedical.github.io/metaforge/',g:'Research'},
-    {n:'Biostats',u:'https://mokangmedical.github.io/biostats-/',g:'Research'},
-    {n:'NHANES-to-Lancet',u:'https://mokangmedical.github.io/nhanes-to-lancet/',g:'Research'},
-    {n:'Clinical Trials',u:'https://mokangmedical.github.io/global-clinical-trials-insight-and-commentary-platform-overview/',g:'Research'},
-    {n:'HEOR Platform',u:'https://mokangmedical.github.io/heor-modeling-platform/',g:'Research'},
-    {n:'Oncology Research',u:'https://mokangmedical.github.io/oncology-global-data-to-lancet/',g:'Research'},
-    {n:'SEER Analysis',u:'https://mokangmedical.github.io/seer-data-to-top-oncology-journal/',g:'Research'},
-    {n:'DrugCLIP',u:'https://mokangmedical.github.io/drugclip-benchmark/',g:'Research'},
-    {n:'Pilot Stone',u:'https://mokangmedical.github.io/pilot-stone-prediction/',g:'Research'},
-    {n:'PharmaSpark',u:'https://mokangmedical.github.io/pharmaspark/',g:'Tools'},
-    {n:'OPC Platform',u:'https://mokangmedical.github.io/opc-platform/',g:'Core'},
-    {n:'OPC Marketplace',u:'https://mokangmedical.github.io/opc-marketplace/',g:'Core'},
-    {n:'OPC Alliance',u:'https://mokangmedical.github.io/opc-alliance/',g:'Core'}
-  ];
-  var groups={};
-  p.forEach(function(i){if(!groups[i.g])groups[i.g]=[];groups[i.g].push(i);});
-  var d=document.createElement('div');
-  d.className='mk-nav';
-  var html='<button class="mk-nav-toggle" onclick="this.nextElementSibling.classList.toggle('+"'show'"+')"><svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg></button>';
-  html+='<div class="mk-nav-panel">';
-  for(var g in groups){
-    html+='<h4>'+g+'</h4>';
-    groups[g].forEach(function(i){html+='<a href="'+i.u+'" target="_blank">'+i.n+'</a>';});
-  }
-  html+='</div>';
-  d.innerHTML=html;
-  document.body.appendChild(d);
-  document.addEventListener('click',function(e){
-    if(!e.target.closest('.mk-nav')){
-      var panel=d.querySelector('.mk-nav-panel');
-      if(panel)panel.classList.remove('show');
-    }
-  });
-})();
-</script>
-<section style="padding:60px 0;border-top:1px solid rgba(255,255,255,.06)">
-<div style="max-width:1100px;margin:0 auto;padding:0 24px;text-align:center">
-<h2 style="font-size:1.5rem;font-weight:700;margin-bottom:8px">探索更多MoKangMedical项目</h2>
-<p style="color:#94a3b8;font-size:.9rem;margin-bottom:32px">医疗AI一站式创新生态</p>
-<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px">
-<a href="https://mokangmedical.github.io/tianyan/" style="display:block;padding:20px;background:#111827;border:1px solid #1e293b;border-radius:12px;text-decoration:none;transition:.3s" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='#1e293b'">
-<div style="font-weight:600;color:#f1f5f9;margin-bottom:4px">天眼 Tianyan</div>
-<div style="font-size:.8rem;color:#94a3b8">AI商业预测平台</div>
-</a>
-<a href="https://mokangmedical.github.io/PharmaSim/" style="display:block;padding:20px;background:#111827;border:1px solid #1e293b;border-radius:12px;text-decoration:none;transition:.3s" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='#1e293b'">
-<div style="font-weight:600;color:#f1f5f9;margin-bottom:4px">PharmaSim</div>
-<div style="font-size:.8rem;color:#94a3b8">药品市场仿真</div>
-</a>
-<a href="https://mokangmedical.github.io/chronicdiseasemanagement/" style="display:block;padding:20px;background:#111827;border:1px solid #1e293b;border-radius:12px;text-decoration:none;transition:.3s" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='#1e293b'">
-<div style="font-weight:600;color:#f1f5f9;margin-bottom:4px">慢康智枢</div>
-<div style="font-size:.8rem;color:#94a3b8">AI慢病管理</div>
-</a>
-<a href="https://mokangmedical.github.io/medichat-rd/" style="display:block;padding:20px;background:#111827;border:1px solid #1e293b;border-radius:12px;text-decoration:none;transition:.3s" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='#1e293b'">
-<div style="font-weight:600;color:#f1f5f9;margin-bottom:4px">MediChat-RD</div>
-<div style="font-size:.8rem;color:#94a3b8">罕见病AI诊疗</div>
-</a>
-<a href="https://mokangmedical.github.io/virtual-cell/" style="display:block;padding:20px;background:#111827;border:1px solid #1e293b;border-radius:12px;text-decoration:none;transition:.3s" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='#1e293b'">
-<div style="font-weight:600;color:#f1f5f9;margin-bottom:4px">Virtual Cell</div>
-<div style="font-size:.8rem;color:#94a3b8">单细胞AI分析</div>
-</a>
-<a href="https://mokangmedical.github.io/opc-homepage/" style="display:block;padding:20px;background:#111827;border:1px solid #1e293b;border-radius:12px;text-decoration:none;transition:.3s" onmouseover="this.style.borderColor='#6366f1'" onmouseout="this.style.borderColor='#1e293b'">
-<div style="font-weight:600;color:#f1f5f9;margin-bottom:4px">OPC创业者联盟</div>
-<div style="font-size:.8rem;color:#94a3b8">查看全部17个项目</div>
-</a>
-</div>
-</div>
-</section>
+// Scroll reveal animation
+const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            entry.target.style.opacity = '1';
+            entry.target.style.transform = 'translateY(0)';
+            observer.unobserve(entry.target);
+        }
+    });
+}, { threshold: 0.1 });
 
+document.querySelectorAll('.feature-card, .card, .pricing-card, .stat-card, [class*="feature"], [class*="card"]').forEach(el => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateY(20px)';
+    el.style.transition = 'all 0.6s cubic-bezier(0.16, 1, 0.3, 1)';
+    observer.observe(el);
+});
+
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+
+// Navbar background on scroll
+const nav = document.querySelector('nav, .nav, .navbar, header');
+if (nav) {
+    window.addEventListener('scroll', () => {
+        nav.style.background = window.scrollY > 50 ? 'rgba(10,10,15,0.98)' : 'rgba(10,10,15,0.85)';
+    });
+}
+
+// Counter animation for stats
+document.querySelectorAll('[data-count], .stat-number, .counter').forEach(el => {
+    const target = parseInt(el.dataset.count || el.textContent);
+    if (isNaN(target)) return;
+    let current = 0;
+    const increment = target / 60;
+    const suffix = el.dataset.suffix || '';
+    const timer = setInterval(() => {
+        current += increment;
+        if (current >= target) { current = target; clearInterval(timer); }
+        el.textContent = Math.floor(current).toLocaleString() + suffix;
+    }, 25);
+});
+
+console.log('MoKangMedical interactive features loaded');
+</script>
 </body>
 </html>
