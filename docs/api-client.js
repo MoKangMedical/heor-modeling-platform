@@ -23,6 +23,11 @@ const HEOR_API = (() => {
   // ============ 核心请求方法 ============
 
   async function request(endpoint, options = {}) {
+    // If already in offline mode, throw immediately
+    if (config.offlineMode) {
+      throw new APIError(0, 'Offline mode');
+    }
+    
     const url = `${config.baseUrl}${endpoint}`;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), config.timeout);
@@ -49,21 +54,17 @@ const HEOR_API = (() => {
     } catch (error) {
       clearTimeout(timeoutId);
       
-      if (error.name === 'AbortError') {
-        throw new APIError(408, 'Request timeout');
-      }
-      
-      if (error instanceof APIError) {
-        throw error;
-      }
-      
-      // Network error - switch to offline mode
+      // Switch to offline mode for any API error
       if (!config.offlineMode) {
-        console.warn('API unavailable, switching to offline mode');
+        console.warn('[HEOR API] API unavailable, switching to offline mode:', error.message || error.status);
         config.offlineMode = true;
       }
       
-      throw new APIError(0, 'Network error - offline mode');
+      if (error.name === 'AbortError') {
+        throw new APIError(0, 'API timeout - offline mode');
+      }
+      
+      throw new APIError(0, 'API error - offline mode');
     }
   }
 
@@ -88,6 +89,7 @@ const HEOR_API = (() => {
       isConnected = false;
       connectionChecked = true;
       config.offlineMode = true;
+      console.log('[HEOR API] Switched to offline mode');
       return { connected: false, offline: true };
     }
   }
@@ -110,12 +112,19 @@ const HEOR_API = (() => {
 
   async function uploadEvidence(projectId, evidenceData) {
     if (config.offlineMode) {
+      console.log('[HEOR API] Using offline mode for uploadEvidence');
       return DemoData.createEvidence(evidenceData);
     }
-    return request(`/projects/${projectId}/evidence`, {
-      method: 'POST',
-      body: JSON.stringify(evidenceData),
-    });
+    try {
+      return await request(`/projects/${projectId}/evidence`, {
+        method: 'POST',
+        body: JSON.stringify(evidenceData),
+      });
+    } catch (error) {
+      console.log('[HEOR API] API failed, falling back to offline mode');
+      config.offlineMode = true;
+      return DemoData.createEvidence(evidenceData);
+    }
   }
 
   async function getEvidenceList(projectId) {
@@ -153,13 +162,13 @@ const HEOR_API = (() => {
 
   // ============ 运行管理 ============
 
-  async function createRun(config) {
+  async function createRun(runConfig) {
     if (config.offlineMode) {
-      return DemoData.createRun(config);
+      return DemoData.createRun(runConfig);
     }
     return request('/runs', {
       method: 'POST',
-      body: JSON.stringify(config),
+      body: JSON.stringify(runConfig),
     });
   }
 
