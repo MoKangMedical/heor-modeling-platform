@@ -3,7 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HEOR 完整工作流演示</title>
+  <title>HEOR 完整工作流演示 | 从证据到结果</title>
+  <meta name="description" content="HEOR Modeling Platform 完整工作流演示 - 从证据上传、概率函数生成、临床校准、Markov/PSA模拟到结果分析的端到端演示">
+  <meta property="og:title" content="HEOR 完整工作流演示">
+  <meta property="og:description" content="从证据上传到结果分析的端到端演示">
+  <link rel="stylesheet" href="./styles.css">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
@@ -78,23 +82,42 @@
       .workflow-sidebar { width: 100%; }
     }
   </style>
-</head>
-<body style="padding-top:56px!important"><nav id="opc-nav" style="position:fixed;top:0;left:0;right:0;z-index:9999;background:rgba(10,10,30,0.95);backdrop-filter:blur(20px);border-bottom:1px solid rgba(99,102,241,0.2);padding:0 2rem;height:56px;display:flex;align-items:center;justify-content:space-between;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif">
-  <a href="https://mokangmedical.github.io/opc-homepage/" style="display:flex;align-items:center;gap:10px;text-decoration:none;color:#fff;font-weight:700;font-size:15px">
-    <svg width="28" height="28" viewBox="0 0 32 32" fill="none"><circle cx="16" cy="16" r="14" stroke="url(#ng1)" stroke-width="2.5"/><path d="M10 16h12M16 10v12" stroke="url(#ng1)" stroke-width="2.5" stroke-linecap="round"/><defs><linearGradient id="ng1" x1="0" y1="0" x2="32" y2="32"><stop stop-color="#818cf8"/><stop offset="1" stop-color="#c084fc"/></linearGradient></defs></svg>
-    <span style="background:linear-gradient(135deg,#818cf8,#c084fc);-webkit-background-clip:text;-webkit-text-fill-color:transparent">MoKangMedical</span>
-  </a>
-  <div style="display:flex;gap:6px;align-items:center">
-    <a href="https://mokangmedical.github.io/opc-homepage/" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;padding:6px 12px;border-radius:8px">生态首页</a>
-    <a href="https://github.com/MoKangMedical" target="_blank" style="color:rgba(255,255,255,0.7);text-decoration:none;font-size:13px;padding:6px 12px;border-radius:8px">GitHub</a>
-    <a href="https://mokangmedical.github.io/opc-alliance/" style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:#fff;padding:6px 16px;border-radius:8px;font-weight:600;font-size:13px;text-decoration:none">OPC Hub</a>
-  </div>
-</nav>
+  <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/workflow-demo.html" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E" />
+  </head>
+<body>
+
+    <div class="status-bar-top" id="status-bar">
+      <div class="status-left">
+        <span class="status-indicator online" id="api-status"></span>
+        <span class="status-text" id="api-status-text">检查连接...</span>
+      </div>
+      <div class="status-center">
+        <span class="status-version">v1.0.0</span>
+        <span class="status-sep">|</span>
+        <span class="status-env" id="env-mode">演示模式</span>
+      </div>
+      <div class="status-right">
+        <button class="status-btn" onclick="HEOR_UX.openPalette()" title="命令面板 (Ctrl+K)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+          <kbd>⌘K</kbd>
+        </button>
+        <button class="status-btn" onclick="HEOR_UX.toggleTheme()" title="切换主题">🌙</button>
+      </div>
+    </div>
+
   <header>
-    <h1>HEOR Modeling Platform</h1>
-    <p>完整工作流演示 - 从证据上传到结果分析</p>
-    <div id="connection-status" class="status-bar status-offline" style="display: inline-block; margin-top: 15px;">
-      检查连接中...
+    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
+      <div>
+        <h1>HEOR Modeling Platform</h1>
+        <p>完整工作流演示 - 从证据上传到结果分析</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <div id="connection-status" class="status-bar status-offline" style="display: inline-block; margin: 0;">
+          检查连接中...
+        </div>
+        <button class="lang-toggle" id="langToggle" onclick="toggleLang()" title="Switch to English" style="padding: 6px 14px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.1); color: white; cursor: pointer; font-size: 13px;">EN</button>
+      </div>
     </div>
   </header>
 
@@ -138,7 +161,7 @@
       <div class="workflow-main">
         <!-- Step 1: 证据上传 -->
         <div id="step-1" class="panel">
-          <h2>Step 1: 上传证据</h2>
+          <h2 data-zh="Step 1: 上传证据" data-en="Step 1: Upload Evidence">Step 1: 上传证据</h2>
           <p style="margin-bottom: 20px; color: #666;">上传KM表或生存数据，平台会自动校验并生成证据对象。</p>
           
           <div class="form-group">
@@ -184,7 +207,7 @@
 
         <!-- Step 2: 概率函数 -->
         <div id="step-2" class="panel hidden">
-          <h2>Step 2: 生成概率函数</h2>
+          <h2 data-zh="Step 2: 生成概率函数" data-en="Step 2: Generate Probability Function">Step 2: 生成概率函数</h2>
           <p style="margin-bottom: 20px; color: #666;">将证据转换为每个周期可调用的事件概率。</p>
           
           <div class="form-group">
@@ -220,7 +243,7 @@
 
         <!-- Step 3: 校准 -->
         <div id="step-3" class="panel hidden">
-          <h2>Step 3: 临床校准</h2>
+          <h2 data-zh="Step 3: 临床校准" data-en="Step 3: Clinical Calibration">Step 3: 临床校准</h2>
           <p style="margin-bottom: 20px; color: #666;">将模型预测与真实世界观察数据进行拟合。</p>
           
           <div class="form-group">
@@ -246,7 +269,7 @@
 
         <!-- Step 4: 模拟 -->
         <div id="step-4" class="panel hidden">
-          <h2>Step 4: 运行模拟</h2>
+          <h2 data-zh="Step 4: 运行模拟" data-en="Step 4: Run Simulation">Step 4: 运行模拟</h2>
           <p style="margin-bottom: 20px; color: #666;">运行Markov模型和概率敏感性分析。</p>
           
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
@@ -294,7 +317,7 @@
 
         <!-- Step 5: 结果 -->
         <div id="step-5" class="panel hidden">
-          <h2>Step 5: 查看结果</h2>
+          <h2 data-zh="Step 5: 查看结果" data-en="Step 5: View Results">Step 5: 查看结果</h2>
           <p style="margin-bottom: 20px; color: #666;">查看成本效果分析、敏感性分析和预算影响。</p>
           
           <div id="results-content">
@@ -338,8 +361,8 @@
     </div>
   </div>
 
-  <script src="./api-client.js"></script>
-  <script src="./workflow.js"></script>
+  <script src="./api-client.js?v=3"></script>
+  <script src="./workflow.js?v=2"></script>
   <script>
     // 全局函数
     function addLog(message, type = 'info') {
@@ -517,7 +540,6 @@
     function resetWorkflow() {
       EvidenceWorkflow.reset();
       
-      // 重置UI
       document.querySelectorAll('.step-item').forEach(el => {
         el.classList.remove('active', 'completed', 'error');
       });
@@ -533,7 +555,6 @@
     document.addEventListener('DOMContentLoaded', () => {
       addLog('系统初始化完成');
       
-      // 检查API连接
       HEOR_API.checkConnection().then(result => {
         const statusEl = document.getElementById('connection-status');
         if (result.connected) {
@@ -548,5 +569,9 @@
       });
     });
   </script>
-</body>
+  <script src="./ux-enhance.js?v=1"></script>
+  <script src="./tour.js?v=1"></script>
+    <script src="./charts.js?v=1"></script>
+      <script src="./opc-nav.js"></script>
+  </body>
 </html>
