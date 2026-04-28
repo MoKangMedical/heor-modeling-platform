@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>API文档 | HEOR Modeling Platform</title>
+  <meta name="description" content="HEOR Modeling Platform REST API文档 - 完整的端点说明和示例">
+  <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/api-docs.html" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    .api-section { margin-bottom: 40px; }
+    .api-endpoint { background: #f8f9fa; border-radius: 12px; padding: 20px; margin-bottom: 16px; border-left: 4px solid #2f6fed; }
+    .api-method { display: inline-block; padding: 4px 10px; border-radius: 4px; font-size: 12px; font-weight: 600; font-family: 'IBM Plex Mono', monospace; margin-right: 10px; }
+    .api-method.get { background: #e8f5e9; color: #2e7d32; }
+    .api-method.post { background: #e3f2fd; color: #1565c0; }
+    .api-method.put { background: #fff3e0; color: #e65100; }
+    .api-method.delete { background: #ffebee; color: #c62828; }
+    .api-path { font-family: 'IBM Plex Mono', monospace; font-size: 14px; color: #111; }
+    .api-desc { color: #666; font-size: 14px; margin-top: 8px; line-height: 1.6; }
+    .api-params { margin-top: 12px; }
+    .api-params table { width: 100%; font-size: 13px; }
+    .api-params th { background: white; }
+    .api-params code { background: #e5e7eb; padding: 2px 6px; border-radius: 4px; font-size: 12px; }
+    .api-example { background: #1e1e1e; color: #d4d4d4; padding: 16px; border-radius: 8px; font-family: 'IBM Plex Mono', monospace; font-size: 13px; overflow-x: auto; margin-top: 12px; }
+    .api-example .keyword { color: #569cd6; }
+    .api-example .string { color: #ce9178; }
+    .api-example .number { color: #b5cea8; }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">HM</span>
+      <span class="brand-copy">
+        <strong>HEOR Modeling Platform</strong>
+        <small>API文档</small>
+      </span>
+    </div>
+    <nav class="nav">
+      <a href="./index.html">总览</a>
+      <a href="./evidence.html">上传证据</a>
+      <a href="./api-docs.html">API文档</a>
+      <a href="./workflow-demo.html">完整流程</a>
+      <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
+    </nav>
+  </header>
+
+  <main style="max-width: 960px; margin: 0 auto; padding: 40px 20px;">
+    <h1 style="font-size: 28px; font-weight: 700; color: #111; margin-bottom: 8px;">REST API 文档</h1>
+    <p style="color: #666; margin-bottom: 40px;">HEOR Modeling Platform 后端API完整参考。基础URL: <code style="background: #f3f4f6; padding: 2px 8px; border-radius: 4px;">http://localhost:8000/api/v1</code></p>
+
+    <div class="api-section">
+      <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 16px;">证据管理</h2>
+      
+      <div class="api-endpoint">
+        <span class="api-method post">POST</span>
+        <span class="api-path">/projects/{project_id}/evidence</span>
+        <p class="api-desc">上传证据数据，平台会自动校验并生成证据对象。</p>
+        <div class="api-params">
+          <table class="data-table">
+            <thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>name</code></td><td>string</td><td>证据名称</td></tr>
+              <tr><td><code>type</code></td><td>enum</td><td>km_survival | survival_table | hazard_table</td></tr>
+              <tr><td><code>points</code></td><td>array</td><td>数据点数组 [{seq_no, time_value, estimate_value}]</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="api-example">
+<span class="keyword">POST</span> /api/v1/projects/default/evidence
+Content-Type: application/json
+
+{
+  <span class="string">"name"</span>: <span class="string">"NSCLC PFS - KEYNOTE-010"</span>,
+  <span class="string">"type"</span>: <span class="string">"km_survival"</span>,
+  <span class="string">"points"</span>: [
+    {<span class="string">"seq_no"</span>: <span class="number">1</span>, <span class="string">"time_value"</span>: <span class="number">0</span>, <span class="string">"estimate_value"</span>: <span class="number">1.0</span>},
+    {<span class="string">"seq_no"</span>: <span class="number">2</span>, <span class="string">"time_value"</span>: <span class="number">1</span>, <span class="string">"estimate_value"</span>: <span class="number">0.968</span>}
+  ]
+}
+        </div>
+      </div>
+
+      <div class="api-endpoint">
+        <span class="api-method get">GET</span>
+        <span class="api-path">/projects/{project_id}/evidence</span>
+        <p class="api-desc">获取项目下的所有证据对象列表。</p>
+      </div>
+
+      <div class="api-endpoint">
+        <span class="api-method post">POST</span>
+        <span class="api-path">/evidence/{evidence_id}/validate</span>
+        <p class="api-desc">验证证据数据的完整性和一致性。</p>
+      </div>
+    </div>
+
+    <div class="api-section">
+      <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 16px;">概率函数</h2>
+      
+      <div class="api-endpoint">
+        <span class="api-method post">POST</span>
+        <span class="api-path">/probability-functions</span>
+        <p class="api-desc">从证据对象生成概率函数。</p>
+        <div class="api-params">
+          <table class="data-table">
+            <thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>evidence_id</code></td><td>uuid</td><td>证据对象ID</td></tr>
+              <tr><td><code>cycle_length</code></td><td>number</td><td>周期长度 (默认1)</td></tr>
+              <tr><td><code>cycle_unit</code></td><td>enum</td><td>month | year | week</td></tr>
+              <tr><td><code>distribution</code></td><td>enum</td><td>weibull | exponential | log_normal</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="api-section">
+      <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 16px;">运行管理</h2>
+      
+      <div class="api-endpoint">
+        <span class="api-method post">POST</span>
+        <span class="api-path">/runs</span>
+        <p class="api-desc">创建模拟运行。</p>
+        <div class="api-params">
+          <table class="data-table">
+            <thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>model_type</code></td><td>enum</td><td>markov | partitioned_survival | microsimulation</td></tr>
+              <tr><td><code>cycles</code></td><td>integer</td><td>周期数 (默认60)</td></tr>
+              <tr><td><code>initial_population</code></td><td>integer</td><td>初始人群 (默认1000)</td></tr>
+              <tr><td><code>sample_size</code></td><td>integer</td><td>PSA样本量 (默认1000)</td></tr>
+              <tr><td><code>discount_rate</code></td><td>number</td><td>折现率 (默认0.03)</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="api-endpoint">
+        <span class="api-method get">GET</span>
+        <span class="api-path">/runs/{run_id}/results</span>
+        <p class="api-desc">获取运行结果，包括队列轨迹和成本效果分析。</p>
+      </div>
+    </div>
+
+    <div class="api-section">
+      <h2 style="font-size: 20px; font-weight: 600; margin-bottom: 16px;">分析</h2>
+      
+      <div class="api-endpoint">
+        <span class="api-method get">GET</span>
+        <span class="api-path">/analytics/icer/{run_id}</span>
+        <p class="api-desc">计算增量成本效果比 (ICER)。</p>
+      </div>
+
+      <div class="api-endpoint">
+        <span class="api-method post">POST</span>
+        <span class="api-path">/analytics/psa/{run_id}</span>
+        <p class="api-desc">执行概率敏感性分析 (PSA)。</p>
+        <div class="api-params">
+          <table class="data-table">
+            <thead><tr><th>参数</th><th>类型</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>n_simulations</code></td><td>integer</td><td>模拟次数 (默认1000)</td></tr>
+              <tr><td><code>sampling_method</code></td><td>enum</td><td>lhs | monte_carlo</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="api-endpoint">
+        <span class="api-method get">GET</span>
+        <span class="api-path">/analytics/ceac/{run_id}</span>
+        <p class="api-desc">获取成本效果可接受曲线 (CEAC) 数据。</p>
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <span class="brand-mark">HM</span>
+          <div>
+            <strong>HEOR Modeling Platform</strong>
+            <small>卫生经济学与结果研究建模平台</small>
+          </div>
+        </div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>产品</h4>
+          <a href="./evidence.html">上传证据</a>
+          <a href="./disease-data.html">疾病数据</a>
+          <a href="./api-docs.html">API文档</a>
+        </div>
+        <div class="footer-col">
+          <h4>资源</h4>
+          <a href="./platform.html">平台细节</a>
+          <a href="./research.html">研究追踪</a>
+        </div>
+        <div class="footer-col">
+          <h4>关于</h4>
+          <a href="https://github.com/MoKangMedical/heor-modeling-platform" target="_blank">GitHub</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 HEOR Modeling Platform.</p>
+    </div>
+  </footer>
+
+  <script src="./ux-enhance.js?v=1"></script>
+</body>
+</html>
