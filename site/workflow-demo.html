@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HEOR 完整工作流演示 | 从证据到结果</title>
+  <meta name="description" content="HEOR Modeling Platform 完整工作流演示 - 从证据上传、概率函数生成、临床校准、Markov/PSA模拟到结果分析的端到端演示">
+  <meta property="og:title" content="HEOR 完整工作流演示">
+  <meta property="og:description" content="从证据上传到结果分析的端到端演示">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; color: #333; }
+    
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    
+    header { background: linear-gradient(135deg, #1b345d 0%, #2f6fed 100%); color: white; padding: 40px 20px; text-align: center; }
+    header h1 { font-size: 2em; margin-bottom: 10px; }
+    header p { opacity: 0.9; font-size: 1.1em; }
+    
+    .workflow-container { display: flex; gap: 20px; margin-top: 30px; }
+    
+    .workflow-sidebar { width: 250px; flex-shrink: 0; }
+    .workflow-main { flex: 1; }
+    
+    .step-list { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); }
+    .step-item { padding: 15px; border-left: 3px solid #ddd; margin-bottom: 10px; cursor: pointer; transition: all 0.3s; }
+    .step-item:hover { background: #f8f9fa; }
+    .step-item.active { border-left-color: #2f6fed; background: #e8f0fe; }
+    .step-item.completed { border-left-color: #2e9d6b; }
+    .step-item.error { border-left-color: #e94560; }
+    .step-item h3 { font-size: 0.9em; color: #666; }
+    .step-item p { font-size: 0.85em; color: #999; margin-top: 5px; }
+    
+    .step-number { display: inline-block; width: 24px; height: 24px; border-radius: 50%; background: #ddd; color: #666; text-align: center; line-height: 24px; font-size: 0.8em; margin-right: 10px; }
+    .step-item.active .step-number { background: #2f6fed; color: white; }
+    .step-item.completed .step-number { background: #2e9d6b; color: white; }
+    
+    .panel { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); margin-bottom: 20px; }
+    .panel h2 { color: #1b345d; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 2px solid #f0f0f0; }
+    
+    .form-group { margin-bottom: 20px; }
+    .form-group label { display: block; font-weight: 600; margin-bottom: 8px; color: #444; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; }
+    .form-group textarea { min-height: 200px; font-family: monospace; }
+    
+    .btn { padding: 12px 24px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    .btn-primary { background: #2f6fed; color: white; }
+    .btn-primary:hover { background: #1d5bd9; }
+    .btn-secondary { background: #f0f0f0; color: #333; }
+    .btn-secondary:hover { background: #e0e0e0; }
+    .btn-success { background: #2e9d6b; color: white; }
+    .btn-success:hover { background: #247a54; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    
+    .btn-group { display: flex; gap: 10px; margin-top: 20px; }
+    
+    .status-bar { display: flex; align-items: center; padding: 15px; border-radius: 8px; margin-bottom: 20px; }
+    .status-connected { background: #e8f5e9; color: #2e7d32; }
+    .status-offline { background: #fff3e0; color: #ef6c00; }
+    .status-error { background: #ffebee; color: #c62828; }
+    
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px; }
+    .result-card { background: #f8f9fa; padding: 20px; border-radius: 8px; border-left: 4px solid #2f6fed; }
+    .result-card h4 { color: #666; font-size: 0.9em; margin-bottom: 10px; }
+    .result-card .value { font-size: 2em; font-weight: 700; color: #1b345d; }
+    .result-card .unit { font-size: 0.9em; color: #999; }
+    
+    .chart-container { background: #f8f9fa; border-radius: 8px; padding: 20px; min-height: 300px; display: flex; align-items: center; justify-content: center; }
+    .chart-placeholder { color: #999; text-align: center; }
+    
+    .log-container { background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 12px; max-height: 200px; overflow-y: auto; }
+    .log-entry { margin-bottom: 5px; }
+    .log-entry.info { color: #4fc1ff; }
+    .log-entry.success { color: #6a9955; }
+    .log-entry.error { color: #f44747; }
+    
+    .hidden { display: none; }
+    
+    @media (max-width: 768px) {
+      .workflow-container { flex-direction: column; }
+      .workflow-sidebar { width: 100%; }
+    }
+  </style>
+  <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/workflow-demo.html" />
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E" />
+  </head>
+<body>
+
+    <div class="status-bar-top" id="status-bar">
+      <div class="status-left">
+        <span class="status-indicator online" id="api-status"></span>
+        <span class="status-text" id="api-status-text">检查连接...</span>
+      </div>
+      <div class="status-center">
+        <span class="status-version">v1.0.0</span>
+        <span class="status-sep">|</span>
+        <span class="status-env" id="env-mode">演示模式</span>
+      </div>
+      <div class="status-right">
+        <button class="status-btn" onclick="HEOR_UX.openPalette()" title="命令面板 (Ctrl+K)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+          <kbd>⌘K</kbd>
+        </button>
+        <button class="status-btn" onclick="HEOR_UX.toggleTheme()" title="切换主题">🌙</button>
+      </div>
+    </div>
+
+  <header>
+    <div style="display: flex; justify-content: space-between; align-items: center; max-width: 1200px; margin: 0 auto;">
+      <div>
+        <h1>HEOR Modeling Platform</h1>
+        <p>完整工作流演示 - 从证据上传到结果分析</p>
+      </div>
+      <div style="display: flex; align-items: center; gap: 15px;">
+        <div id="connection-status" class="status-bar status-offline" style="display: inline-block; margin: 0;">
+          检查连接中...
+        </div>
+        <button class="lang-toggle" id="langToggle" onclick="toggleLang()" title="Switch to English" style="padding: 6px 14px; border: 1px solid rgba(255,255,255,0.3); border-radius: 6px; background: rgba(255,255,255,0.1); color: white; cursor: pointer; font-size: 13px;">EN</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="container">
+    <div class="workflow-container">
+      <!-- 侧边栏 - 步骤导航 -->
+      <div class="workflow-sidebar">
+        <div class="step-list">
+          <div class="step-item active" data-step="1" onclick="goToStep(1)">
+            <h3><span class="step-number">1</span> 上传证据</h3>
+            <p>导入KM/生存数据</p>
+          </div>
+          <div class="step-item" data-step="2" onclick="goToStep(2)">
+            <h3><span class="step-number">2</span> 概率函数</h3>
+            <p>生成转移概率</p>
+          </div>
+          <div class="step-item" data-step="3" onclick="goToStep(3)">
+            <h3><span class="step-number">3</span> 临床校准</h3>
+            <p>拟合真实世界数据</p>
+          </div>
+          <div class="step-item" data-step="4" onclick="goToStep(4)">
+            <h3><span class="step-number">4</span> 运行模拟</h3>
+            <p>Markov/PSA分析</p>
+          </div>
+          <div class="step-item" data-step="5" onclick="goToStep(5)">
+            <h3><span class="step-number">5</span> 查看结果</h3>
+            <p>ICER、PSA、CEAC</p>
+          </div>
+        </div>
+        
+        <!-- 日志 -->
+        <div class="panel" style="margin-top: 20px;">
+          <h3 style="margin-bottom: 10px;">运行日志</h3>
+          <div id="log-container" class="log-container">
+            <div class="log-entry info">系统初始化...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 主内容区 -->
+      <div class="workflow-main">
+        <!-- Step 1: 证据上传 -->
+        <div id="step-1" class="panel">
+          <h2 data-zh="Step 1: 上传证据" data-en="Step 1: Upload Evidence">Step 1: 上传证据</h2>
+          <p style="margin-bottom: 20px; color: #666;">上传KM表或生存数据，平台会自动校验并生成证据对象。</p>
+          
+          <div class="form-group">
+            <label>证据名称</label>
+            <input type="text" id="evidence-name" value="NSCLC PFS - KEYNOTE-010" placeholder="输入证据名称">
+          </div>
+          
+          <div class="form-group">
+            <label>证据类型</label>
+            <select id="evidence-type">
+              <option value="km_survival">KM生存曲线</option>
+              <option value="survival_table">生存表</option>
+              <option value="hazard_table">风险函数表</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>点位CSV数据 (seq_no,time_value,estimate_value)</label>
+            <textarea id="evidence-csv">seq_no,time_value,estimate_value
+1,0,1
+2,1,0.968
+3,2,0.936
+4,3,0.902
+5,4,0.868
+6,5,0.835
+7,6,0.802
+8,8,0.732
+9,10,0.664
+10,12,0.598
+11,15,0.512
+12,18,0.438
+13,21,0.368
+14,24,0.304</textarea>
+          </div>
+          
+          <div class="btn-group">
+            <button class="btn btn-secondary" onclick="loadDemoData()">加载示例数据</button>
+            <button class="btn btn-primary" onclick="submitEvidence()">上传并验证</button>
+          </div>
+          
+          <div id="evidence-result" class="hidden" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- Step 2: 概率函数 -->
+        <div id="step-2" class="panel hidden">
+          <h2 data-zh="Step 2: 生成概率函数" data-en="Step 2: Generate Probability Function">Step 2: 生成概率函数</h2>
+          <p style="margin-bottom: 20px; color: #666;">将证据转换为每个周期可调用的事件概率。</p>
+          
+          <div class="form-group">
+            <label>周期长度</label>
+            <input type="number" id="cycle-length" value="1" min="1" max="12">
+          </div>
+          
+          <div class="form-group">
+            <label>周期单位</label>
+            <select id="cycle-unit">
+              <option value="month">月</option>
+              <option value="year">年</option>
+              <option value="week">周</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>分布类型</label>
+            <select id="distribution-type">
+              <option value="weibull">Weibull</option>
+              <option value="exponential">指数分布</option>
+              <option value="log_normal">对数正态</option>
+              <option value="gompertz">Gompertz</option>
+            </select>
+          </div>
+          
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="generateProbability()">生成概率函数</button>
+          </div>
+          
+          <div id="probability-result" class="hidden" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- Step 3: 校准 -->
+        <div id="step-3" class="panel hidden">
+          <h2 data-zh="Step 3: 临床校准" data-en="Step 3: Clinical Calibration">Step 3: 临床校准</h2>
+          <p style="margin-bottom: 20px; color: #666;">将模型预测与真实世界观察数据进行拟合。</p>
+          
+          <div class="form-group">
+            <label>校准方法</label>
+            <select id="calibration-method">
+              <option value="least_squares">最小二乘法</option>
+              <option value="maximum_likelihood">最大似然估计</option>
+              <option value="bayesian">贝叶斯估计</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>迭代次数</label>
+            <input type="number" id="calibration-iterations" value="1000" min="100" max="10000">
+          </div>
+          
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="runCalibration()">运行校准</button>
+          </div>
+          
+          <div id="calibration-result" class="hidden" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- Step 4: 模拟 -->
+        <div id="step-4" class="panel hidden">
+          <h2 data-zh="Step 4: 运行模拟" data-en="Step 4: Run Simulation">Step 4: 运行模拟</h2>
+          <p style="margin-bottom: 20px; color: #666;">运行Markov模型和概率敏感性分析。</p>
+          
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+            <div class="form-group">
+              <label>模型类型</label>
+              <select id="model-type">
+                <option value="markov">Markov队列模型</option>
+                <option value="partitioned_survival">分区生存模型</option>
+                <option value="microsimulation">微观模拟</option>
+              </select>
+            </div>
+            
+            <div class="form-group">
+              <label>周期数</label>
+              <input type="number" id="sim-cycles" value="60" min="12" max="240">
+            </div>
+            
+            <div class="form-group">
+              <label>初始人群</label>
+              <input type="number" id="sim-population" value="1000" min="100" max="100000">
+            </div>
+            
+            <div class="form-group">
+              <label>PSA样本量</label>
+              <input type="number" id="sim-psa-samples" value="1000" min="100" max="10000">
+            </div>
+            
+            <div class="form-group">
+              <label>折现率</label>
+              <input type="number" id="sim-discount" value="0.03" min="0" max="0.1" step="0.01">
+            </div>
+            
+            <div class="form-group">
+              <label>支付意愿阈值 (¥/QALY)</label>
+              <input type="number" id="sim-wtp" value="150000" min="50000" max="500000" step="10000">
+            </div>
+          </div>
+          
+          <div class="btn-group">
+            <button class="btn btn-primary" onclick="runSimulation()">运行模拟</button>
+          </div>
+          
+          <div id="simulation-result" class="hidden" style="margin-top: 20px;"></div>
+        </div>
+
+        <!-- Step 5: 结果 -->
+        <div id="step-5" class="panel hidden">
+          <h2 data-zh="Step 5: 查看结果" data-en="Step 5: View Results">Step 5: 查看结果</h2>
+          <p style="margin-bottom: 20px; color: #666;">查看成本效果分析、敏感性分析和预算影响。</p>
+          
+          <div id="results-content">
+            <div class="results-grid">
+              <div class="result-card">
+                <h4>增量成本效果比 (ICER)</h4>
+                <div class="value" id="icer-value">--</div>
+                <div class="unit">¥/QALY</div>
+              </div>
+              <div class="result-card">
+                <h4>增量QALY</h4>
+                <div class="value" id="qaly-value">--</div>
+                <div class="unit">QALYs</div>
+              </div>
+              <div class="result-card">
+                <h4>成本效果概率</h4>
+                <div class="value" id="ce-prob">--</div>
+                <div class="unit">%</div>
+              </div>
+              <div class="result-card">
+                <h4>净货币收益</h4>
+                <div class="value" id="nmb-value">--</div>
+                <div class="unit">¥</div>
+              </div>
+            </div>
+            
+            <div style="margin-top: 30px;">
+              <h3 style="margin-bottom: 15px;">队列轨迹</h3>
+              <div class="chart-container" id="cohort-chart">
+                <div class="chart-placeholder">图表加载中...</div>
+              </div>
+            </div>
+            
+            <div class="btn-group" style="margin-top: 30px;">
+              <button class="btn btn-success" onclick="exportResults()">导出结果 (JSON)</button>
+              <button class="btn btn-secondary" onclick="resetWorkflow()">重新开始</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./api-client.js?v=3"></script>
+  <script src="./workflow.js?v=2"></script>
+  <script>
+    // 全局函数
+    function addLog(message, type = 'info') {
+      const container = document.getElementById('log-container');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      container.appendChild(entry);
+      container.scrollTop = container.scrollHeight;
+    }
+
+    function goToStep(step) {
+      // 隐藏所有步骤
+      document.querySelectorAll('[id^="step-"]').forEach(el => el.classList.add('hidden'));
+      
+      // 显示当前步骤
+      document.getElementById(`step-${step}`).classList.remove('hidden');
+      
+      // 更新侧边栏状态
+      document.querySelectorAll('.step-item').forEach(el => {
+        el.classList.remove('active');
+        if (parseInt(el.dataset.step) === step) {
+          el.classList.add('active');
+        }
+      });
+    }
+
+    function loadDemoData() {
+      document.getElementById('evidence-name').value = 'NSCLC PFS - KEYNOTE-010';
+      document.getElementById('evidence-type').value = 'km_survival';
+      document.getElementById('evidence-csv').value = `seq_no,time_value,estimate_value
+1,0,1
+2,1,0.968
+3,2,0.936
+4,3,0.902
+5,4,0.868
+6,5,0.835
+7,6,0.802
+8,8,0.732
+9,10,0.664
+10,12,0.598
+11,15,0.512
+12,18,0.438
+13,21,0.368
+14,24,0.304`;
+      addLog('已加载示例数据', 'success');
+    }
+
+    async function submitEvidence() {
+      const name = document.getElementById('evidence-name').value;
+      const type = document.getElementById('evidence-type').value;
+      const csv = document.getElementById('evidence-csv').value;
+      
+      addLog('开始上传证据...');
+      
+      try {
+        const evidence = await EvidenceWorkflow.uploadEvidence({
+          name: name,
+          type: type,
+          csvData: csv,
+        });
+        
+        addLog(`证据上传成功: ${evidence.id}`, 'success');
+        
+        // 显示结果
+        const resultDiv = document.getElementById('evidence-result');
+        resultDiv.classList.remove('hidden');
+        resultDiv.innerHTML = `
+          <div class="status-bar status-connected">
+            ✓ 证据验证通过 - ${evidence.points.length} 个数据点
+          </div>
+        `;
+        
+        // 启用下一步
+        document.querySelectorAll('.step-item')[1].classList.add('completed');
+      } catch (error) {
+        addLog(`证据上传失败: ${error.message}`, 'error');
+      }
+    }
+
+    async function generateProbability() {
+      addLog('生成概率函数...');
+      
+      try {
+        const pf = await EvidenceWorkflow.generateProbabilityFunction({
+          cycleLength: parseInt(document.getElementById('cycle-length').value),
+          cycleUnit: document.getElementById('cycle-unit').value,
+          distribution: document.getElementById('distribution-type').value,
+        });
+        
+        addLog(`概率函数生成成功: ${pf.id}`, 'success');
+        
+        const resultDiv = document.getElementById('probability-result');
+        resultDiv.classList.remove('hidden');
+        resultDiv.innerHTML = `
+          <div class="status-bar status-connected">
+            ✓ 概率函数已生成 - ${pf.probabilities.length} 个周期
+          </div>
+        `;
+        
+        document.querySelectorAll('.step-item')[2].classList.add('completed');
+      } catch (error) {
+        addLog(`概率函数生成失败: ${error.message}`, 'error');
+      }
+    }
+
+    async function runCalibration() {
+      addLog('运行临床校准...');
+      
+      try {
+        const calibration = await EvidenceWorkflow.runCalibration({
+          method: document.getElementById('calibration-method').value,
+          iterations: parseInt(document.getElementById('calibration-iterations').value),
+        });
+        
+        addLog(`校准完成: RMSE = ${calibration.rmse}`, 'success');
+        
+        const resultDiv = document.getElementById('calibration-result');
+        resultDiv.classList.remove('hidden');
+        resultDiv.innerHTML = `
+          <div class="status-bar status-connected">
+            ✓ 校准完成 - RMSE: ${calibration.rmse}
+          </div>
+        `;
+        
+        document.querySelectorAll('.step-item')[3].classList.add('completed');
+      } catch (error) {
+        addLog(`校准失败: ${error.message}`, 'error');
+      }
+    }
+
+    async function runSimulation() {
+      addLog('运行模拟...');
+      
+      try {
+        const { run, results } = await EvidenceWorkflow.runSimulation({
+          modelType: document.getElementById('model-type').value,
+          cycles: parseInt(document.getElementById('sim-cycles').value),
+          population: parseInt(document.getElementById('sim-population').value),
+          sampleSize: parseInt(document.getElementById('sim-psa-samples').value),
+          discountRate: parseFloat(document.getElementById('sim-discount').value),
+        });
+        
+        addLog(`模拟完成: ${run.id}`, 'success');
+        
+        // 获取完整结果
+        const fullResults = await EvidenceWorkflow.getResults();
+        
+        // 更新结果页面
+        document.getElementById('icer-value').textContent = fullResults.icer.icer.toLocaleString();
+        document.getElementById('qaly-value').textContent = fullResults.icer.incremental_qaly.toFixed(2);
+        document.getElementById('ce-prob').textContent = (fullResults.psa.cost_effective_probability * 100).toFixed(1);
+        document.getElementById('nmb-value').textContent = fullResults.icer.net_monetary_benefit.toLocaleString();
+        
+        document.querySelectorAll('.step-item')[4].classList.add('completed');
+        
+        // 跳转到结果页面
+        goToStep(5);
+        
+        addLog('完整流程完成!', 'success');
+      } catch (error) {
+        addLog(`模拟失败: ${error.message}`, 'error');
+      }
+    }
+
+    function exportResults() {
+      try {
+        EvidenceWorkflow.exportResults('json');
+        addLog('结果已导出', 'success');
+      } catch (error) {
+        addLog(`导出失败: ${error.message}`, 'error');
+      }
+    }
+
+    function resetWorkflow() {
+      EvidenceWorkflow.reset();
+      
+      document.querySelectorAll('.step-item').forEach(el => {
+        el.classList.remove('active', 'completed', 'error');
+      });
+      document.querySelectorAll('.step-item')[0].classList.add('active');
+      
+      document.querySelectorAll('[id$="-result"]').forEach(el => el.classList.add('hidden'));
+      
+      goToStep(1);
+      addLog('工作流已重置');
+    }
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      addLog('系统初始化完成');
+      
+      HEOR_API.checkConnection().then(result => {
+        const statusEl = document.getElementById('connection-status');
+        if (result.connected) {
+          statusEl.className = 'status-bar status-connected';
+          statusEl.textContent = '✓ API已连接';
+          addLog('API连接成功', 'success');
+        } else {
+          statusEl.className = 'status-bar status-offline';
+          statusEl.textContent = '⚡ 离线演示模式';
+          addLog('离线模式 - 使用模拟数据', 'info');
+        }
+      });
+    });
+  </script>
+  <script src="./ux-enhance.js?v=1"></script>
+  <script src="./tour.js?v=1"></script>
+    <script src="./charts.js?v=1"></script>
+      <script src="./opc-nav.js"></script>
+  </body>
+</html>

@@ -1,4 +1,4 @@
-# TreeAge Platform Backend
+# HEOR Modeling Platform Backend
 
 FastAPI backend for the HEOR/HTA modeling platform demo.
 

@@ -1,22 +1,194 @@
 [
   {
-    "state": "健康",
-    "utility": 1.0
+    "disease": "2型糖尿病",
+    "health_states": [
+      {"state": "无并发症", "utility": 0.85, "std_error": 0.05, "source": "中国DM调查"},
+      {"state": "微血管并发症", "utility": 0.72, "std_error": 0.08, "source": "UKPDS推算"},
+      {"state": "大血管并发症", "utility": 0.65, "std_error": 0.10, "source": "ADVANCE研究"},
+      {"state": "多并发症", "utility": 0.52, "std_error": 0.12, "source": "中国DM登记"},
+      {"state": "终末期", "utility": 0.35, "std_error": 0.15, "source": "透析患者数据"},
+      {"state": "死亡", "utility": 0.0, "std_error": 0.0, "source": "定义"}
+    ],
+    "disutility": {
+      "低血糖事件": -0.02,
+      "截肢": -0.28,
+      "失明": -0.35,
+      "透析": -0.45
+    },
+    "measurement_method": "EQ-5D-5L",
+    "valuation_set": "中国TTO值集",
+    "reference_year": 2024
   },
   {
-    "state": "轻度疾病",
-    "utility": 0.85
+    "disease": "非小细胞肺癌",
+    "health_states": [
+      {"state": "进展前(治疗中)", "utility": 0.65, "std_error": 0.12, "source": "KEYNOTE研究"},
+      {"state": "进展前(维持)", "utility": 0.78, "std_error": 0.10, "source": "中国NSCLC数据"},
+      {"state": "进展后", "utility": 0.45, "std_error": 0.15, "source": "二线治疗数据"},
+      {"state": "终末期", "utility": 0.25, "std_error": 0.18, "source": "姑息治疗数据"},
+      {"state": "死亡", "utility": 0.0, "std_error": 0.0, "source": "定义"}
+    ],
+    "disutility": {
+      "化疗毒性(Grade 3+)": -0.15,
+      "免疫相关不良反应": -0.10,
+      "脑转移": -0.25,
+      "骨转移疼痛": -0.30
+    },
+    "measurement_method": "EQ-5D-5L",
+    "valuation_set": "中国TTO值集",
+    "reference_year": 2024
   },
   {
-    "state": "中度疾病",
-    "utility": 0.65
+    "disease": "心力衰竭",
+    "health_states": [
+      {"state": "NYHA I级", "utility": 0.85, "std_error": 0.06, "source": "ELITE研究"},
+      {"state": "NYHA II级", "utility": 0.72, "std_error": 0.08, "source": "Val-HeFT研究"},
+      {"state": "NYHA III级", "utility": 0.55, "std_error": 0.12, "source": "CHARM研究"},
+      {"state": "NYHA IV级", "utility": 0.35, "std_error": 0.15, "source": "中国HF登记"},
+      {"state": "死亡", "utility": 0.0, "std_error": 0.0, "source": "定义"}
+    ],
+    "disutility": {
+      "心衰住院": -0.08,
+      "ICD植入": -0.05,
+      "CRT治疗": -0.03
+    },
+    "measurement_method": "EQ-5D-5L",
+    "valuation_set": "中国TTO值集",
+    "reference_year": 2024
   },
   {
-    "state": "重度疾病",
-    "utility": 0.4
+    "disease": "抑郁症",
+    "health_states": [
+      {"state": "缓解期", "utility": 0.82, "std_error": 0.08, "source": "STAR*D研究"},
+      {"state": "轻度发作", "utility": 0.65, "std_error": 0.10, "source": "中国MH调查"},
+      {"state": "中度发作", "utility": 0.48, "std_error": 0.12, "source": "NICE数据"},
+      {"state": "重度发作", "utility": 0.28, "std_error": 0.15, "source": "中国精神卫生"},
+      {"state": "自杀风险", "utility": 0.15, "std_error": 0.20, "source": "危机干预数据"},
+      {"state": "死亡", "utility": 0.0, "std_error": 0.0, "source": "定义"}
+    ],
+    "disutility": {
+      "药物副作用(性功能)": -0.08,
+      "药物副作用(体重增加)": -0.05,
+      "复发": -0.12
+    },
+    "measurement_method": "EQ-5D-5L + QIDS-SR",
+    "valuation_set": "中国TTO值集",
+    "reference_year": 2024
   },
   {
-    "state": "死亡",
-    "utility": 0.0
+    "disease": "慢性肾病",
+    "health_states": [
+      {"state": "CKD 3a期", "utility": 0.78, "std_error": 0.07, "source": "CKD-EPI研究"},
+      {"state": "CKD 3b期", "utility": 0.68, "std_error": 0.09, "source": "CSN登记"},
+      {"state": "CKD 4期", "utility": 0.55, "std_error": 0.12, "source": "AASK研究"},
+      {"state": "CKD 5期(透析前)", "utility": 0.45, "std_error": 0.15, "source": "中国透析前数据"},
+      {"state": "血液透析", "utility": 0.52, "std_error": 0.12, "source": "DOPPS研究"},
+      {"state": "腹膜透析", "utility": 0.55, "std_error": 0.11, "source": "中国PD数据"},
+      {"state": "肾移植", "utility": 0.78, "std_error": 0.08, "source": "移植后随访"},
+      {"state": "死亡", "utility": 0.0, "std_error": 0.0, "source": "定义"}
+    ],
+    "disutility": {
+      "透析通路并发症": -0.08,
+      "肾性贫血": -0.12,
+      "矿物质骨病": -0.06
+    },
+    "measurement_method": "EQ-5D-5L",
+    "valuation_set": "中国TTO值集",
+    "reference_year": 2024
+  },
+  {
+    "disease": "类风湿关节炎",
+    "health_states": [
+      {"state": "低疾病活动度", "utility": 0.72, "std_error": 0.08, "source": "DAS28<3.2"},
+      {"state": "中疾病活动度", "utility": 0.58, "std_error": 0.10, "source": "DAS28 3.2-5.1"},
+      {"state": "高疾病活动度", "utility": 0.42, "std_error": 0.12, "source": "DAS28>5.1"},
+      {"state": "缓解", "utility": 0.82, "std_error": 0.06, "source": "DAS28<2.6"},
+      {"state": "关节置换后", "utility": 0.65, "std_error": 0.10, "source": "术后随访"},
+      {"state": "死亡", "utility": 0.0, "std_error": 0.0, "source": "定义"}
+    ],
+    "disutility": {
+      "生物制剂注射反应": -0.02,
+      "关节畸形": -0.20,
+      "心血管并发症": -0.15
+    },
+    "measurement_method": "EQ-5D-5L + HAQ-DI",
+    "valuation_set": "中国TTO值集",
+    "reference_year": 2024
+  },
+  {
+    "disease": "丙型肝炎",
+    "health_states": [
+      {"state": "慢性肝炎(无纤维化)", "utility": 0.78, "std_error": 0.07, "source": "F0-F1"},
+      {"state": "显著纤维化", "utility": 0.68, "std_error": 0.09, "source": "F2-F3"},
+      {"state": "代偿期肝硬化", "utility": 0.55, "std_error": 0.12, "source": "F4"},
+      {"state": "失代偿期肝硬化", "utility": 0.38, "std_error": 0.15, "source": "Child-Pugh B/C"},
+      {"state": "肝细胞癌", "utility": 0.42, "std_error": 0.18, "source": "HCC诊断后"},
+      {"state": "SVR(治愈)", "utility": 0.88, "std_error": 0.05, "source": "DAA治愈后"},
+      {"state": "肝移植", "utility": 0.65, "std_error": 0.12, "source": "移植后随访"},
+      {"state": "死亡", "utility": 0.0, "std_error": 0.0, "source": "定义"}
+    ],
+    "disutility": {
+      "DAA治疗副作用": -0.03,
+      "肝移植等待": -0.25
+    },
+    "measurement_method": "EQ-5D-5L",
+    "valuation_set": "中国TTO值集",
+    "reference_year": 2024
+  },
+  {
+    "disease": "骨质疏松症",
+    "health_states": [
+      {"state": "无骨折", "utility": 0.82, "std_error": 0.06, "source": "基线状态"},
+      {"state": "椎体骨折", "utility": 0.62, "std_error": 0.12, "source": "骨折后3月"},
+      {"state": "髋部骨折(急性)", "utility": 0.45, "std_error": 0.15, "source": "骨折后1月"},
+      {"state": "髋部骨折(恢复)", "utility": 0.65, "std_error": 0.10, "source": "骨折后12月"},
+      {"state": "慢性疼痛", "utility": 0.58, "std_error": 0.12, "source": "骨折后>12月"},
+      {"state": "死亡", "utility": 0.0, "std_error": 0.0, "source": "定义"}
+    ],
+    "disutility": {
+      "跌倒恐惧": -0.05,
+      "活动受限": -0.12,
+      "身高缩短": -0.03
+    },
+    "measurement_method": "EQ-5D-5L",
+    "valuation_set": "中国TTO值集",
+    "reference_year": 2024
+  },
+  {
+    "disease": "哮喘",
+    "health_states": [
+      {"state": "控制良好", "utility": 0.88, "std_error": 0.05, "source": "GINA 1-2级"},
+      {"state": "部分控制", "utility": 0.75, "std_error": 0.08, "source": "GINA 3级"},
+      {"state": "未控制", "utility": 0.58, "std_error": 0.12, "source": "GINA 4-5级"},
+      {"state": "急性发作(轻度)", "utility": 0.52, "std_error": 0.15, "source": "门诊处理"},
+      {"state": "急性发作(重度)", "utility": 0.32, "std_error": 0.18, "source": "ICU住院"},
+      {"state": "死亡", "utility": 0.0, "std_error": 0.0, "source": "定义"}
+    ],
+    "disutility": {
+      "夜间症状": -0.05,
+      "运动受限": -0.08,
+      "糖皮质激素副作用": -0.03
+    },
+    "measurement_method": "EQ-5D-5L + ACQ-7",
+    "valuation_set": "中国TTO值集",
+    "reference_year": 2024
+  },
+  {
+    "disease": "阿尔茨海默病",
+    "health_states": [
+      {"state": "轻度认知障碍", "utility": 0.72, "std_error": 0.10, "source": "MCI阶段"},
+      {"state": "轻度AD", "utility": 0.58, "std_error": 0.12, "source": "CDR 0.5-1"},
+      {"state": "中度AD", "utility": 0.38, "std_error": 0.15, "source": "CDR 2"},
+      {"state": "重度AD", "utility": 0.18, "std_error": 0.18, "source": "CDR 3"},
+      {"state": "死亡", "utility": 0.0, "std_error": 0.0, "source": "定义"}
+    ],
+    "disutility": {
+      "照护者负担(患者视角)": -0.05,
+      "行为精神症状": -0.15,
+      "跌倒骨折": -0.25
+    },
+    "measurement_method": "EQ-5D proxy + QoL-AD",
+    "valuation_set": "中国TTO值集",
+    "reference_year": 2024
   }
 ]
