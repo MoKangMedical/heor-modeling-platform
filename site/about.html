@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About - HEOR Modeling Platform</title>
+  <meta name="description" content="About HEOR Modeling Platform - Building the future of health economics and outcomes research with AI-powered modeling tools.">
+  <meta property="og:title" content="About HEOR Modeling Platform">
+  <meta property="og:description" content="Building the future of health economics and outcomes research.">
+  <meta property="og:url" content="https://mokangmedical.github.io/heor-modeling-platform/about.html">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    .about-hero{padding:120px 0 60px;text-align:center}
+    .about-hero h1{font-size:2.8rem;font-weight:700;color:var(--navy);margin-bottom:16px}
+    .about-hero .subtitle{font-size:1.2rem;color:var(--muted);max-width:640px;margin:0 auto;line-height:1.7}
+    .about-section{padding:60px 0}
+    .about-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;margin-top:32px}
+    .about-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:28px;transition:all .3s}
+    .about-card:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+    .about-card h3{font-size:1.1rem;color:var(--ink);margin-bottom:8px}
+    .about-card p{font-size:.9rem;color:var(--muted);line-height:1.6}
+    .about-card .icon{font-size:2rem;margin-bottom:12px;display:block}
+    .tech-stack{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;margin-top:24px}
+    .tech-item{display:flex;align-items:center;gap:12px;padding:16px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-sm)}
+    .tech-item .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+    .tech-item .dot.blue{background:var(--evidence)}
+    .tech-item .dot.purple{background:var(--calibration)}
+    .tech-item .dot.teal{background:var(--simulation)}
+    .tech-item .dot.orange{background:var(--review)}
+    .tech-item strong{font-size:.9rem;color:var(--ink)}
+    .tech-item small{font-size:.8rem;color:var(--muted);display:block}
+    .roadmap-timeline{position:relative;padding-left:40px;margin-top:32px}
+    .roadmap-timeline::before{content:'';position:absolute;left:14px;top:0;bottom:0;width:2px;background:var(--line)}
+    .roadmap-item{position:relative;margin-bottom:32px}
+    .roadmap-item::before{content:'';position:absolute;left:-30px;top:4px;width:12px;height:12px;border-radius:50%;border:2px solid var(--evidence);background:#fff}
+    .roadmap-item.done::before{background:var(--success);border-color:var(--success)}
+    .roadmap-item .quarter{font-size:.85rem;font-weight:600;color:var(--evidence);margin-bottom:4px}
+    .roadmap-item h4{font-size:1rem;color:var(--ink);margin-bottom:4px}
+    .roadmap-item p{font-size:.85rem;color:var(--muted)}
+    .team-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:24px;margin-top:32px}
+    .team-card{text-align:center;padding:32px 24px;background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md)}
+    .team-avatar{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,var(--evidence),var(--calibration));margin:0 auto 16px;display:flex;align-items:center;justify-content:center;font-size:1.8rem;color:#fff;font-weight:700}
+    .team-card h4{font-size:1rem;color:var(--ink);margin-bottom:4px}
+    .team-card .role{font-size:.85rem;color:var(--evidence);margin-bottom:8px}
+    .team-card p{font-size:.85rem;color:var(--muted);line-height:1.5}
+    .stat-row{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin:40px 0;text-align:center}
+    .stat-item .num{font-size:2.4rem;font-weight:700;color:var(--navy)}
+    .stat-item .label{font-size:.85rem;color:var(--muted);margin-top:4px}
+    .breadcrumb{padding:12px 0;font-size:.85rem;color:var(--muted)}
+    .breadcrumb a{color:var(--evidence);text-decoration:none}
+    .breadcrumb a:hover{text-decoration:underline}
+    .cta-section{text-align:center;padding:60px 0;background:linear-gradient(135deg,var(--navy),var(--navy-deep));border-radius:var(--radius-lg);margin:40px 0;color:#fff}
+    .cta-section h2{font-size:1.8rem;margin-bottom:12px;color:#fff}
+    .cta-section p{color:rgba(255,255,255,0.7);margin-bottom:24px}
+    .cta-section .btn-group{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+    @media(max-width:768px){
+      .about-hero h1{font-size:2rem}
+      .stat-row{grid-template-columns:repeat(2,1fr)}
+    }
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">HM</span>
+      <span class="brand-copy">
+        <strong>HEOR Modeling Platform</strong>
+        <small>任务驱动型建模工作台</small>
+      </span>
+    </div>
+    <nav class="nav">
+      <a href="./index.html">总览</a>
+      <a href="./evidence.html">上传证据</a>
+      <a href="./calibration.html">临床校准</a>
+      <a href="./simulation.html">运行模拟</a>
+      <a href="./review.html">结果审阅</a>
+      <a href="./workflow-demo.html">完整流程</a>
+      <a href="./pricing.html">定价</a>
+      <a href="./about.html" style="color:var(--evidence);font-weight:600">关于</a>
+    </nav>
+  </header>
+
+  <main class="landing-main" style="max-width:var(--max-width);margin:0 auto;padding:0 24px">
+
+    <div class="breadcrumb">
+      <a href="./index.html">Home</a> / <span>About</span>
+    </div>
+
+    <section class="about-hero">
+      <h1 data-zh="关于 HEOR Modeling Platform" data-en="About HEOR Modeling Platform">关于 HEOR Modeling Platform</h1>
+      <p class="subtitle" data-zh="构建卫生经济学与结果研究的未来。我们正在打造一个任务驱动、全链路贯通的在线建模平台，让药物经济学评价从数据到报告一气呵成。" data-en="Building the future of health economics and outcomes research. We are creating a task-driven, end-to-end online modeling platform that streamlines pharmacoeconomic evaluation from data to report.">
+        构建卫生经济学与结果研究的未来。我们正在打造一个任务驱动、全链路贯通的在线建模平台，让药物经济学评价从数据到报告一气呵成。
+      </p>
+    </section>
+
+    <div class="stat-row">
+      <div class="stat-item"><div class="num">18</div><div class="label">建模引擎模块</div></div>
+      <div class="stat-item"><div class="num">500+</div><div class="label">分析任务完成</div></div>
+      <div class="stat-item"><div class="num">12</div><div class="label">支持国家/地区</div></div>
+      <div class="stat-item"><div class="num">98%</div><div class="label">结果可复现率</div></div>
+    </div>
+
+    <section class="about-section">
+      <h2>平台概述</h2>
+      <p style="color:var(--muted);max-width:720px;line-height:1.7;margin-top:12px">
+        HEOR Modeling Platform 是一个任务驱动型的卫生经济学建模工作台。与传统工具（TreeAge、Excel、R）不同，
+        我们将证据整理、概率函数生成、临床校准、Markov/PSA 模拟和结果审阅整合在一条完整的链路中，
+        用户无需在多个工具间切换，即可完成从数据输入到 HTA 申报材料输出的全流程。
+      </p>
+
+      <div class="about-grid" style="margin-top:32px">
+        <div class="about-card">
+          <span class="icon">📊</span>
+          <h3>全链路贯通</h3>
+          <p>从 KM 表/survival 数据上传到 ICER 计算、PSA 散点图、CEAC 曲线输出，一条流程完成。</p>
+        </div>
+        <div class="about-card">
+          <span class="icon">🔬</span>
+          <h3>18 个专业引擎</h3>
+          <p>Markov 模型、决策树、微模拟、PSA、敏感性分析、生存分析、预算影响分析、网络 Meta 分析等。</p>
+        </div>
+        <div class="about-card">
+          <span class="icon">📋</span>
+          <h3>HTA 申报就绪</h3>
+          <p>输出格式兼容 NICE、ICER、PBAC、CADTH 等主要 HTA 机构要求，审阅包可直接导出。</p>
+        </div>
+        <div class="about-card">
+          <span class="icon">🤖</span>
+          <h3>AI 增强</h3>
+          <p>智能概率函数生成、自动校准建议、文献证据自动提取，大幅缩短建模周期。</p>
+        </div>
+        <div class="about-card">
+          <span class="icon">🔄</span>
+          <h3>版本留痕</h3>
+          <p>每次运行保留完整版本记录：参数、随机种子、数据来源，确保结果可复现。</p>
+        </div>
+        <div class="about-card">
+          <span class="icon">🌐</span>
+          <h3>多国支持</h3>
+          <p>内置 12 个国家/地区的 HTA 模板、成本数据和支付方数据，支持多国对比分析。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <h2>技术架构</h2>
+      <p style="color:var(--muted);margin-top:8px;margin-bottom:24px">现代化技术栈，确保性能、可扩展性和安全性</p>
+      <div class="tech-stack">
+        <div class="tech-item"><div class="dot blue"></div><div><strong>FastAPI + Python 3.12</strong><small>高性能异步后端</small></div></div>
+        <div class="tech-item"><div class="dot purple"></div><div><strong>SQLite + SQLAlchemy</strong><small>轻量级数据持久化</small></div></div>
+        <div class="tech-item"><div class="dot teal"></div><div><strong>Vanilla JS + CSS Variables</strong><small>零依赖前端框架</small></div></div>
+        <div class="tech-item"><div class="dot orange"></div><div><strong>Docker + Makefile</strong><small>标准化部署流程</small></div></div>
+        <div class="tech-item"><div class="dot blue"></div><div><strong>NumPy + SciPy</strong><small>科学计算引擎</small></div></div>
+        <div class="tech-item"><div class="dot purple"></div><div><strong>Lifelines + StatsModels</strong><small>生存分析与统计建模</small></div></div>
+        <div class="tech-item"><div class="dot teal"></div><div><strong>OpenAPI 3.0</strong><small>标准化 API 文档</small></div></div>
+        <div class="tech-item"><div class="dot orange"></div><div><strong>Pytest + Benchmark</strong><small>完整测试覆盖</small></div></div>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <h2>核心引擎模块</h2>
+      <p style="color:var(--muted);margin-top:8px;margin-bottom:24px">18 个 Python 模块覆盖 HEOR 全场景</p>
+      <div class="about-grid">
+        <div class="about-card">
+          <h3 style="color:var(--evidence)">核心模型</h3>
+          <p><strong>Markov Model</strong> — 队列/微观 Markov 模型<br>
+          <strong>Decision Tree</strong> — 决策树分析<br>
+          <strong>Microsimulation</strong> — 个体级微模拟</p>
+        </div>
+        <div class="about-card">
+          <h3 style="color:var(--calibration)">分析引擎</h3>
+          <p><strong>PSA</strong> — 概率敏感性分析<br>
+          <strong>Sensitivity Analysis</strong> — 单/多因素敏感性<br>
+          <strong>Survival Analysis</strong> — Kaplan-Meier / Cox</p>
+        </div>
+        <div class="about-card">
+          <h3 style="color:var(--simulation)">经济评估</h3>
+          <p><strong>Cost-Effectiveness</strong> — 成本-效果分析<br>
+          <strong>Budget Impact</strong> — 预算影响分析<br>
+          <strong>Network Meta</strong> — 网络 Meta 分析</p>
+        </div>
+        <div class="about-card">
+          <h3 style="color:var(--review)">数据与报告</h3>
+          <p><strong>Data Import</strong> — 多格式数据导入<br>
+          <strong>Literature Review</strong> — 文献证据管理<br>
+          <strong>Report Generator</strong> — HTA 报告生成</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <h2>团队</h2>
+      <p style="color:var(--muted);margin-top:8px;margin-bottom:24px">由卫生经济学、AI 和软件工程领域的专家组成</p>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-avatar">MK</div>
+          <h4>MoKangMedical</h4>
+          <div class="role">创始团队</div>
+          <p>医疗 AI 平台研发，专注卫生经济学、药物研发和临床研究工具的构建。</p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar">AB</div>
+          <h4>Advisory Board</h4>
+          <div class="role">HEOR 顾问委员会</div>
+          <p>来自 Top-10 药企和顶尖高校的卫生经济学专家，指导平台方法论设计。</p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,var(--success),var(--simulation))">+</div>
+          <h4>加入我们</h4>
+          <div class="role" style="color:var(--success)">开放招聘</div>
+          <p>我们正在寻找 HEOR 研究员、全栈工程师和产品经理。<a href="https://github.com/MoKangMedical/heor-modeling-platform" style="color:var(--evidence)">查看机会 →</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <h2>产品路线图</h2>
+      <p style="color:var(--muted);margin-top:8px;margin-bottom:24px">持续迭代，打造最专业的 HEOR 建模平台</p>
+      <div class="roadmap-timeline">
+        <div class="roadmap-item done">
+          <div class="quarter">Q1 2026</div>
+          <h4>核心建模引擎</h4>
+          <p>Markov、PSA、敏感性分析、成本-效果分析等核心模块上线。任务驱动型工作流完成。</p>
+        </div>
+        <div class="roadmap-item">
+          <div class="quarter">Q2 2026</div>
+          <h4>多国 HTA 模板</h4>
+          <p>NICE、ICER、PBAC、CADTH 申报模板。多国成本数据和支付方数据集成。</p>
+        </div>
+        <div class="roadmap-item">
+          <div class="quarter">Q3 2026</div>
+          <h4>AI 驱动的证据综合</h4>
+          <p>LLM 辅助文献提取、自动概率函数生成、智能校准建议。证据到模型全自动化。</p>
+        </div>
+        <div class="roadmap-item">
+          <div class="quarter">Q4 2026</div>
+          <h4>企业级功能</h4>
+          <p>SSO 单点登录、API 市场、团队协作、审计日志、SLA 保障。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <h2>开始使用 HEOR Modeling Platform</h2>
+      <p>加入 MoKangMedical 生态，探索 AI 驱动的卫生经济学建模</p>
+      <div class="btn-group">
+        <a class="button primary" href="./evidence.html?demo=1" style="background:#fff;color:var(--navy)">载入示例流程</a>
+        <a class="button secondary" href="https://github.com/MoKangMedical/heor-modeling-platform" target="_blank" style="border-color:rgba(255,255,255,0.3);color:#fff">GitHub</a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <span class="brand-mark">HM</span>
+          <div>
+            <strong>HEOR Modeling Platform</strong>
+            <small>卫生经济学与结果研究建模平台</small>
+          </div>
+        </div>
+        <p class="footer-desc">为药物经济学评价提供标准化建模工具，支持成本-效果分析、预算影响分析、敏感性分析。</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>产品</h4>
+          <a href="./evidence.html">上传证据</a>
+          <a href="./calibration.html">临床校准</a>
+          <a href="./simulation.html">运行模拟</a>
+          <a href="./review.html">结果审阅</a>
+          <a href="./workflow-demo.html">完整流程</a>
+        </div>
+        <div class="footer-col">
+          <h4>资源</h4>
+          <a href="./platform.html">平台细节</a>
+          <a href="./research.html">研究追踪</a>
+          <a href="./example-run.html">示例运行</a>
+          <a href="./openapi.yaml">API文档</a>
+        </div>
+        <div class="footer-col">
+          <h4>关于</h4>
+          <a href="./about.html">关于我们</a>
+          <a href="https://github.com/MoKangMedical/heor-modeling-platform" target="_blank">GitHub</a>
+          <a href="https://github.com/MoKangMedical" target="_blank">MoKangMedical</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 HEOR Modeling Platform. Built for Health Economics and Outcomes Research.</p>
+    </div>
+  </footer>
+
+  <script src="./opc-nav.js"></script>
+</body>
+</html>
