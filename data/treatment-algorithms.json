@@ -1,20 +1,185 @@
 [
   {
-    "disease": "糖尿病",
+    "disease": "2型糖尿病",
+    "algorithm_name": "中国2型糖尿病防治指南 2024",
     "steps": [
-      "生活方式",
-      "二甲双胍",
-      "联合用药",
-      "胰岛素"
+      {
+        "step": 1,
+        "line": "一线",
+        "interventions": ["二甲双胍", "生活方式干预"],
+        "criteria": "HbA1c ≥ 7.0%",
+        "annual_cost": 3600,
+        "expected_hba1c_reduction": 1.5
+      },
+      {
+        "step": 2,
+        "line": "二线",
+        "interventions": ["二甲双胍 + SGLT2i", "二甲双胍 + DPP-4i", "二甲双胍 + GLP-1RA"],
+        "criteria": "HbA1c ≥ 7.0% after 3 months",
+        "annual_cost": 8500,
+        "expected_hba1c_reduction": 2.0
+      },
+      {
+        "step": 3,
+        "line": "三线",
+        "interventions": ["三联口服", "基础胰岛素 + 口服药", "GLP-1RA + 口服药"],
+        "criteria": "HbA1c ≥ 7.0% after 6 months",
+        "annual_cost": 15000,
+        "expected_hba1c_reduction": 2.5
+      },
+      {
+        "step": 4,
+        "line": "强化治疗",
+        "interventions": ["基础+餐时胰岛素", "胰岛素泵", "联合GLP-1RA"],
+        "criteria": "HbA1c ≥ 8.0%",
+        "annual_cost": 28000,
+        "expected_hba1c_reduction": 3.0
+      }
+    ],
+    "complications_management": {
+      "retinopathy": {"screening": "annual", "treatment_cost": 25000},
+      "nephropathy": {"screening": "annual", "treatment_cost": 45000},
+      "neuropathy": {"screening": "annual", "treatment_cost": 12000},
+      "cardiovascular": {"screening": "annual", "treatment_cost": 65000}
+    }
+  },
+  {
+    "disease": "非小细胞肺癌",
+    "algorithm_name": "CSCO NSCLC诊疗指南 2024",
+    "molecular_subtypes": [
+      {
+        "subtype": "EGFR突变",
+        "prevalence": 0.45,
+        "treatment_sequence": [
+          {"line": "一线", "drugs": ["奥希替尼", "阿美替尼"], "median_pfs": 18.9, "annual_cost": 180000},
+          {"line": "二线", "drugs": ["含铂化疗"], "median_pfs": 5.5, "annual_cost": 65000},
+          {"line": "三线", "drugs": ["安罗替尼"], "median_pfs": 4.8, "annual_cost": 85000}
+        ]
+      },
+      {
+        "subtype": "ALK融合",
+        "prevalence": 0.07,
+        "treatment_sequence": [
+          {"line": "一线", "drugs": ["阿来替尼", "洛拉替尼"], "median_pfs": 34.8, "annual_cost": 250000},
+          {"line": "二线", "drugs": ["克唑替尼", "塞瑞替尼"], "median_pfs": 12.0, "annual_cost": 180000}
+        ]
+      },
+      {
+        "subtype": "PD-L1高表达(≥50%)",
+        "prevalence": 0.25,
+        "treatment_sequence": [
+          {"line": "一线", "drugs": ["帕博利珠单抗单药", "帕博利珠单抗+化疗"], "median_pfs": 10.3, "annual_cost": 280000},
+          {"line": "二线", "drugs": ["多西他赛", "培美曲塞"], "median_pfs": 4.2, "annual_cost": 85000}
+        ]
+      },
+      {
+        "subtype": "无驱动基因/PD-L1低表达",
+        "prevalence": 0.23,
+        "treatment_sequence": [
+          {"line": "一线", "drugs": ["免疫+化疗"], "median_pfs": 8.5, "annual_cost": 220000},
+          {"line": "二线", "drugs": ["多西他赛"], "median_pfs": 3.8, "annual_cost": 75000}
+        ]
+      }
     ]
   },
   {
-    "disease": "高血压",
-    "steps": [
-      "生活方式",
-      "单药治疗",
-      "联合用药",
-      "三联用药"
+    "disease": "心力衰竭",
+    "algorithm_name": "中国心力衰竭诊断和治疗指南 2024",
+    "hf_types": [
+      {
+        "type": "HFrEF (LVEF ≤ 40%)",
+        "prevalence": 0.50,
+        "treatment_sequence": [
+          {"step": 1, "drugs": ["ACEI/ARB/ARNI", "β受体阻滞剂", "醛固酮受体拮抗剂"], "annual_cost": 12000},
+          {"step": 2, "drugs": ["加用SGLT2i(达格列净)"], "annual_cost": 18000},
+          {"step": 3, "drugs": ["加用伊伐布雷定"], "annual_cost": 22000},
+          {"step": 4, "drugs": ["器械治疗(ICD/CRT)"], "annual_cost": 85000}
+        ]
+      },
+      {
+        "type": "HFmrEF (LVEF 41-49%)",
+        "prevalence": 0.25,
+        "treatment_sequence": [
+          {"step": 1, "drugs": ["利尿剂", "ACEI/ARB"], "annual_cost": 8000},
+          {"step": 2, "drugs": ["加用β受体阻滞剂"], "annual_cost": 10000}
+        ]
+      },
+      {
+        "type": "HFpEF (LVEF ≥ 50%)",
+        "prevalence": 0.25,
+        "treatment_sequence": [
+          {"step": 1, "drugs": ["利尿剂", "SGLT2i"], "annual_cost": 12000},
+          {"step": 2, "drugs": ["ARNI(沙库巴曲缬沙坦)"], "annual_cost": 18000}
+        ]
+      }
+    ]
+  },
+  {
+    "disease": "慢性肾病",
+    "algorithm_name": "KDIGO CKD管理指南 2024",
+    "stages": [
+      {
+        "stage": "CKD 1-2期",
+        "interventions": ["ACEI/ARB", "血压控制", "血糖管理"],
+        "annual_cost": 8000,
+        "target": "延缓进展"
+      },
+      {
+        "stage": "CKD 3期",
+        "interventions": ["ACEI/ARB", "SGLT2i", "贫血管理", "矿物质骨病管理"],
+        "annual_cost": 18000,
+        "target": "延缓进展，管理并发症"
+      },
+      {
+        "stage": "CKD 4期",
+        "interventions": ["透析准备", "血管通路", "肾移植评估"],
+        "annual_cost": 35000,
+        "target": "准备肾脏替代治疗"
+      },
+      {
+        "stage": "CKD 5期",
+        "interventions": ["血液透析", "腹膜透析", "肾移植"],
+        "annual_cost": 98000,
+        "target": "维持生命"
+      }
+    ],
+    "renal_replacement_therapy": {
+      "hemodialysis": {"annual_cost": 98000, "survival_5yr": 0.45},
+      "peritoneal_dialysis": {"annual_cost": 72000, "survival_5yr": 0.50},
+      "transplantation": {"first_year_cost": 180000, "annual_maintenance": 35000, "survival_5yr": 0.85}
+    }
+  },
+  {
+    "disease": "类风湿关节炎",
+    "algorithm_name": "ACR/EULAR RA治疗推荐 2024",
+    "treat_to_target": true,
+    "target": "DAS28 < 2.6 (缓解) 或 < 3.2 (低疾病活动度)",
+    "treatment_sequence": [
+      {
+        "step": 1,
+        "drugs": ["甲氨蝶呤"],
+        "dose": "15-25mg/周",
+        "annual_cost": 2400,
+        "response_rate": 0.45
+      },
+      {
+        "step": 2,
+        "drugs": ["甲氨蝶呤 + 羟氯喹 + 柳氮磺吡啶"],
+        "annual_cost": 4800,
+        "response_rate": 0.55
+      },
+      {
+        "step": 3,
+        "drugs": ["TNF抑制剂", "JAK抑制剂", "IL-6抑制剂"],
+        "annual_cost": 65000,
+        "response_rate": 0.70
+      },
+      {
+        "step": 4,
+        "drugs": ["换用另一种生物制剂"],
+        "annual_cost": 72000,
+        "response_rate": 0.50
+      }
     ]
   }
 ]
