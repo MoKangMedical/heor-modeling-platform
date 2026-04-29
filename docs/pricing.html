@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>定价方案 | HEOR Modeling Platform</title>
+  <meta name="description" content="HEOR Modeling Platform 定价方案 - 从免费体验到企业定制">
+  <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/pricing.html" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    .pricing-hero { text-align: center; padding: 80px 20px 40px; background: linear-gradient(135deg, #1b345d 0%, #2f6fed 100%); color: white; }
+    .pricing-hero h1 { font-size: 36px; font-weight: 700; margin-bottom: 12px; }
+    .pricing-hero p { font-size: 18px; opacity: 0.9; max-width: 600px; margin: 0 auto; }
+    .pricing-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1100px; margin: -60px auto 60px; padding: 0 20px; position: relative; z-index: 1; }
+    .pricing-card { background: white; border-radius: 16px; padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); text-align: center; transition: transform 0.2s, box-shadow 0.2s; }
+    .pricing-card:hover { transform: translateY(-4px); box-shadow: 0 8px 30px rgba(0,0,0,0.15); }
+    .pricing-card.featured { border: 2px solid #2f6fed; position: relative; }
+    .pricing-card.featured::before { content: '推荐'; position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: #2f6fed; color: white; padding: 4px 16px; border-radius: 20px; font-size: 12px; font-weight: 600; }
+    .pricing-name { font-size: 20px; font-weight: 600; color: #111; margin-bottom: 8px; }
+    .pricing-price { font-size: 42px; font-weight: 700; color: #111; margin: 16px 0; }
+    .pricing-price .currency { font-size: 20px; vertical-align: top; }
+    .pricing-price .period { font-size: 14px; color: #999; font-weight: 400; }
+    .pricing-desc { font-size: 14px; color: #666; margin-bottom: 24px; min-height: 40px; }
+    .pricing-features { list-style: none; padding: 0; margin: 0 0 24px; text-align: left; }
+    .pricing-features li { padding: 8px 0; font-size: 14px; color: #374151; display: flex; align-items: center; gap: 10px; }
+    .pricing-features li::before { content: '✓'; color: #2e9d6b; font-weight: 600; }
+    .pricing-features li.disabled { color: #999; }
+    .pricing-features li.disabled::before { content: '✗'; color: #ddd; }
+    .pricing-btn { display: block; width: 100%; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; text-align: center; }
+    .pricing-btn-primary { background: #2f6fed; color: white; border: none; }
+    .pricing-btn-primary:hover { background: #1d5bd9; }
+    .pricing-btn-secondary { background: white; color: #2f6fed; border: 2px solid #2f6fed; }
+    .pricing-btn-secondary:hover { background: #f0f5ff; }
+    @media (max-width: 768px) {
+      .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar" style="position: absolute; top: 0; left: 0; right: 0; background: transparent;">
+    <div class="brand">
+      <span class="brand-mark" style="background: rgba(255,255,255,0.2);">HM</span>
+      <span class="brand-copy">
+        <strong style="color: white;">HEOR Modeling Platform</strong>
+        <small style="color: rgba(255,255,255,0.7);">定价方案</small>
+      </span>
+    </div>
+    <nav class="nav">
+      <a href="./index.html" style="color: rgba(255,255,255,0.8);">总览</a>
+      <a href="./pricing.html" style="color: white;">定价</a>
+      <a href="./workflow-demo.html" style="color: rgba(255,255,255,0.8);">演示</a>
+    </nav>
+  </header>
+
+  <section class="pricing-hero">
+    <h1>简单透明的定价</h1>
+    <p>从免费体验到企业定制，选择适合您的方案</p>
+  </section>
+
+  <section class="pricing-grid">
+    <div class="pricing-card">
+      <div class="pricing-name">体验版</div>
+      <div class="pricing-price"><span class="currency">¥</span>0<span class="period">/永久</span></div>
+      <div class="pricing-desc">适合个人学习和评估平台功能</div>
+      <ul class="pricing-features">
+        <li>完整工作流演示</li>
+        <li>3种疾病模型</li>
+        <li>基础Markov模拟</li>
+        <li>ICER计算</li>
+        <li>离线模式</li>
+        <li class="disabled">数据导出</li>
+        <li class="disabled">API访问</li>
+        <li class="disabled">团队协作</li>
+      </ul>
+      <a href="./workflow-demo.html" class="pricing-btn pricing-btn-secondary">开始体验</a>
+    </div>
+
+    <div class="pricing-card featured">
+      <div class="pricing-name">专业版</div>
+      <div class="pricing-price"><span class="currency">¥</span>2,999<span class="period">/月</span></div>
+      <div class="pricing-desc">适合药企HEOR团队和研究机构</div>
+      <ul class="pricing-features">
+        <li>所有疾病模型</li>
+        <li>Markov + PSM + 微观模拟</li>
+        <li>完整PSA/TOWSA分析</li>
+        <li>PDF/Excel导出</li>
+        <li>REST API访问</li>
+        <li>5个团队成员</li>
+        <li>邮件支持</li>
+        <li class="disabled">自定义疾病模型</li>
+      </ul>
+      <a href="mailto:contact@mokangmedical.com" class="pricing-btn pricing-btn-primary">联系销售</a>
+    </div>
+
+    <div class="pricing-card">
+      <div class="pricing-name">企业版</div>
+      <div class="pricing-price"><span class="currency">¥</span>定制<span class="period"></span></div>
+      <div class="pricing-desc">适合大型药企和CRO公司</div>
+      <ul class="pricing-features">
+        <li>专业版全部功能</li>
+        <li>自定义疾病模型</li>
+        <li>真实世界数据集成</li>
+        <li>无限团队成员</li>
+        <li>私有化部署</li>
+        <li>专属客户经理</li>
+        <li>SLA保障</li>
+        <li>合规认证支持</li>
+      </ul>
+      <a href="mailto:contact@mokangmedical.com" class="pricing-btn pricing-btn-secondary">联系我们</a>
+    </div>
+  </section>
+
+  <section style="max-width: 800px; margin: 0 auto 80px; padding: 0 20px;">
+    <h2 style="font-size: 24px; font-weight: 600; text-align: center; margin-bottom: 32px;">常见问题</h2>
+    <div style="display: flex; flex-direction: column; gap: 16px;">
+      <details style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e5e7eb;">
+        <summary style="font-weight: 600; cursor: pointer; color: #111;">体验版有什么限制？</summary>
+        <p style="color: #666; margin-top: 12px; line-height: 1.6;">体验版提供完整的工作流演示和3种疾病模型，可以体验所有核心功能。主要限制是不能导出数据、不能使用API、不能团队协作。</p>
+      </details>
+      <details style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e5e7eb;">
+        <summary style="font-weight: 600; cursor: pointer; color: #111;">支持哪些支付方式？</summary>
+        <p style="color: #666; margin-top: 12px; line-height: 1.6;">支持银行转账、支付宝、微信支付。企业版支持对公转账和发票。</p>
+      </details>
+      <details style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e5e7eb;">
+        <summary style="font-weight: 600; cursor: pointer; color: #111;">数据安全如何保障？</summary>
+        <p style="color: #666; margin-top: 12px; line-height: 1.6;">所有数据传输使用TLS 1.3加密，存储使用AES-256加密。企业版支持私有化部署，数据完全在您控制之下。</p>
+      </details>
+      <details style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #e5e7eb;">
+        <summary style="font-weight: 600; cursor: pointer; color: #111;">可以退款吗？</summary>
+        <p style="color: #666; margin-top: 12px; line-height: 1.6;">专业版支持7天无理由退款。企业版根据合同条款执行。</p>
+      </details>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <span class="brand-mark">HM</span>
+          <div>
+            <strong>HEOR Modeling Platform</strong>
+            <small>卫生经济学与结果研究建模平台</small>
+          </div>
+        </div>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>产品</h4>
+          <a href="./evidence.html">上传证据</a>
+          <a href="./pricing.html">定价</a>
+        </div>
+        <div class="footer-col">
+          <h4>资源</h4>
+          <a href="./api-docs.html">API文档</a>
+          <a href="./platform.html">平台细节</a>
+        </div>
+        <div class="footer-col">
+          <h4>关于</h4>
+          <a href="https://github.com/MoKangMedical/heor-modeling-platform" target="_blank">GitHub</a>
+        <a href="./about.html">About</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 HEOR Modeling Platform.</p>
+    </div>
+  </footer>
+
+  <script src="./ux-enhance.js?v=1"></script>
+    <script src="./opc-nav.js"></script>
+  </body>
+</html>

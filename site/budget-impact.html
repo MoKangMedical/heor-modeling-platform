@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Budget Impact Calculator - HEOR Modeling Platform</title>
+  <meta name="description" content="Interactive budget impact analysis calculator. Model 5-year budget implications of new health interventions with real-time visualization.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    .calc-container{max-width:1100px;margin:0 auto;padding:80px 24px 60px}
+    .calc-header{text-align:center;margin-bottom:40px}
+    .calc-header h1{font-size:2rem;color:var(--navy);margin-bottom:8px}
+    .calc-header p{color:var(--muted);max-width:600px;margin:0 auto}
+    .calc-grid{display:grid;grid-template-columns:340px 1fr;gap:24px;align-items:start}
+    @media(max-width:860px){.calc-grid{grid-template-columns:1fr}}
+    .inputs-panel{position:sticky;top:80px}
+    .input-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:24px;margin-bottom:16px}
+    .input-card h3{font-size:.95rem;color:var(--ink);margin-bottom:16px}
+    .field{margin-bottom:14px}
+    .field label{display:block;font-size:.8rem;font-weight:500;color:var(--ink);margin-bottom:4px}
+    .field input,.field select{width:100%;padding:8px 12px;border:1px solid var(--line);border-radius:var(--radius-sm);font-size:.9rem;font-family:'IBM Plex Mono',monospace;background:var(--paper-strong);color:var(--ink)}
+    .field input:focus,.field select:focus{outline:none;border-color:var(--evidence);box-shadow:0 0 0 3px var(--evidence-soft)}
+    .field .hint{font-size:.75rem;color:var(--muted);margin-top:2px}
+    .summary-bar{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px}
+    .summary-item{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;text-align:center}
+    .summary-item .val{font-size:1.6rem;font-weight:700;font-family:'IBM Plex Mono',monospace}
+    .summary-item .val.green{color:var(--success)}
+    .summary-item .val.red{color:#c7382f}
+    .summary-item .val.blue{color:var(--evidence)}
+    .summary-item .lbl{font-size:.75rem;color:var(--muted);margin-top:4px}
+    .chart-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:24px;margin-bottom:24px}
+    .chart-card h3{font-size:1rem;color:var(--ink);margin-bottom:16px}
+    .chart-card canvas{width:100%!important;height:280px!important}
+    .table-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:24px}
+    .table-card h3{font-size:1rem;color:var(--ink);margin-bottom:16px}
+    .data-table{width:100%;border-collapse:collapse;font-size:.8rem}
+    .data-table th{background:var(--bg-soft);padding:8px 12px;text-align:right;font-weight:600;color:var(--ink);border-bottom:2px solid var(--line)}
+    .data-table th:first-child{text-align:left}
+    .data-table td{padding:8px 12px;text-align:right;border-bottom:1px solid var(--line);font-family:'IBM Plex Mono',monospace}
+    .data-table td:first-child{text-align:left;font-family:'IBM Plex Sans',sans-serif;font-weight:500}
+    .data-table tr:hover td{background:var(--bg-soft)}
+    .scenario-btns{display:flex;gap:8px;margin-bottom:16px}
+    .scenario-btns button{flex:1;padding:8px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--paper-strong);color:var(--muted);font-size:.8rem;cursor:pointer}
+    .scenario-btns button.active{background:var(--evidence);color:#fff;border-color:var(--evidence)}
+    .breadcrumb{padding:12px 0;font-size:.85rem;color:var(--muted);max-width:1100px;margin:0 auto}
+    .breadcrumb a{color:var(--evidence);text-decoration:none}
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">HM</span>
+      <span class="brand-copy">
+        <strong>HEOR Modeling Platform</strong>
+        <small>任务驱动型建模工作台</small>
+      </span>
+    </div>
+    <nav class="nav">
+      <a href="./index.html">总览</a>
+      <a href="./evidence.html">上传证据</a>
+      <a href="./simulation.html">运行模拟</a>
+      <a href="./review.html">结果审阅</a>
+      <a href="./pricing.html">定价</a>
+      <a href="./about.html">关于</a>
+    </nav>
+  </header>
+
+  <div class="breadcrumb">
+    <a href="./index.html">Home</a> / <span>Budget Impact Calculator</span>
+  </div>
+
+  <div class="calc-container">
+    <div class="calc-header">
+      <h1>预算影响分析计算器</h1>
+      <p>输入人群、治疗成本和市场渗透率，即时计算 5 年预算影响。支持保守/基准/乐观三种场景。</p>
+    </div>
+
+    <div class="calc-grid">
+      <!-- Inputs -->
+      <div class="inputs-panel">
+        <div class="input-card">
+          <h3>人群参数</h3>
+          <div class="field">
+            <label>目标人群总数</label>
+            <input type="number" id="population" value="500000" min="1000" step="10000">
+            <div class="hint">符合治疗条件的患者总数</div>
+          </div>
+          <div class="field">
+            <label>年增长率 (%)</label>
+            <input type="number" id="growth" value="2" min="0" max="20" step="0.5">
+          </div>
+        </div>
+
+        <div class="input-card">
+          <h3>当前治疗 (SOC)</h3>
+          <div class="field">
+            <label>年治疗成本 ($)</label>
+            <input type="number" id="soc-cost" value="15000" min="0" step="500">
+          </div>
+          <div class="field">
+            <label>当前市场占有率 (%)</label>
+            <input type="number" id="soc-share" value="100" min="0" max="100">
+          </div>
+        </div>
+
+        <div class="input-card">
+          <h3>新干预措施</h3>
+          <div class="field">
+            <label>年治疗成本 ($)</label>
+            <input type="number" id="new-cost" value="45000" min="0" step="500">
+          </div>
+          <div class="field">
+            <label>年 1 渗透率 (%)</label>
+            <input type="number" id="new-share-y1" value="5" min="0" max="100">
+          </div>
+          <div class="field">
+            <label>年 5 渗透率 (%)</label>
+            <input type="number" id="new-share-y5" value="30" min="0" max="100">
+          </div>
+        </div>
+
+        <div class="input-card">
+          <h3>场景选择</h3>
+          <div class="scenario-btns">
+            <button onclick="setScenario('conservative')">保守</button>
+            <button class="active" onclick="setScenario('base')">基准</button>
+            <button onclick="setScenario('optimistic')">乐观</button>
+          </div>
+        </div>
+
+        <button class="form-submit" onclick="calculate()" style="width:100%;padding:12px;background:var(--evidence);color:#fff;border:none;border-radius:var(--radius-sm);font-size:1rem;font-weight:600;cursor:pointer">计算预算影响</button>
+      </div>
+
+      <!-- Results -->
+      <div class="results-area">
+        <div class="summary-bar">
+          <div class="summary-item"><div class="val blue" id="total-budget">--</div><div class="lbl">5 年总预算</div></div>
+          <div class="summary-item"><div class="val" id="total-incremental">--</div><div class="lbl">增量预算影响</div></div>
+          <div class="summary-item"><div class="val green" id="per-patient">--</div><div class="lbl">人均年增量成本</div></div>
+        </div>
+
+        <div class="chart-card">
+          <h3>年度预算影响趋势</h3>
+          <canvas id="budget-chart"></canvas>
+        </div>
+
+        <div class="chart-card">
+          <h3>市场渗透率 vs 预算影响</h3>
+          <canvas id="penetration-chart"></canvas>
+        </div>
+
+        <div class="table-card">
+          <h3>逐年明细</h3>
+          <table class="data-table" id="detail-table">
+            <thead>
+              <tr><th>年度</th><th>目标人群</th><th>SOC 患者</th><th>新药患者</th><th>SOC 成本</th><th>新药成本</th><th>总预算</th><th>增量影响</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-bottom">
+      <p>&copy; 2026 HEOR Modeling Platform. Built for Health Economics and Outcomes Research.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="./opc-nav.js"></script>
+  <script>
+  let budgetChart = null, penChart = null;
+  let scenario = 'base';
+  const SCENARIOS = { conservative: 0.7, base: 1.0, optimistic: 1.3 };
+
+  function setScenario(s) {
+    scenario = s;
+    document.querySelectorAll('.scenario-btns button').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    calculate();
+  }
+
+  function calculate() {
+    const pop = parseFloat(document.getElementById('population').value);
+    const growth = parseFloat(document.getElementById('growth').value) / 100;
+    const socCost = parseFloat(document.getElementById('soc-cost').value);
+    const socShare = parseFloat(document.getElementById('soc-share').value) / 100;
+    const newCost = parseFloat(document.getElementById('new-cost').value);
+    const newShareY1 = parseFloat(document.getElementById('new-share-y1').value) / 100;
+    const newShareY5 = parseFloat(document.getElementById('new-share-y5').value) / 100;
+    const mult = SCENARIOS[scenario];
+
+    const years = [];
+    let totalBudget = 0, totalSoc = 0, totalNew = 0;
+
+    for (let y = 1; y <= 5; y++) {
+      const yearPop = pop * Math.pow(1 + growth, y - 1);
+      const newShare = newShareY1 + (newShareY5 - newShareY1) * ((y - 1) / 4) * mult;
+      const socPatients = yearPop * (1 - newShare);
+      const newPatients = yearPop * newShare;
+      const socBudget = socPatients * socCost;
+      const newBudget = newPatients * newCost;
+      const total = socBudget + newBudget;
+      const incremental = newPatients * (newCost - socCost);
+
+      years.push({ y, yearPop, socPatients, newPatients, socBudget, newBudget, total, incremental });
+      totalBudget += total;
+      totalSoc += socBudget;
+      totalNew += newBudget;
+    }
+
+    const totalIncremental = totalBudget - (pop * 5 * socCost);
+    const perPatient = years.reduce((s, y) => s + y.incremental, 0) / (pop * 5);
+
+    // Update summary
+    document.getElementById('total-budget').textContent = '$' + (totalBudget / 1e9).toFixed(2) + 'B';
+    const incEl = document.getElementById('total-incremental');
+    incEl.textContent = (totalIncremental >= 0 ? '+' : '') + '$' + (totalIncremental / 1e6).toFixed(0) + 'M';
+    incEl.className = 'val ' + (totalIncremental >= 0 ? 'red' : 'green');
+    document.getElementById('per-patient').textContent = '$' + Math.round(perPatient).toLocaleString();
+
+    // Update charts
+    updateBudgetChart(years);
+    updatePenChart(pop, growth, socCost, newCost, newShareY1, newShareY5, mult);
+    updateTable(years);
+  }
+
+  function updateBudgetChart(years) {
+    const ctx = document.getElementById('budget-chart').getContext('2d');
+    if (budgetChart) budgetChart.destroy();
+    budgetChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: years.map(y => 'Year ' + y.y),
+        datasets: [
+          { label: 'SOC Budget', data: years.map(y => y.socBudget / 1e6), backgroundColor: '#94a3b8', borderRadius: 4 },
+          { label: 'New Intervention', data: years.map(y => y.newBudget / 1e6), backgroundColor: '#2f6fed', borderRadius: 4 },
+          { label: 'Incremental Impact', data: years.map(y => y.incremental / 1e6), type: 'line', borderColor: '#c7382f', borderWidth: 2, pointRadius: 4, fill: false, yAxisID: 'y1' }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } },
+        scales: {
+          x: { stacked: true },
+          y: { stacked: true, title: { display: true, text: 'Budget ($M)' } },
+          y1: { position: 'right', title: { display: true, text: 'Incremental ($M)' }, grid: { drawOnChartArea: false } }
+        }
+      }
+    });
+  }
+
+  function updatePenChart(pop, growth, socCost, newCost, newY1, newY5, mult) {
+    const ctx = document.getElementById('penetration-chart').getContext('2d');
+    if (penChart) penChart.destroy();
+    const penRates = [0, 5, 10, 15, 20, 25, 30, 35, 40, 50];
+    const impacts = penRates.map(pen => {
+      const share = pen / 100;
+      let total = 0;
+      for (let y = 1; y <= 5; y++) {
+        const yearPop = pop * Math.pow(1 + growth, y - 1);
+        total += yearPop * share * (newCost - socCost);
+      }
+      return total / 1e6;
+    });
+    penChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: penRates.map(p => p + '%'),
+        datasets: [{
+          label: '5-Year Incremental Budget Impact',
+          data: impacts,
+          borderColor: '#d9852c',
+          backgroundColor: 'rgba(217,133,44,0.1)',
+          fill: true,
+          tension: 0.3,
+          borderWidth: 2,
+          pointRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { title: { display: true, text: 'New Intervention Market Share' } },
+          y: { title: { display: true, text: 'Incremental Impact ($M)' } }
+        }
+      }
+    });
+  }
+
+  function updateTable(years) {
+    const tbody = document.querySelector('#detail-table tbody');
+    tbody.innerHTML = years.map(y => `<tr>
+      <td>Year ${y.y}</td>
+      <td>${Math.round(y.yearPop).toLocaleString()}</td>
+      <td>${Math.round(y.socPatients).toLocaleString()}</td>
+      <td>${Math.round(y.newPatients).toLocaleString()}</td>
+      <td>$${(y.socBudget/1e6).toFixed(1)}M</td>
+      <td>$${(y.newBudget/1e6).toFixed(1)}M</td>
+      <td>$${(y.total/1e6).toFixed(1)}M</td>
+      <td style="color:${y.incremental>=0?'#c7382f':'#2e9d6b'}">${y.incremental>=0?'+':''}$${(y.incremental/1e6).toFixed(1)}M</td>
+    </tr>`).join('');
+  }
+
+  // Initial calculation
+  calculate();
+  </script>
+</body>
+</html>
