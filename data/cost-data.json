@@ -1,17 +1,107 @@
 [
   {
-    "disease": "糖尿病",
-    "direct_cost": 12000,
-    "indirect_cost": 5000
+    "disease": "2型糖尿病",
+    "cost_category": "direct_medical",
+    "items": [
+      {"item": "门诊药物", "annual_cost": 4800, "percentage": 0.38},
+      {"item": "住院治疗", "annual_cost": 3200, "percentage": 0.25},
+      {"item": "检查检验", "annual_cost": 2100, "percentage": 0.17},
+      {"item": "并发症治疗", "annual_cost": 1580, "percentage": 0.13},
+      {"item": "其他", "annual_cost": 900, "percentage": 0.07}
+    ],
+    "total_direct": 12580,
+    "indirect_costs": {
+      "productivity_loss": 5200,
+      "caregiver_cost": 2100,
+      "transportation": 1100
+    },
+    "total_indirect": 8400,
+    "total_cost": 20980,
+    "currency": "CNY",
+    "year": 2024
   },
   {
-    "disease": "高血压",
-    "direct_cost": 8000,
-    "indirect_cost": 3000
+    "disease": "非小细胞肺癌",
+    "cost_category": "direct_medical",
+    "items": [
+      {"item": "靶向/免疫治疗", "annual_cost": 98000, "percentage": 0.53},
+      {"item": "化疗", "annual_cost": 35000, "percentage": 0.19},
+      {"item": "手术", "annual_cost": 28000, "percentage": 0.15},
+      {"item": "放疗", "annual_cost": 15000, "percentage": 0.08},
+      {"item": "支持治疗", "annual_cost": 10000, "percentage": 0.05}
+    ],
+    "total_direct": 186000,
+    "indirect_costs": {
+      "productivity_loss": 65000,
+      "caregiver_cost": 22000,
+      "transportation": 8000
+    },
+    "total_indirect": 95000,
+    "total_cost": 281000,
+    "currency": "CNY",
+    "year": 2024
   },
   {
-    "disease": "冠心病",
-    "direct_cost": 25000,
-    "indirect_cost": 10000
+    "disease": "心力衰竭",
+    "cost_category": "direct_medical",
+    "items": [
+      {"item": "药物治疗", "annual_cost": 12000, "percentage": 0.42},
+      {"item": "住院治疗", "annual_cost": 8500, "percentage": 0.29},
+      {"item": "器械/植入", "annual_cost": 4500, "percentage": 0.16},
+      {"item": "检查监测", "annual_cost": 2400, "percentage": 0.08},
+      {"item": "康复", "annual_cost": 1500, "percentage": 0.05}
+    ],
+    "total_direct": 28900,
+    "indirect_costs": {
+      "productivity_loss": 9500,
+      "caregiver_cost": 3800,
+      "transportation": 1700
+    },
+    "total_indirect": 15000,
+    "total_cost": 43900,
+    "currency": "CNY",
+    "year": 2024
+  },
+  {
+    "disease": "慢性肾病(CKD3-5期)",
+    "cost_category": "direct_medical",
+    "items": [
+      {"item": "透析治疗", "annual_cost": 35000, "percentage": 0.67},
+      {"item": "药物治疗", "annual_cost": 8500, "percentage": 0.16},
+      {"item": "检查监测", "annual_cost": 4800, "percentage": 0.09},
+      {"item": "住院", "annual_cost": 3000, "percentage": 0.06},
+      {"item": "其他", "annual_cost": 1000, "percentage": 0.02}
+    ],
+    "total_direct": 52300,
+    "indirect_costs": {
+      "productivity_loss": 18000,
+      "caregiver_cost": 6500,
+      "transportation": 3500
+    },
+    "total_indirect": 28000,
+    "total_cost": 80300,
+    "currency": "CNY",
+    "year": 2024
+  },
+  {
+    "disease": "阿尔茨海默病",
+    "cost_category": "direct_medical",
+    "items": [
+      {"item": "药物治疗", "annual_cost": 18000, "percentage": 0.39},
+      {"item": "护理机构", "annual_cost": 15000, "percentage": 0.33},
+      {"item": "门诊随访", "annual_cost": 6600, "percentage": 0.14},
+      {"item": "检查评估", "annual_cost": 3500, "percentage": 0.08},
+      {"item": "其他", "annual_cost": 2500, "percentage": 0.06}
+    ],
+    "total_direct": 45600,
+    "indirect_costs": {
+      "productivity_loss": 25000,
+      "caregiver_cost": 38000,
+      "transportation": 5000
+    },
+    "total_indirect": 68000,
+    "total_cost": 113600,
+    "currency": "CNY",
+    "year": 2024
   }
 ]

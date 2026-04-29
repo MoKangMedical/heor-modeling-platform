@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Markov Model Demo - HEOR Modeling Platform</title>
+  <meta name="description" content="Interactive Markov model demo with real-time state transition visualization. Explore cohort traces, cycle costs, and QALY calculations.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+  <style>
+    .demo-container{max-width:1200px;margin:0 auto;padding:80px 24px 60px}
+    .demo-header{text-align:center;margin-bottom:40px}
+    .demo-header h1{font-size:2rem;color:var(--navy);margin-bottom:8px}
+    .demo-header p{color:var(--muted);max-width:640px;margin:0 auto}
+    .demo-grid{display:grid;grid-template-columns:320px 1fr;gap:24px;align-items:start}
+    @media(max-width:900px){.demo-grid{grid-template-columns:1fr}}
+    .control-panel{position:sticky;top:80px}
+    .control-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:24px;margin-bottom:16px}
+    .control-card h3{font-size:.95rem;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;gap:8px}
+    .control-card h3 .badge{font-size:.7rem;background:var(--evidence-soft);color:var(--evidence);padding:2px 8px;border-radius:10px}
+    .param-group{margin-bottom:14px}
+    .param-group label{display:block;font-size:.8rem;font-weight:500;color:var(--ink);margin-bottom:4px}
+    .param-group input[type=range]{width:100%;margin:0}
+    .param-group .param-value{font-size:.85rem;font-family:'IBM Plex Mono',monospace;color:var(--evidence);text-align:right;margin-top:2px}
+    .state-diagram{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:24px;margin-bottom:24px}
+    .state-diagram h3{font-size:1rem;color:var(--ink);margin-bottom:16px}
+    .state-diagram svg{width:100%;height:auto}
+    .chart-section{margin-bottom:24px}
+    .chart-card{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-md);padding:24px}
+    .chart-card h3{font-size:1rem;color:var(--ink);margin-bottom:16px;display:flex;align-items:center;justify-content:space-between}
+    .chart-card canvas{width:100%!important;height:300px!important}
+    .results-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+    .result-item{background:var(--paper);border:1px solid var(--line);border-radius:var(--radius-sm);padding:16px;text-align:center}
+    .result-item .num{font-size:1.4rem;font-weight:700;color:var(--navy);font-family:'IBM Plex Mono',monospace}
+    .result-item .label{font-size:.75rem;color:var(--muted);margin-top:4px}
+    .btn-row{display:flex;gap:8px;margin-top:12px}
+    .btn-run{flex:1;padding:10px 16px;border:none;border-radius:var(--radius-sm);font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+    .btn-run.primary{background:var(--evidence);color:#fff}
+    .btn-run.primary:hover{background:#1d5fd6}
+    .btn-run.secondary{background:var(--paper-strong);color:var(--ink);border:1px solid var(--line)}
+    .transition-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:12px}
+    .transition-table th{background:var(--bg-soft);padding:8px;text-align:center;font-weight:600;color:var(--ink);border:1px solid var(--line)}
+    .transition-table td{padding:6px 8px;text-align:center;border:1px solid var(--line);font-family:'IBM Plex Mono',monospace}
+    .transition-table td input{width:60px;text-align:center;border:1px solid var(--line);border-radius:4px;padding:4px;font-family:'IBM Plex Mono',monospace;font-size:.8rem}
+    .breadcrumb{padding:12px 0;font-size:.85rem;color:var(--muted);max-width:1200px;margin:0 auto;padding-left:24px;padding-right:24px}
+    .breadcrumb a{color:var(--evidence);text-decoration:none}
+    .model-select{display:flex;gap:8px;margin-bottom:16px}
+    .model-select button{flex:1;padding:8px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--paper-strong);color:var(--muted);font-size:.8rem;cursor:pointer;transition:all .2s}
+    .model-select button.active{background:var(--evidence);color:#fff;border-color:var(--evidence)}
+    .legend-inline{display:flex;gap:16px;flex-wrap:wrap;font-size:.8rem;color:var(--muted);margin-top:8px}
+    .legend-inline i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:4px;vertical-align:middle}
+  </style>
+</head>
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">HM</span>
+      <span class="brand-copy">
+        <strong>HEOR Modeling Platform</strong>
+        <small>任务驱动型建模工作台</small>
+      </span>
+    </div>
+    <nav class="nav">
+      <a href="./index.html">总览</a>
+      <a href="./evidence.html">上传证据</a>
+      <a href="./calibration.html">临床校准</a>
+      <a href="./simulation.html">运行模拟</a>
+      <a href="./review.html">结果审阅</a>
+      <a href="./workflow-demo.html">完整流程</a>
+      <a href="./pricing.html">定价</a>
+      <a href="./about.html">关于</a>
+    </nav>
+  </header>
+
+  <div class="breadcrumb">
+    <a href="./index.html">Home</a> / <span>Markov Model Demo</span>
+  </div>
+
+  <div class="demo-container">
+    <div class="demo-header">
+      <h1>交互式 Markov 模型演示</h1>
+      <p>调整参数，实时观察队列轨迹、状态转移和成本-效果结果。支持 Oncology、Diabetes、Rare Disease 三种预设模型。</p>
+    </div>
+
+    <div class="demo-grid">
+      <!-- Control Panel -->
+      <div class="control-panel">
+        <div class="control-card">
+          <h3>模型选择 <span class="badge">3 presets</span></h3>
+          <div class="model-select">
+            <button class="active" onclick="loadModel('oncology')">Oncology</button>
+            <button onclick="loadModel('diabetes')">Diabetes</button>
+            <button onclick="loadModel('rare')">Rare Disease</button>
+          </div>
+        </div>
+
+        <div class="control-card">
+          <h3>模型参数</h3>
+          <div class="param-group">
+            <label>模拟周期数</label>
+            <input type="range" id="cycles" min="5" max="60" value="20" oninput="updateParam(this)">
+            <div class="param-value" id="cycles-val">20 cycles</div>
+          </div>
+          <div class="param-group">
+            <label>贴现率 (%)</label>
+            <input type="range" id="discount" min="0" max="10" value="3" step="0.5" oninput="updateParam(this)">
+            <div class="param-value" id="discount-val">3.0%</div>
+          </div>
+          <div class="param-group">
+            <label>队列大小</label>
+            <input type="range" id="cohort" min="100" max="10000" value="1000" step="100" oninput="updateParam(this)">
+            <div class="param-value" id="cohort-val">1,000</div>
+          </div>
+        </div>
+
+        <div class="control-card">
+          <h3>转移概率矩阵</h3>
+          <div id="transition-matrix"></div>
+          <div class="btn-row">
+            <button class="btn-run primary" onclick="runModel()">运行模型</button>
+            <button class="btn-run secondary" onclick="resetModel()">重置</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Visualization Area -->
+      <div class="viz-area">
+        <!-- Results Summary -->
+        <div class="results-bar" id="results-bar">
+          <div class="result-item"><div class="num" id="res-icer">--</div><div class="label">ICER ($/QALY)</div></div>
+          <div class="result-item"><div class="num" id="res-qaly">--</div><div class="label">Total QALYs</div></div>
+          <div class="result-item"><div class="num" id="res-cost">--</div><div class="label">Total Cost</div></div>
+          <div class="result-item"><div class="num" id="res-life">--</div><div class="label">Life Years</div></div>
+        </div>
+
+        <!-- State Diagram -->
+        <div class="state-diagram">
+          <h3>状态转移图</h3>
+          <svg id="state-svg" viewBox="0 0 600 300"></svg>
+        </div>
+
+        <!-- Cohort Trace Chart -->
+        <div class="chart-section">
+          <div class="chart-card">
+            <h3>队列轨迹 <span style="font-size:.8rem;color:var(--muted);font-weight:400">Cohort Trace</span></h3>
+            <canvas id="cohort-chart"></canvas>
+            <div class="legend-inline" id="cohort-legend"></div>
+          </div>
+        </div>
+
+        <!-- Cost & Effectiveness Chart -->
+        <div class="chart-section">
+          <div class="chart-card">
+            <h3>累计成本 vs QALYs <span style="font-size:.8rem;color:var(--muted);font-weight:400">Cost-Effectiveness</span></h3>
+            <canvas id="ce-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Cycle-by-Cycle Table -->
+        <div class="chart-section">
+          <div class="chart-card">
+            <h3>逐周期结果 <span style="font-size:.8rem;color:var(--muted);font-weight:400">Cycle-by-Cycle</span></h3>
+            <div style="overflow-x:auto;max-height:400px;overflow-y:auto">
+              <table class="data-table" id="cycle-table">
+                <thead><tr><th>Cycle</th><th>Alive (%)</th><th>Progressed (%)</th><th>Dead (%)</th><th>Cost</th><th>QALYs</th><th>Cum Cost</th><th>Cum QALYs</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <span class="brand-mark">HM</span>
+          <div><strong>HEOR Modeling Platform</strong><small>卫生经济学与结果研究建模平台</small></div>
+        </div>
+        <p class="footer-desc">为药物经济学评价提供标准化建模工具。</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>产品</h4>
+          <a href="./evidence.html">上传证据</a>
+          <a href="./simulation.html">运行模拟</a>
+          <a href="./review.html">结果审阅</a>
+        </div>
+        <div class="footer-col">
+          <h4>资源</h4>
+          <a href="./api-docs.html">API文档</a>
+          <a href="./about.html">关于我们</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 HEOR Modeling Platform. Built for Health Economics and Outcomes Research.</p>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="./opc-nav.js"></script>
+  <script>
+  /* ===== Markov Model Engine ===== */
+  const MODELS = {
+    oncology: {
+      name: 'Oncology: Pembrolizumab vs Chemo',
+      states: ['PFS', 'Progression', 'Death'],
+      colors: ['#2f6fed', '#d9852c', '#94a3b8'],
+      intervention: {
+        label: 'Pembrolizumab',
+        tp: [[0.72, 0.18, 0.10], [0, 0.68, 0.32], [0, 0, 1]],
+        cost: [8500, 12000, 0],
+        utility: [0.82, 0.65, 0]
+      },
+      control: {
+        label: 'Chemotherapy',
+        tp: [[0.65, 0.22, 0.13], [0, 0.60, 0.40], [0, 0, 1]],
+        cost: [3200, 8000, 0],
+        utility: [0.75, 0.55, 0]
+      }
+    },
+    diabetes: {
+      name: 'Diabetes: GLP-1 RA vs Insulin',
+      states: ['Stable', 'Complications', 'Death'],
+      colors: ['#18a6a0', '#c7382f', '#94a3b8'],
+      intervention: {
+        label: 'GLP-1 RA',
+        tp: [[0.88, 0.08, 0.04], [0, 0.75, 0.25], [0, 0, 1]],
+        cost: [1200, 15000, 0],
+        utility: [0.85, 0.60, 0]
+      },
+      control: {
+        label: 'Insulin',
+        tp: [[0.82, 0.12, 0.06], [0, 0.70, 0.30], [0, 0, 1]],
+        cost: [800, 12000, 0],
+        utility: [0.80, 0.55, 0]
+      }
+    },
+    rare: {
+      name: 'Rare Disease: Gene Therapy vs Standard',
+      states: ['Ambulatory', 'Non-Ambulatory', 'Death'],
+      colors: ['#7c5ce0', '#d9852c', '#94a3b8'],
+      intervention: {
+        label: 'Gene Therapy',
+        tp: [[0.92, 0.05, 0.03], [0, 0.80, 0.20], [0, 0, 1]],
+        cost: [50000, 30000, 0],
+        utility: [0.90, 0.50, 0]
+      },
+      control: {
+        label: 'Standard Care',
+        tp: [[0.70, 0.20, 0.10], [0, 0.55, 0.45], [0, 0, 1]],
+        cost: [5000, 20000, 0],
+        utility: [0.65, 0.35, 0]
+      }
+    }
+  };
+
+  let currentModel = 'oncology';
+  let cohortChart = null;
+  let ceChart = null;
+
+  function loadModel(key) {
+    currentModel = key;
+    document.querySelectorAll('.model-select button').forEach(b => b.classList.remove('active'));
+    event.target.classList.add('active');
+    renderTransitionMatrix();
+    drawStateDiagram();
+    runModel();
+  }
+
+  function updateParam(el) {
+    const id = el.id;
+    const val = parseFloat(el.value);
+    if (id === 'cycles') document.getElementById('cycles-val').textContent = val + ' cycles';
+    if (id === 'discount') document.getElementById('discount-val').textContent = val.toFixed(1) + '%';
+    if (id === 'cohort') document.getElementById('cohort-val').textContent = parseInt(val).toLocaleString();
+  }
+
+  function renderTransitionMatrix() {
+    const m = MODELS[currentModel];
+    const tp = m.intervention.tp;
+    let html = '<table class="transition-table"><thead><tr><th></th>';
+    m.states.forEach(s => html += `<th>${s}</th>`);
+    html += '</tr></thead><tbody>';
+    tp.forEach((row, i) => {
+      html += `<tr><th>${m.states[i]}</th>`;
+      row.forEach((v, j) => {
+        html += `<td>${i === m.states.length - 1 && j === m.states.length - 1 ? '1.00' : v.toFixed(2)}</td>`;
+      });
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    document.getElementById('transition-matrix').innerHTML = html;
+  }
+
+  function drawStateDiagram() {
+    const m = MODELS[currentModel];
+    const svg = document.getElementById('state-svg');
+    const n = m.states.length;
+    const positions = n === 3 ? [{x:150,y:150},{x:450,y:150},{x:300,y:280}] : [{x:150,y:150},{x:450,y:150}];
+    let html = '';
+    // Arrows
+    const tp = m.intervention.tp;
+    for (let i = 0; i < n; i++) {
+      for (let j = 0; j < n; j++) {
+        if (tp[i][j] > 0 && i !== j) {
+          const dx = positions[j].x - positions[i].x;
+          const dy = positions[j].y - positions[i].y;
+          const dist = Math.sqrt(dx*dx + dy*dy);
+          const nx = dx/dist, ny = dy/dist;
+          const sx = positions[i].x + nx*50, sy = positions[i].y + ny*50;
+          const ex = positions[j].x - nx*50, ey = positions[j].y - ny*50;
+          const mx = (sx+ex)/2 + ny*20, my = (sy+ey)/2 - nx*20;
+          html += `<path d="M${sx},${sy} Q${mx},${my} ${ex},${ey}" fill="none" stroke="${m.colors[j]}" stroke-width="2" opacity="0.6" marker-end="url(#arrow-${j})"/>`;
+          html += `<text x="${mx}" y="${my-8}" text-anchor="middle" font-size="11" fill="${m.colors[j]}" font-weight="600">${(tp[i][j]*100).toFixed(0)}%</text>`;
+        }
+      }
+    }
+    // Arrow markers
+    html += '<defs>';
+    m.colors.forEach((c, i) => {
+      html += `<marker id="arrow-${i}" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="${c}"/></marker>`;
+    });
+    html += '</defs>';
+    // Nodes
+    positions.forEach((p, i) => {
+      html += `<circle cx="${p.x}" cy="${p.y}" r="45" fill="${m.colors[i]}" opacity="0.15" stroke="${m.colors[i]}" stroke-width="2"/>`;
+      html += `<text x="${p.x}" y="${p.y-8}" text-anchor="middle" font-size="14" font-weight="700" fill="${m.colors[i]}">${m.states[i]}</text>`;
+      html += `<text x="${p.x}" y="${p.y+12}" text-anchor="middle" font-size="11" fill="var(--muted)">State ${i+1}</text>`;
+    });
+    svg.innerHTML = html;
+  }
+
+  function runModel() {
+    const m = MODELS[currentModel];
+    const nCycles = parseInt(document.getElementById('cycles').value);
+    const discount = parseFloat(document.getElementById('discount').value) / 100;
+    const cohortSize = parseInt(document.getElementById('cohort').value);
+    const nStates = m.states.length;
+
+    // Run for both arms
+    function simulate(arm) {
+      let pop = new Array(nStates).fill(0);
+      pop[0] = 1; // Start in first state
+      const trace = [];
+      let totalCost = 0, totalQaly = 0, totalLife = 0;
+
+      for (let t = 0; t <= nCycles; t++) {
+        const df = 1 / Math.pow(1 + discount, t);
+        let cycleCost = 0, cycleQaly = 0, cycleLife = 0;
+        for (let s = 0; s < nStates; s++) {
+          cycleCost += pop[s] * arm.cost[s] * df;
+          cycleQaly += pop[s] * arm.utility[s] * df;
+          if (s < nStates - 1) cycleLife += pop[s] * df;
+        }
+        totalCost += cycleCost;
+        totalQaly += cycleQaly;
+        totalLife += cycleLife;
+        trace.push({ cycle: t, pop: [...pop], cost: cycleCost, qaly: cycleQaly, cumCost: totalCost, cumQaly: totalQaly });
+
+        // Transition
+        if (t < nCycles) {
+          const newPop = new Array(nStates).fill(0);
+          for (let s = 0; s < nStates; s++) {
+            for (let d = 0; d < nStates; d++) {
+              newPop[d] += pop[s] * arm.tp[s][d];
+            }
+          }
+          pop = newPop;
+        }
+      }
+      return { trace, totalCost, totalQaly, totalLife };
+    }
+
+    const intResult = simulate(m.intervention);
+    const ctrlResult = simulate(m.control);
+
+    // Calculate ICER
+    const dCost = intResult.totalCost - ctrlResult.totalCost;
+    const dQaly = intResult.totalQaly - ctrlResult.totalQaly;
+    const icer = dQaly > 0 ? dCost / dQaly : Infinity;
+
+    // Update results
+    document.getElementById('res-icer').textContent = icer === Infinity ? '∞' : '$' + Math.round(icer).toLocaleString();
+    document.getElementById('res-qaly').textContent = (intResult.totalQaly * cohortSize).toFixed(0);
+    document.getElementById('res-cost').textContent = '$' + Math.round(intResult.totalCost * cohortSize).toLocaleString();
+    document.getElementById('res-life').textContent = (intResult.totalLife * cohortSize).toFixed(0);
+
+    // Update cohort trace chart
+    updateCohortChart(intResult.trace, ctrlResult.trace, m);
+    // Update CE chart
+    updateCEChart(intResult.trace, ctrlResult.trace, m);
+    // Update cycle table
+    updateCycleTable(intResult.trace, ctrlResult.trace, m);
+  }
+
+  function updateCohortChart(intTrace, ctrlTrace, m) {
+    const ctx = document.getElementById('cohort-chart').getContext('2d');
+    if (cohortChart) cohortChart.destroy();
+    const labels = intTrace.map(t => t.cycle);
+    const datasets = [];
+    m.states.forEach((state, i) => {
+      if (i < m.states.length - 1) {
+        datasets.push({
+          label: `${m.intervention.label} - ${state}`,
+          data: intTrace.map(t => (t.pop[i] * 100).toFixed(1)),
+          borderColor: m.colors[i],
+          backgroundColor: m.colors[i] + '20',
+          fill: true,
+          tension: 0.3,
+          borderWidth: 2
+        });
+        datasets.push({
+          label: `${m.control.label} - ${state}`,
+          data: ctrlTrace.map(t => (t.pop[i] * 100).toFixed(1)),
+          borderColor: m.colors[i],
+          borderDash: [5, 5],
+          tension: 0.3,
+          borderWidth: 2,
+          pointRadius: 0
+        });
+      }
+    });
+    cohortChart = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } },
+        scales: {
+          x: { title: { display: true, text: 'Cycle' } },
+          y: { title: { display: true, text: 'Population (%)' }, min: 0, max: 100 }
+        }
+      }
+    });
+  }
+
+  function updateCEChart(intTrace, ctrlTrace, m) {
+    const ctx = document.getElementById('ce-chart').getContext('2d');
+    if (ceChart) ceChart.destroy();
+    ceChart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: intTrace.map(t => t.cycle),
+        datasets: [
+          {
+            label: m.intervention.label,
+            data: intTrace.map(t => ({ x: t.cumQaly, y: t.cumCost })),
+            borderColor: m.colors[0],
+            backgroundColor: m.colors[0] + '30',
+            fill: false,
+            tension: 0.3,
+            borderWidth: 2,
+            pointRadius: 3
+          },
+          {
+            label: m.control.label,
+            data: ctrlTrace.map(t => ({ x: t.cumQaly, y: t.cumCost })),
+            borderColor: m.colors[1],
+            borderDash: [5, 5],
+            fill: false,
+            tension: 0.3,
+            borderWidth: 2,
+            pointRadius: 3
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom' } },
+        scales: {
+          x: { title: { display: true, text: 'Cumulative QALYs' }, type: 'linear' },
+          y: { title: { display: true, text: 'Cumulative Cost ($)' } }
+        }
+      }
+    });
+  }
+
+  function updateCycleTable(intTrace, ctrlTrace, m) {
+    const tbody = document.querySelector('#cycle-table tbody');
+    let html = '';
+    intTrace.forEach((t, i) => {
+      html += `<tr>
+        <td>${t.cycle}</td>
+        <td>${(t.pop[0]*100).toFixed(1)}</td>
+        <td>${(t.pop[1]*100).toFixed(1)}</td>
+        <td>${(t.pop[2]*100).toFixed(1)}</td>
+        <td>$${Math.round(t.cost).toLocaleString()}</td>
+        <td>${t.qaly.toFixed(4)}</td>
+        <td>$${Math.round(t.cumCost).toLocaleString()}</td>
+        <td>${t.cumQaly.toFixed(4)}</td>
+      </tr>`;
+    });
+    tbody.innerHTML = html;
+  }
+
+  function resetModel() {
+    document.getElementById('cycles').value = 20;
+    document.getElementById('discount').value = 3;
+    document.getElementById('cohort').value = 1000;
+    updateParam(document.getElementById('cycles'));
+    updateParam(document.getElementById('discount'));
+    updateParam(document.getElementById('cohort'));
+    runModel();
+  }
+
+  // Initialize
+  renderTransitionMatrix();
+  drawStateDiagram();
+  runModel();
+  </script>
+</body>
+</html>

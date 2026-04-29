@@ -1,31 +1,163 @@
 [
   {
+    "id": "dm-t2dm",
+    "name": "2型糖尿病疾病模型",
     "disease": "2型糖尿病",
+    "icd10": "E11",
+    "model_type": "markov",
     "states": [
-      "无并发症",
-      "微血管并发症",
-      "大血管并发症",
-      "终末期"
+      {"id": "no_complication", "name": "无并发症", "utility": 0.85},
+      {"id": "micro_complication", "name": "微血管并发症", "utility": 0.72},
+      {"id": "macro_complication", "name": "大血管并发症", "utility": 0.65},
+      {"id": "multi_complication", "name": "多并发症", "utility": 0.52},
+      {"id": "death", "name": "死亡", "utility": 0.0}
     ],
-    "transition_probs": {
-      "无并发症_微血管": 0.05,
-      "微血管_大血管": 0.03,
-      "大血管_终末期": 0.02
-    }
+    "transitions": [
+      {"from": "no_complication", "to": "micro_complication", "annual_prob": 0.035, "source": "UKPDS"},
+      {"from": "no_complication", "to": "macro_complication", "annual_prob": 0.025, "source": "UKPDS"},
+      {"from": "no_complication", "to": "death", "annual_prob": 0.012, "source": "中国DM登记"},
+      {"from": "micro_complication", "to": "multi_complication", "annual_prob": 0.045, "source": "UKPDS"},
+      {"from": "micro_complication", "to": "death", "annual_prob": 0.025, "source": "中国DM登记"},
+      {"from": "macro_complication", "to": "multi_complication", "annual_prob": 0.035, "source": "ADVANCE"},
+      {"from": "macro_complication", "to": "death", "annual_prob": 0.045, "source": "ADVANCE"},
+      {"from": "multi_complication", "to": "death", "annual_prob": 0.085, "source": "中国DM登记"}
+    ],
+    "costs": {
+      "no_complication": 5000,
+      "micro_complication": 18000,
+      "macro_complication": 35000,
+      "multi_complication": 65000,
+      "death": 0
+    },
+    "discount_rate": 0.03,
+    "cycle_length": 1,
+    "cycle_unit": "year",
+    "time_horizon": 30,
+    "reference": "中国2型糖尿病防治指南 2024"
   },
   {
-    "disease": "冠心病",
+    "id": "dm-nsclc",
+    "name": "非小细胞肺癌分区生存模型",
+    "disease": "非小细胞肺癌",
+    "icd10": "C34",
+    "model_type": "partitioned_survival",
     "states": [
-      "稳定型心绞痛",
-      "不稳定型心绞痛",
-      "心肌梗死",
-      "心力衰竭",
-      "死亡"
+      {"id": "pfs", "name": "无进展生存", "utility": 0.65},
+      {"id": "pd", "name": "进展后生存", "utility": 0.45},
+      {"id": "death", "name": "死亡", "utility": 0.0}
     ],
-    "transition_probs": {
-      "稳定_不稳定": 0.04,
-      "不稳定_梗死": 0.02,
-      "梗死_心衰": 0.03
-    }
+    "survival_curves": {
+      "pfs": {
+        "distribution": "weibull",
+        "lambda": 0.085,
+        "gamma": 0.95,
+        "median_months": 8.5
+      },
+      "os": {
+        "distribution": "weibull",
+        "lambda": 0.045,
+        "gamma": 0.88,
+        "median_months": 17.2
+      }
+    },
+    "interventions": [
+      {
+        "name": "Pembrolizumab",
+        "pfs_hr": 0.61,
+        "os_hr": 0.73,
+        "annual_cost": 280000,
+        "source": "KEYNOTE-010"
+      },
+      {
+        "name": "Docetaxel",
+        "pfs_hr": 1.0,
+        "os_hr": 1.0,
+        "annual_cost": 85000,
+        "source": "标准治疗"
+      }
+    ],
+    "discount_rate": 0.03,
+    "cycle_length": 1,
+    "cycle_unit": "month",
+    "time_horizon": 60,
+    "reference": "CSCO NSCLC诊疗指南 2024"
+  },
+  {
+    "id": "dm-hf",
+    "name": "心力衰竭Markov模型",
+    "disease": "心力衰竭",
+    "icd10": "I50",
+    "model_type": "markov",
+    "states": [
+      {"id": "nyha1", "name": "NYHA I级", "utility": 0.85},
+      {"id": "nyha2", "name": "NYHA II级", "utility": 0.72},
+      {"id": "nyha3", "name": "NYHA III级", "utility": 0.55},
+      {"id": "nyha4", "name": "NYHA IV级", "utility": 0.35},
+      {"id": "death", "name": "死亡", "utility": 0.0}
+    ],
+    "transitions": [
+      {"from": "nyha1", "to": "nyha2", "annual_prob": 0.08, "source": "ELITE"},
+      {"from": "nyha1", "to": "death", "annual_prob": 0.03, "source": "CCCF"},
+      {"from": "nyha2", "to": "nyha3", "annual_prob": 0.12, "source": "Val-HeFT"},
+      {"from": "nyha2", "to": "death", "annual_prob": 0.06, "source": "CCCF"},
+      {"from": "nyha3", "to": "nyha4", "annual_prob": 0.15, "source": "CHARM"},
+      {"from": "nyha3", "to": "death", "annual_prob": 0.12, "source": "CCCF"},
+      {"from": "nyha4", "to": "death", "annual_prob": 0.25, "source": "CCCF"}
+    ],
+    "costs": {
+      "nyha1": 15000,
+      "nyha2": 25000,
+      "nyha3": 42000,
+      "nyha4": 85000,
+      "death": 0
+    },
+    "discount_rate": 0.03,
+    "cycle_length": 1,
+    "cycle_unit": "year",
+    "time_horizon": 20,
+    "reference": "中国心力衰竭诊断和治疗指南 2024"
+  },
+  {
+    "id": "dm-ckd",
+    "name": "慢性肾病进展模型",
+    "disease": "慢性肾病",
+    "icd10": "N18",
+    "model_type": "markov",
+    "states": [
+      {"id": "ckd3a", "name": "CKD 3a期", "utility": 0.78},
+      {"id": "ckd3b", "name": "CKD 3b期", "utility": 0.68},
+      {"id": "ckd4", "name": "CKD 4期", "utility": 0.55},
+      {"id": "ckd5", "name": "CKD 5期", "utility": 0.45},
+      {"id": "dialysis", "name": "透析", "utility": 0.52},
+      {"id": "transplant", "name": "肾移植", "utility": 0.78},
+      {"id": "death", "name": "死亡", "utility": 0.0}
+    ],
+    "transitions": [
+      {"from": "ckd3a", "to": "ckd3b", "annual_prob": 0.08, "source": "CSN登记"},
+      {"from": "ckd3a", "to": "death", "annual_prob": 0.02, "source": "CSN登记"},
+      {"from": "ckd3b", "to": "ckd4", "annual_prob": 0.12, "source": "CSN登记"},
+      {"from": "ckd3b", "to": "death", "annual_prob": 0.04, "source": "CSN登记"},
+      {"from": "ckd4", "to": "ckd5", "annual_prob": 0.18, "source": "CSN登记"},
+      {"from": "ckd4", "to": "death", "annual_prob": 0.08, "source": "CSN登记"},
+      {"from": "ckd5", "to": "dialysis", "annual_prob": 0.65, "source": "CSN登记"},
+      {"from": "ckd5", "to": "death", "annual_prob": 0.15, "source": "CSN登记"},
+      {"from": "dialysis", "to": "transplant", "annual_prob": 0.05, "source": "中国移植登记"},
+      {"from": "dialysis", "to": "death", "annual_prob": 0.12, "source": "DOPPS"},
+      {"from": "transplant", "to": "death", "annual_prob": 0.03, "source": "移植后随访"}
+    ],
+    "costs": {
+      "ckd3a": 8000,
+      "ckd3b": 15000,
+      "ckd4": 30000,
+      "ckd5": 50000,
+      "dialysis": 98000,
+      "transplant": 45000,
+      "death": 0
+    },
+    "discount_rate": 0.03,
+    "cycle_length": 1,
+    "cycle_unit": "year",
+    "time_horizon": 25,
+    "reference": "KDIGO CKD管理指南 2024"
   }
 ]
