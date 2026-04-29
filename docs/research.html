@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>研究追踪 | HEOR Modeling Platform</title>
+    <meta name="description" content="卫生经济学与结果研究建模平台，药物经济学评价自动化">
+    <meta property="og:title" content="HEOR Modeling Platform">
+    <meta property="og:description" content="卫生经济学与结果研究建模平台，药物经济学评价自动化">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/MoKangMedical/heor-modeling-platform">
+    <meta name="twitter:card" content="summary_large_image">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📈</text></svg>">
+
+    <meta
+      name="description"
+      content="HEOR Modeling Platform 研究追踪页面：独立呈现 Lancet 2026 建模与经济评价研究跟踪。"
+    />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:opsz,wght@6..72,500;6..72,700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/research.html" />
+  </head>
+  <body>
+
+    <div class="status-bar-top" id="status-bar">
+      <div class="status-left">
+        <span class="status-indicator online" id="api-status"></span>
+        <span class="status-text" id="api-status-text">检查连接...</span>
+      </div>
+      <div class="status-center">
+        <span class="status-version">v1.0.0</span>
+        <span class="status-sep">|</span>
+        <span class="status-env" id="env-mode">演示模式</span>
+      </div>
+      <div class="status-right">
+        <button class="status-btn" onclick="HEOR_UX.openPalette()" title="命令面板 (Ctrl+K)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+          <kbd>⌘K</kbd>
+        </button>
+        <button class="status-btn" onclick="HEOR_UX.toggleTheme()" title="切换主题">🌙</button>
+      </div>
+    </div>
+
+    <div class="backdrop"></div>
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark">HM</span>
+        <span class="brand-copy">
+          <strong>HEOR Modeling Platform</strong>
+          <small>研究追踪</small>
+        </span>
+      </div>
+      <nav class="nav">
+        <a href="./index.html" data-zh="总览" data-en="Overview">总览</a>
+        <a href="./evidence.html" data-zh="证据" data-en="Evidence">证据</a>
+        <a href="./example-run.html" data-zh="示例运行" data-en="Example">示例运行</a>
+        <a href="./platform.html" data-zh="平台细节" data-en="Platform">平台细节</a>
+        <a href="./workflow-demo.html" data-zh="完整流程" data-en="Workflow">完整流程</a>
+        <a href="./disease-data.html" data-zh="疾病数据" data-en="Disease Data">疾病数据</a>
+        <a href="./api-docs.html" data-zh="API文档" data-en="API Docs">API文档</a>
+        <a href="./pricing.html" data-zh="定价" data-en="Pricing">定价</a>
+        <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
+      </nav>
+    </header>
+
+    <main>
+      <section class="page-hero card">
+        <div class="page-hero-copy">
+          <p class="eyebrow">研究追踪</p>
+          <h1>研究追踪单独成页，不再打断产品入口。</h1>
+          <p class="hero-text">
+            首页负责引导用户开始使用平台。研究跟踪属于另一类内容，所以单独放在这里，方便需要行业视角的人查看
+            Lancet 家族期刊 2026 年与 modelling、HEOR 和经济评价相关的研究。
+          </p>
+        </div>
+        <div class="page-hero-actions">
+          <a class="button primary" href="./index.html">回到产品首页</a>
+          <a class="button secondary" href="./platform.html">查看平台细节</a>
+        </div>
+      </section>
+
+      <section id="lancet-watch" class="section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Lancet 2026 追踪</p>
+            <h2>截至 2026 年 3 月 25 日，按既定检索口径收录 Lancet 家族期刊中与 HEOR、政策建模和经济评价最相关的 <span id="lancet-count"></span> 篇 2026 论文。</h2>
+          </div>
+          <p class="section-note">
+            检索口径: Lancet 家族期刊 + 建模研究 / 经济评价 / 成本效果 / 预算影响 / 模拟分析。
+          </p>
+        </div>
+        <div id="lancet-grid" class="lancet-grid"></div>
+      </section>
+    </main>
+
+        <footer class="footer">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <span class="brand-mark">HM</span>
+            <div>
+              <strong>HEOR Modeling Platform</strong>
+              <small>卫生经济学与结果研究建模平台</small>
+            </div>
+          </div>
+          <p class="footer-desc">为药物经济学评价提供标准化建模工具，支持成本-效果分析、预算影响分析、敏感性分析。</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4>产品</h4>
+            <a href="./evidence.html">上传证据</a>
+            <a href="./calibration.html">临床校准</a>
+            <a href="./simulation.html">运行模拟</a>
+            <a href="./review.html">结果审阅</a>
+            <a href="./workflow-demo.html">完整流程</a>
+          </div>
+          <div class="footer-col">
+            <h4>资源</h4>
+            <a href="./platform.html">平台细节</a>
+            <a href="./research.html">研究追踪</a>
+            <a href="./example-run.html">示例运行</a>
+            <a href="./openapi.yaml">API文档</a>
+          </div>
+          <div class="footer-col">
+            <h4>关于</h4>
+            <a href="https://github.com/MoKangMedical/heor-modeling-platform" target="_blank">GitHub</a>
+            <a href="https://github.com/MoKangMedical" target="_blank">MoKangMedical</a>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HEOR Modeling Platform. Built for Health Economics and Outcomes Research.</p>
+        <p>每一次运行都会保留版本、留痕来源，并可直接导出用于审阅。</p>
+      </div>
+    </footer>
+
+    <script src="./app.js"></script>
+    <script src="./ux-enhance.js?v=1"></script>
+    <script src="./tour.js?v=1"></script>
+    <script src="./charts.js?v=1"></script>
+      <script src="./opc-nav.js"></script>
+  </body>
+</html>
