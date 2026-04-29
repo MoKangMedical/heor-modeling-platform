@@ -1,22 +1,134 @@
 [
   {
+    "id": "icd-e11",
     "code": "E11",
-    "name": "2型糖尿病"
+    "name": "2型糖尿病",
+    "name_en": "Type 2 Diabetes Mellitus",
+    "category": "内分泌代谢",
+    "prevalence_cn": 0.116,
+    "annual_cases_cn": 160000000,
+    "mortality_rate": 0.015,
+    "burden_rank": 3
   },
   {
-    "code": "I10",
-    "name": "原发性高血压"
+    "id": "icd-c34",
+    "code": "C34",
+    "name": "非小细胞肺癌",
+    "name_en": "Non-Small Cell Lung Cancer",
+    "category": "恶性肿瘤",
+    "prevalence_cn": 0.00058,
+    "annual_cases_cn": 820000,
+    "mortality_rate": 0.45,
+    "burden_rank": 1
   },
   {
-    "code": "I25",
-    "name": "慢性缺血性心脏病"
+    "id": "icd-i50",
+    "code": "I50",
+    "name": "心力衰竭",
+    "name_en": "Heart Failure",
+    "category": "心血管",
+    "prevalence_cn": 0.013,
+    "annual_cases_cn": 13700000,
+    "mortality_rate": 0.08,
+    "burden_rank": 4
   },
   {
-    "code": "J44",
-    "name": "COPD"
+    "id": "icd-n18",
+    "code": "N18",
+    "name": "慢性肾病",
+    "name_en": "Chronic Kidney Disease",
+    "category": "泌尿系统",
+    "prevalence_cn": 0.018,
+    "annual_cases_cn": 15000000,
+    "mortality_rate": 0.05,
+    "burden_rank": 5
   },
   {
-    "code": "F32",
-    "name": "抑郁发作"
+    "id": "icd-g30",
+    "code": "G30",
+    "name": "阿尔茨海默病",
+    "name_en": "Alzheimer Disease",
+    "category": "神经系统",
+    "prevalence_cn": 0.035,
+    "annual_cases_cn": 10000000,
+    "mortality_rate": 0.12,
+    "burden_rank": 6
+  },
+  {
+    "id": "icd-m06",
+    "code": "M06",
+    "name": "类风湿关节炎",
+    "name_en": "Rheumatoid Arthritis",
+    "category": "骨骼肌肉",
+    "prevalence_cn": 0.004,
+    "annual_cases_cn": 5000000,
+    "mortality_rate": 0.008,
+    "burden_rank": 8
+  },
+  {
+    "id": "icd-f32",
+    "code": "F32-F33",
+    "name": "抑郁症",
+    "name_en": "Major Depressive Disorder",
+    "category": "精神心理",
+    "prevalence_cn": 0.034,
+    "annual_cases_cn": 50000000,
+    "mortality_rate": 0.001,
+    "burden_rank": 2
+  },
+  {
+    "id": "icd-j45",
+    "code": "J45",
+    "name": "哮喘",
+    "name_en": "Asthma",
+    "category": "呼吸系统",
+    "prevalence_cn": 0.042,
+    "annual_cases_cn": 45000000,
+    "mortality_rate": 0.001,
+    "burden_rank": 7
+  },
+  {
+    "id": "icd-m80",
+    "code": "M80-M81",
+    "name": "骨质疏松症",
+    "name_en": "Osteoporosis",
+    "category": "骨骼肌肉",
+    "prevalence_cn": 0.065,
+    "annual_cases_cn": 70000000,
+    "mortality_rate": 0.003,
+    "burden_rank": 9
+  },
+  {
+    "id": "icd-b18",
+    "code": "B18.2",
+    "name": "丙型肝炎",
+    "name_en": "Hepatitis C",
+    "category": "感染性疾病",
+    "prevalence_cn": 0.007,
+    "annual_cases_cn": 10000000,
+    "mortality_rate": 0.008,
+    "burden_rank": 10
+  },
+  {
+    "id": "icd-c50",
+    "code": "C50",
+    "name": "乳腺癌",
+    "name_en": "Breast Cancer",
+    "category": "恶性肿瘤",
+    "prevalence_cn": 0.00045,
+    "annual_cases_cn": 420000,
+    "mortality_rate": 0.08,
+    "burden_rank": 11
+  },
+  {
+    "id": "icd-g20",
+    "code": "G20",
+    "name": "帕金森病",
+    "name_en": "Parkinson Disease",
+    "category": "神经系统",
+    "prevalence_cn": 0.002,
+    "annual_cases_cn": 3000000,
+    "mortality_rate": 0.04,
+    "burden_rank": 12
   }
 ]
