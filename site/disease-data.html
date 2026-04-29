@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>疾病负担数据库 | HEOR Modeling Platform</title>
+  <meta name="description" content="中国主要疾病经济负担数据库 - 涵盖12种主要疾病的患病率、成本、效用值等关键参数">
+  <meta property="og:title" content="疾病负担数据库 | HEOR Modeling">
+  <meta property="og:description" content="中国主要疾病经济负担数据库">
+  <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/disease-data.html" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='18' fill='%231b345d'/%3E%3Ctext x='50%25' y='54%25' text-anchor='middle' dominant-baseline='middle' font-size='28' font-family='Georgia' fill='%23f7fbff'%3EHM%3C/text%3E%3C/svg%3E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="status-bar-top" id="status-bar">
+    <div class="status-left">
+      <span class="status-indicator online" id="api-status"></span>
+      <span class="status-text">数据库</span>
+    </div>
+    <div class="status-center">
+      <span class="status-version">v1.0.0</span>
+      <span class="status-sep">|</span>
+      <span class="status-env">12种疾病</span>
+    </div>
+    <div class="status-right">
+      <button class="status-btn" onclick="HEOR_UX.openPalette()" title="命令面板 (Ctrl+K)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+        <kbd>⌘K</kbd>
+      </button>
+    </div>
+  </div>
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-mark">HM</span>
+      <span class="brand-copy">
+        <strong>HEOR Modeling Platform</strong>
+        <small>疾病负担数据库</small>
+      </span>
+    </div>
+    <nav class="nav">
+      <a href="./index.html" data-zh="总览" data-en="Overview">总览</a>
+      <a href="./evidence.html" data-zh="上传证据" data-en="Evidence">上传证据</a>
+      <a href="./disease-data.html" data-zh="疾病数据" data-en="Disease Data">疾病数据</a>
+      <a href="./workflow-demo.html" data-zh="完整流程" data-en="Workflow">完整流程</a>
+      <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
+    </nav>
+  </header>
+
+  <main style="max-width: 1280px; margin: 0 auto; padding: 40px 20px;">
+    <section style="margin-bottom: 40px;">
+      <h1 style="font-size: 28px; font-weight: 700; color: #111; margin-bottom: 8px;">中国疾病经济负担数据库</h1>
+      <p style="color: #666; font-size: 15px; margin-bottom: 24px;">涵盖12种主要疾病的患病率、直接医疗成本、间接成本和健康效用值数据</p>
+      
+      <div class="metric-cards">
+        <div class="metric-card">
+          <div class="metric-card-label">覆盖疾病</div>
+          <div class="metric-card-value">12</div>
+          <div class="metric-card-unit">种</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">覆盖患者</div>
+          <div class="metric-card-value">4.8</div>
+          <div class="metric-card-unit">亿人</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">数据来源</div>
+          <div class="metric-card-value">28</div>
+          <div class="metric-card-unit">项研究</div>
+        </div>
+        <div class="metric-card">
+          <div class="metric-card-label">更新时间</div>
+          <div class="metric-card-value">2024</div>
+          <div class="metric-card-unit">年</div>
+        </div>
+      </div>
+    </section>
+
+    <section style="margin-bottom: 40px;">
+      <h2 style="font-size: 20px; font-weight: 600; color: #111; margin-bottom: 16px;">疾病负担概览</h2>
+      <div style="overflow-x: auto;">
+        <table class="data-table" id="disease-table">
+          <thead>
+            <tr>
+              <th>疾病</th>
+              <th>ICD-10</th>
+              <th>患病率</th>
+              <th class="number">患者数 (万)</th>
+              <th class="number">年直接成本 (¥)</th>
+              <th class="number">QALY损失/年</th>
+              <th>数据来源</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section style="margin-bottom: 40px;">
+      <h2 style="font-size: 20px; font-weight: 600; color: #111; margin-bottom: 16px;">成本构成分析</h2>
+      <div id="cost-chart" class="chart-container" style="min-height: 300px;"></div>
+    </section>
+
+    <section style="margin-bottom: 40px;">
+      <h2 style="font-size: 20px; font-weight: 600; color: #111; margin-bottom: 16px;">健康效用值分布</h2>
+      <div id="utility-chart" class="chart-container" style="min-height: 300px;"></div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="footer-main">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <span class="brand-mark">HM</span>
+          <div>
+            <strong>HEOR Modeling Platform</strong>
+            <small>卫生经济学与结果研究建模平台</small>
+          </div>
+        </div>
+        <p class="footer-desc">为药物经济学评价提供标准化建模工具。</p>
+      </div>
+      <div class="footer-links">
+        <div class="footer-col">
+          <h4>产品</h4>
+          <a href="./evidence.html">上传证据</a>
+          <a href="./disease-data.html">疾病数据</a>
+          <a href="./workflow-demo.html">完整流程</a>
+        </div>
+        <div class="footer-col">
+          <h4>资源</h4>
+          <a href="./platform.html">平台细节</a>
+          <a href="./research.html">研究追踪</a>
+        </div>
+        <div class="footer-col">
+          <h4>关于</h4>
+          <a href="https://github.com/MoKangMedical/heor-modeling-platform" target="_blank">GitHub</a>
+        <a href="./about.html">About</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 HEOR Modeling Platform.</p>
+    </div>
+  </footer>
+
+  <script>
+    // Disease data
+    const diseases = [
+      { name: '2型糖尿病', icd: 'E11', prevalence: '11.6%', patients: 16000, cost: 12580, qaly: 0.05, source: '中国慢性病监测' },
+      { name: '非小细胞肺癌', icd: 'C34', prevalence: '0.058%', patients: 82, cost: 186000, qaly: 0.65, source: '肿瘤登记年报' },
+      { name: '心力衰竭', icd: 'I50', prevalence: '1.3%', patients: 1370, cost: 28900, qaly: 0.10, source: 'CCCF研究' },
+      { name: '慢性肾病(CKD3-5)', icd: 'N18', prevalence: '1.8%', patients: 1500, cost: 52300, qaly: 0.12, source: 'CSN登记' },
+      { name: '阿尔茨海默病', icd: 'G30', prevalence: '3.5%', patients: 1000, cost: 45600, qaly: 0.15, source: 'AD登记研究' },
+      { name: '类风湿关节炎', icd: 'M06', prevalence: '0.4%', patients: 500, cost: 18200, qaly: 0.08, source: 'APLAR数据' },
+      { name: '抑郁症', icd: 'F32-F33', prevalence: '3.4%', patients: 5000, cost: 6200, qaly: 0.20, source: '精神卫生调查' },
+      { name: '哮喘', icd: 'J45', prevalence: '4.2%', patients: 4500, cost: 5800, qaly: 0.04, source: 'CSE数据' },
+      { name: '骨质疏松症', icd: 'M80-M81', prevalence: '6.5%', patients: 7000, cost: 8900, qaly: 0.03, source: 'COS研究' },
+      { name: '丙型肝炎', icd: 'B18.2', prevalence: '0.7%', patients: 1000, cost: 35000, qaly: 0.08, source: 'CSLH数据' },
+      { name: '乳腺癌', icd: 'C50', prevalence: '0.045%', patients: 42, cost: 145000, qaly: 0.35, source: '肿瘤登记年报' },
+      { name: '帕金森病', icd: 'G20', prevalence: '0.2%', patients: 300, cost: 32000, qaly: 0.12, source: 'PD登记研究' },
+    ];
+
+    // Populate table
+    const tbody = document.querySelector('#disease-table tbody');
+    diseases.forEach(d => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><strong>${d.name}</strong></td>
+        <td>${d.icd}</td>
+        <td>${d.prevalence}</td>
+        <td class="number">${d.patients.toLocaleString()}</td>
+        <td class="number">¥${d.cost.toLocaleString()}</td>
+        <td class="number">${d.qaly}</td>
+        <td>${d.source}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  </script>
+  <script src="./ux-enhance.js?v=1"></script>
+  <script src="./tour.js?v=1"></script>
+  <script src="./charts.js?v=1"></script>
+    <script src="./opc-nav.js"></script>
+  </body>
+</html>
