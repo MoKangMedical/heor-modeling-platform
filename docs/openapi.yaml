@@ -1,0 +1,635 @@
+openapi: 3.1.0
+info:
+  title: TreeAge Platform Backend Draft API
+  version: 0.1.0
+  description: Draft OpenAPI contract for the HEOR/HTA modeling backend.
+servers:
+  - url: http://localhost:8000
+paths:
+  /health:
+    get:
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Service health
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+  /api/v1/projects/{project_id}/clinical-series:
+    post:
+      tags: [evidence]
+      summary: Create a clinical series
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ClinicalSeriesCreate"
+      responses:
+        "201":
+          description: Clinical series created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClinicalSeriesRead"
+  /api/v1/clinical-series/{series_id}:
+    get:
+      tags: [evidence]
+      summary: Get a clinical series
+      parameters:
+        - $ref: "#/components/parameters/SeriesId"
+      responses:
+        "200":
+          description: Clinical series
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ClinicalSeriesRead"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/projects/{project_id}/compound-curves:
+    post:
+      tags: [evidence]
+      summary: Create a compound curve
+      parameters:
+        - $ref: "#/components/parameters/ProjectId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CompoundCurveCreate"
+      responses:
+        "201":
+          description: Compound curve created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompoundCurveRead"
+  /api/v1/compound-curves/{curve_id}:
+    get:
+      tags: [evidence]
+      summary: Get a compound curve
+      parameters:
+        - $ref: "#/components/parameters/CurveId"
+      responses:
+        "200":
+          description: Compound curve
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CompoundCurveRead"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/model-versions/{model_version_id}/probability-functions:
+    post:
+      tags: [probability]
+      summary: Create a probability function
+      parameters:
+        - $ref: "#/components/parameters/ModelVersionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProbabilityFunctionCreate"
+      responses:
+        "201":
+          description: Probability function created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProbabilityFunctionRead"
+  /api/v1/probability-functions/{function_id}/debug:
+    post:
+      tags: [probability]
+      summary: Debug a probability function over a time window
+      parameters:
+        - $ref: "#/components/parameters/FunctionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProbabilityDebugRequest"
+      responses:
+        "200":
+          description: Probability debug trace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProbabilityDebugResponse"
+  /api/v1/model-versions/{model_version_id}/runs:
+    post:
+      tags: [runs]
+      summary: Queue an analysis run
+      parameters:
+        - $ref: "#/components/parameters/ModelVersionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunCreate"
+      responses:
+        "202":
+          description: Run accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RunRead"
+  /api/v1/runs/{run_id}:
+    get:
+      tags: [runs]
+      summary: Get a run
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+      responses:
+        "200":
+          description: Run details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RunRead"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/runs/{run_id}/artifacts:
+    get:
+      tags: [runs]
+      summary: List run artifacts
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+      responses:
+        "200":
+          description: Run artifacts
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RunArtifactRead"
+  /api/v1/runs/{run_id}/metrics:
+    get:
+      tags: [runs]
+      summary: List run metric catalog entries
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+      responses:
+        "200":
+          description: Metric catalog
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/RunMetricCatalogRead"
+  /api/v1/model-versions/{model_version_id}/calibration-configs:
+    post:
+      tags: [calibration]
+      summary: Create a calibration config
+      parameters:
+        - $ref: "#/components/parameters/ModelVersionId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CalibrationConfigCreate"
+      responses:
+        "201":
+          description: Calibration config created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalibrationConfigRead"
+  /api/v1/calibration-configs/{config_id}/run:
+    post:
+      tags: [calibration]
+      summary: Queue a calibration run
+      parameters:
+        - $ref: "#/components/parameters/ConfigId"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RunLaunchRequest"
+      responses:
+        "202":
+          description: Calibration run accepted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RunRead"
+  /api/v1/runs/{run_id}/calibration-result:
+    get:
+      tags: [calibration]
+      summary: Get calibration result
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+      responses:
+        "200":
+          description: Calibration result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CalibrationResultRead"
+        "404":
+          $ref: "#/components/responses/NotFound"
+  /api/v1/runs/{run_id}/scatterplot:
+    get:
+      tags: [analytics]
+      summary: Build a scatterplot dataset from run metrics
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+        - name: x_metric
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: y_metric
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Scatterplot response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ScatterplotResponse"
+  /api/v1/runs/{run_id}/cohort-dashboard:
+    get:
+      tags: [analytics]
+      summary: Get cohort dashboard data
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+        - name: subgroup_key
+          in: query
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Cohort dashboard response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CohortDashboardResponse"
+  /api/v1/runs/{run_id}/patients/{patient_index}/trace:
+    get:
+      tags: [analytics]
+      summary: Get a patient trace
+      parameters:
+        - $ref: "#/components/parameters/RunId"
+        - name: patient_index
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Patient trace
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PatientTraceResponse"
+components:
+  parameters:
+    ProjectId:
+      name: project_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    SeriesId:
+      name: series_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    CurveId:
+      name: curve_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ModelVersionId:
+      name: model_version_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    FunctionId:
+      name: function_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    RunId:
+      name: run_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+    ConfigId:
+      name: config_id
+      in: path
+      required: true
+      schema:
+        type: string
+        format: uuid
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+  schemas:
+    HealthResponse:
+      type: object
+      properties:
+        status: { type: string }
+        app_name: { type: string }
+      required: [status, app_name]
+    ErrorResponse:
+      type: object
+      properties:
+        detail: { type: string }
+      required: [detail]
+    ClinicalSeriesPoint:
+      type: object
+      properties:
+        seq_no: { type: integer }
+        time_value: { type: number }
+        estimate_value: { type: number, nullable: true }
+        lower_ci: { type: number, nullable: true }
+        upper_ci: { type: number, nullable: true }
+        at_risk: { type: integer, nullable: true }
+        events: { type: integer, nullable: true }
+        censored: { type: integer, nullable: true }
+      required: [seq_no, time_value]
+    ClinicalSeriesCreate:
+      type: object
+      properties:
+        name: { type: string }
+        series_kind: { type: string }
+        time_unit: { type: string }
+        value_unit: { type: string }
+        interpolation_method: { type: string }
+        source_file_uri: { type: string, nullable: true }
+        source_metadata_json: { type: object, additionalProperties: true }
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/ClinicalSeriesPoint"
+      required: [name, series_kind, time_unit, value_unit, points]
+    ClinicalSeriesRead:
+      allOf:
+        - $ref: "#/components/schemas/ClinicalSeriesCreate"
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            project_id: { type: string, format: uuid }
+            created_at: { type: string, format: date-time }
+          required: [id, project_id, created_at]
+    CompoundCurveSegment:
+      type: object
+      properties:
+        seq_no: { type: integer }
+        segment_kind: { type: string }
+        source_ref_id: { type: string, format: uuid }
+        start_time: { type: number }
+        end_time: { type: number, nullable: true }
+        blend_mode: { type: string }
+        blend_window: { type: number, nullable: true }
+        transform_json: { type: object, additionalProperties: true }
+      required: [seq_no, segment_kind, source_ref_id, start_time]
+    CompoundCurveCreate:
+      type: object
+      properties:
+        name: { type: string }
+        curve_kind: { type: string }
+        time_unit: { type: string }
+        definition_json: { type: object, additionalProperties: true }
+        segments:
+          type: array
+          items:
+            $ref: "#/components/schemas/CompoundCurveSegment"
+      required: [name, curve_kind, time_unit, definition_json, segments]
+    CompoundCurveRead:
+      allOf:
+        - $ref: "#/components/schemas/CompoundCurveCreate"
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            project_id: { type: string, format: uuid }
+            created_at: { type: string, format: date-time }
+          required: [id, project_id, created_at]
+    ProbabilityFunctionCreate:
+      type: object
+      properties:
+        name: { type: string }
+        function_kind: { type: string }
+        source_type: { type: string }
+        source_ref_id: { type: string, format: uuid }
+        cycle_length: { type: number }
+        time_unit: { type: string }
+        interpolation_method: { type: string }
+        options_json: { type: object, additionalProperties: true }
+      required: [name, function_kind, source_type, source_ref_id, cycle_length, time_unit, interpolation_method]
+    ProbabilityFunctionRead:
+      allOf:
+        - $ref: "#/components/schemas/ProbabilityFunctionCreate"
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            model_version_id: { type: string, format: uuid }
+            created_at: { type: string, format: date-time }
+          required: [id, model_version_id, created_at]
+    ProbabilityDebugRequest:
+      type: object
+      properties:
+        t0: { type: number }
+        t1: { type: number }
+      required: [t0, t1]
+    ProbabilityDebugResponse:
+      type: object
+      properties:
+        function_id: { type: string, format: uuid }
+        t0: { type: number }
+        t1: { type: number }
+        probability: { type: number }
+        trace:
+          type: object
+          additionalProperties: true
+      required: [function_id, t0, t1, probability, trace]
+    RunCreate:
+      type: object
+      properties:
+        project_id: { type: string, format: uuid }
+        analysis_type: { type: string }
+        template_id: { type: string, format: uuid, nullable: true }
+        random_seed: { type: integer, nullable: true }
+        sampling_method: { type: string, nullable: true }
+        input_snapshot_json: { type: object, additionalProperties: true }
+        config_json: { type: object, additionalProperties: true }
+      required: [project_id, analysis_type, input_snapshot_json, config_json]
+    RunRead:
+      allOf:
+        - $ref: "#/components/schemas/RunCreate"
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            model_version_id: { type: string, format: uuid }
+            status: { type: string }
+            engine_version: { type: string }
+            summary_json: { type: object, additionalProperties: true }
+            submitted_at: { type: string, format: date-time }
+          required: [id, model_version_id, status, engine_version, summary_json, submitted_at]
+    RunArtifactRead:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        run_id: { type: string, format: uuid }
+        artifact_type: { type: string }
+        storage_uri: { type: string }
+        metadata_json: { type: object, additionalProperties: true }
+      required: [id, run_id, artifact_type, storage_uri, metadata_json]
+    RunMetricCatalogRead:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        run_id: { type: string, format: uuid }
+        metric_key: { type: string }
+        metric_label: { type: string }
+        metric_scope: { type: string }
+        data_type: { type: string }
+        unit: { type: string, nullable: true }
+        strategy_code: { type: string, nullable: true }
+        comparator_strategy_code: { type: string, nullable: true }
+      required: [id, run_id, metric_key, metric_label, metric_scope, data_type]
+    CalibrationParameterCreate:
+      type: object
+      properties:
+        parameter_code: { type: string }
+        lower_bound: { type: number }
+        upper_bound: { type: number }
+        initial_value: { type: number, nullable: true }
+        transform_type: { type: string, nullable: true }
+        is_fixed: { type: boolean, nullable: true }
+      required: [parameter_code, lower_bound, upper_bound]
+    CalibrationConfigCreate:
+      type: object
+      properties:
+        name: { type: string }
+        target_series_id: { type: string, format: uuid }
+        objective_type: { type: string }
+        optimizer_type: { type: string }
+        max_iterations: { type: integer }
+        config_json: { type: object, additionalProperties: true }
+        parameters:
+          type: array
+          items:
+            $ref: "#/components/schemas/CalibrationParameterCreate"
+      required: [name, target_series_id, objective_type, optimizer_type, max_iterations, parameters]
+    CalibrationConfigRead:
+      allOf:
+        - $ref: "#/components/schemas/CalibrationConfigCreate"
+        - type: object
+          properties:
+            id: { type: string, format: uuid }
+            model_version_id: { type: string, format: uuid }
+            created_at: { type: string, format: date-time }
+          required: [id, model_version_id, created_at]
+    RunLaunchRequest:
+      type: object
+      properties:
+        project_id: { type: string, format: uuid }
+        random_seed: { type: integer, nullable: true }
+        input_snapshot_json: { type: object, additionalProperties: true }
+        config_json: { type: object, additionalProperties: true }
+      required: [project_id]
+    CalibrationResultRead:
+      type: object
+      properties:
+        run_id: { type: string, format: uuid }
+        calibration_config_id: { type: string, format: uuid }
+        convergence_status: { type: string }
+        best_objective_value: { type: number }
+        best_params_json: { type: object, additionalProperties: true }
+        diagnostics_json: { type: object, additionalProperties: true }
+      required: [run_id, calibration_config_id, convergence_status, best_objective_value, best_params_json, diagnostics_json]
+    ScatterPoint:
+      type: object
+      properties:
+        sample_index: { type: integer }
+        x: { type: number }
+        y: { type: number }
+      required: [sample_index, x, y]
+    ScatterplotResponse:
+      type: object
+      properties:
+        run_id: { type: string, format: uuid }
+        x_metric: { type: string }
+        y_metric: { type: string }
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/ScatterPoint"
+      required: [run_id, x_metric, y_metric, points]
+    CohortPoint:
+      type: object
+      properties:
+        bucket_time: { type: number }
+        state_code: { type: string }
+        subgroup_key: { type: string, nullable: true }
+        occupancy_count: { type: integer }
+        inflow_count: { type: integer }
+        outflow_count: { type: integer }
+      required: [bucket_time, state_code, occupancy_count, inflow_count, outflow_count]
+    CohortDashboardResponse:
+      type: object
+      properties:
+        run_id: { type: string, format: uuid }
+        subgroup_key: { type: string, nullable: true }
+        points:
+          type: array
+          items:
+            $ref: "#/components/schemas/CohortPoint"
+      required: [run_id, points]
+    PatientTraceEvent:
+      type: object
+      properties:
+        patient_index: { type: integer }
+        event_seq: { type: integer }
+        cycle_index: { type: integer, nullable: true }
+        event_time: { type: number }
+        from_state_code: { type: string, nullable: true }
+        to_state_code: { type: string, nullable: true }
+        event_type: { type: string }
+        tracker_json: { type: object, additionalProperties: true }
+      required: [patient_index, event_seq, event_time, event_type, tracker_json]
+    PatientTraceResponse:
+      type: object
+      properties:
+        run_id: { type: string, format: uuid }
+        patient_index: { type: integer }
+        events:
+          type: array
+          items:
+            $ref: "#/components/schemas/PatientTraceEvent"
+      required: [run_id, patient_index, events]
+

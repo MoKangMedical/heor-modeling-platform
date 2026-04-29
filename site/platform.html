@@ -27,8 +27,29 @@
       rel="stylesheet"
     />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="canonical" href="https://mokangmedical.github.io/heor-modeling-platform/platform.html" />
   </head>
   <body>
+
+    <div class="status-bar-top" id="status-bar">
+      <div class="status-left">
+        <span class="status-indicator online" id="api-status"></span>
+        <span class="status-text" id="api-status-text">检查连接...</span>
+      </div>
+      <div class="status-center">
+        <span class="status-version">v1.0.0</span>
+        <span class="status-sep">|</span>
+        <span class="status-env" id="env-mode">演示模式</span>
+      </div>
+      <div class="status-right">
+        <button class="status-btn" onclick="HEOR_UX.openPalette()" title="命令面板 (Ctrl+K)">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M11.742 10.344a6.5 6.5 0 1 0-1.397 1.398h-.001c.03.04.062.078.098.115l3.85 3.85a1 1 0 0 0 1.415-1.414l-3.85-3.85a1.007 1.007 0 0 0-.115-.1zM12 6.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0z"/></svg>
+          <kbd>⌘K</kbd>
+        </button>
+        <button class="status-btn" onclick="HEOR_UX.toggleTheme()" title="切换主题">🌙</button>
+      </div>
+    </div>
+
     <div class="backdrop"></div>
     <header class="topbar">
       <div class="brand">
@@ -39,12 +60,24 @@
         </span>
       </div>
       <nav class="nav">
-        <a href="./index.html">总览</a>
-        <a href="./evidence.html">证据</a>
-        <a href="./calibration.html">临床校准</a>
-        <a href="./simulation.html">运行模拟</a>
-        <a href="./review.html">结果审阅</a>
-        <a href="./example-run.html">示例运行</a>
+        <a href="./index.html" data-zh="总览" data-en="Overview">总览</a>
+        <a href="./evidence.html" data-zh="证据" data-en="Evidence">证据</a>
+        <a href="./calibration.html" data-zh="临床校准" data-en="Calibration">临床校准</a>
+        <a href="./simulation.html" data-zh="运行模拟" data-en="Simulation">运行模拟</a>
+        <a href="./review.html" data-zh="结果审阅" data-en="Review">结果审阅</a>
+        <a href="./example-run.html" data-zh="示例运行" data-en="Example">示例运行</a>
+        
+        <a href="./disease-data.html" data-zh="疾病数据" data-en="Disease Data">疾病数据</a>
+        <a href="./api-docs.html" data-zh="API文档" data-en="API Docs">API文档</a>
+        <a href="./pricing.html" data-zh="定价" data-en="Pricing">定价</a>
+        <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
+      
+        <a href="./workflow-demo.html" data-zh="完整流程" data-en="Workflow">完整流程</a>
+        
+        <a href="./disease-data.html" data-zh="疾病数据" data-en="Disease Data">疾病数据</a>
+        <a href="./api-docs.html" data-zh="API文档" data-en="API Docs">API文档</a>
+        <a href="./pricing.html" data-zh="定价" data-en="Pricing">定价</a>
+        <button class="lang-toggle" id="langToggle" title="Switch to English">EN</button>
       </nav>
     </header>
 
@@ -159,15 +192,51 @@
       </section>
     </main>
 
-    <footer class="footer">
-      <div class="footer-links">
-        <a class="text-link" href="./index.html">回到首页</a>
-        <a class="text-link" href="./example-run.html">示例运行</a>
-        <a class="text-link" href="./research.html">研究追踪</a>
+        <footer class="footer">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <div class="footer-logo">
+            <span class="brand-mark">HM</span>
+            <div>
+              <strong>HEOR Modeling Platform</strong>
+              <small>卫生经济学与结果研究建模平台</small>
+            </div>
+          </div>
+          <p class="footer-desc">为药物经济学评价提供标准化建模工具，支持成本-效果分析、预算影响分析、敏感性分析。</p>
+        </div>
+        <div class="footer-links">
+          <div class="footer-col">
+            <h4>产品</h4>
+            <a href="./evidence.html">上传证据</a>
+            <a href="./calibration.html">临床校准</a>
+            <a href="./simulation.html">运行模拟</a>
+            <a href="./review.html">结果审阅</a>
+            <a href="./workflow-demo.html">完整流程</a>
+          </div>
+          <div class="footer-col">
+            <h4>资源</h4>
+            <a href="./platform.html">平台细节</a>
+            <a href="./research.html">研究追踪</a>
+            <a href="./example-run.html">示例运行</a>
+            <a href="./openapi.yaml">API文档</a>
+          </div>
+          <div class="footer-col">
+            <h4>关于</h4>
+            <a href="https://github.com/MoKangMedical/heor-modeling-platform" target="_blank">GitHub</a>
+            <a href="https://github.com/MoKangMedical" target="_blank">MoKangMedical</a>
+          </div>
+        </div>
       </div>
-      <p>这页用于展示更深入的产品结构和系统上下文。</p>
+      <div class="footer-bottom">
+        <p>&copy; 2026 HEOR Modeling Platform. Built for Health Economics and Outcomes Research.</p>
+        <p>每一次运行都会保留版本、留痕来源，并可直接导出用于审阅。</p>
+      </div>
     </footer>
 
     <script src="./app.js"></script>
+    <script src="./ux-enhance.js?v=1"></script>
+    <script src="./tour.js?v=1"></script>
+    <script src="./charts.js?v=1"></script>
+      <script src="./opc-nav.js"></script>
   </body>
 </html>

@@ -1,54 +1,62 @@
 version: '3.8'
 
 services:
-  app:
-    build: .
+  # 后端API服务
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: heor-backend
     ports:
       - "8000:8000"
     environment:
-      - DATABASE_URL=postgresql://postgres:postgres@db:5432/heor-modeling-platform
-      - REDIS_URL=redis://redis:6379/0
-      - DEBUG=False
-    depends_on:
-      - db
-      - redis
+      - APP_ENV=production
+      - DATABASE_URL=sqlite:///./heor.db
+      - AUTO_CREATE_TABLES=true
+      - SEED_DEMO_DATA=true
+      - CORS_ORIGINS=["http://localhost:3000","http://localhost","https://mokangmedical.github.io"]
     volumes:
-      - .:/app
-    command: python -m uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+      - backend-data:/app/data
+      - backend-logs:/app/logs
+      - backend-uploads:/app/uploads
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
 
-  db:
-    image: postgres:15-alpine
-    environment:
-      - POSTGRES_DB=heor-modeling-platform
-      - POSTGRES_USER=postgres
-      - POSTGRES_PASSWORD=postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    restart: unless-stopped
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    restart: unless-stopped
-
-  nginx:
+  # 前端静态文件服务
+  frontend:
     image: nginx:alpine
+    container_name: heor-frontend
     ports:
-      - "80:80"
-      - "443:443"
+      - "3000:80"
     volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf
-      - ./ssl:/etc/nginx/ssl
+      - ./site:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
     depends_on:
-      - app
+      backend:
+        condition: service_healthy
     restart: unless-stopped
+
+  # 可选：PostgreSQL数据库（生产环境）
+  # postgres:
+  #   image: postgres:15-alpine
+  #   container_name: heor-postgres
+  #   environment:
+  #     - POSTGRES_DB=heor
+  #     - POSTGRES_USER=heor
+  #     - POSTGRES_PASSWORD=heor_secret_password
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   ports:
+  #     - "5432:5432"
+  #   restart: unless-stopped
 
 volumes:
-  postgres_data:
-  redis_data:
+  backend-data:
+  backend-logs:
+  backend-uploads:
+  # postgres-data:
